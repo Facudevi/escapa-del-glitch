@@ -19,3 +19,8 @@ import './components/checkpoint.js';
 import './components/caida.js';
 import './components/modo-escritorio.js';
 import './components/escalada-mouse.js';
+import './components/fragmentos.js';
+import './components/pulsera.js';
+import './components/escaneo.js';
+import './components/niebla.js';
+import './components/glitch.js';

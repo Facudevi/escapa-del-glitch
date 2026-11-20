@@ -7,7 +7,7 @@
     <style>
       body { margin: 0; background: #1d1727; }
       #ayuda {
-        position: fixed; left: 12px; bottom: 12px; z-index: 10;
+        position: fixed; left: 12px; top: 12px; z-index: 10;
         max-width: 320px; padding: 10px 12px; border-radius: 10px;
         background: rgba(29, 23, 39, 0.8); color: #e9e2f5;
         font: 13px/1.4 system-ui, sans-serif; pointer-events: none;
@@ -19,7 +19,7 @@
     <div id="ayuda">
       <b>Modo escritorio:</b> arrastrá para mirar y WASD para caminar. Clic en un agarre lejano para ir hasta él.
       <b>Escalar:</b> mantené el clic izquierdo (mano izquierda) o derecho (mano derecha) sobre una tecla cercana y bajá el mouse.
-      Con casco: apretá el botón lateral (grip) cerca de una tecla y bajá el brazo para subir.
+      <b>Escanear:</b> tecla E. Con casco: apretá el botón lateral (grip) cerca de una tecla y bajá el brazo para subir; tocá la pulsera con la otra mano o apretá A/X para escanear.
     </div>
 
     <a-scene
@@ -28,6 +28,10 @@
       escenario-glitch
       modo-escritorio
       escalada-mouse
+      fragmentos
+      escaneo
+      niebla
+      glitch
       renderer="antialias: true"
       webxr="optionalFeatures: local-floor, bounded-floor"
       loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
@@ -35,7 +39,7 @@
       <!-- Jugador: el rig se mueve, la cámara y las manos van adentro -->
       <a-entity id="rig" position="0 0 0" climb energia caida>
         <a-entity id="camara" camera look-controls="pointerLockEnabled: false" fundido position="0 1.6 0"></a-entity>
-        <a-entity id="mano-izq" meta-touch-controls="hand: left" mano-guante="mano: izquierda" anillo-energia="mano: izquierda"></a-entity>
+        <a-entity id="mano-izq" meta-touch-controls="hand: left" mano-guante="mano: izquierda" anillo-energia="mano: izquierda" pulsera></a-entity>
         <a-entity id="mano-der" meta-touch-controls="hand: right" mano-guante="mano: derecha" anillo-energia="mano: derecha"></a-entity>
       </a-entity>
 

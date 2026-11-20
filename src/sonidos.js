@@ -73,3 +73,102 @@ export function rotura() {
   ruido(0.35, 700, 1);
   tono(110, 0.25, 'triangle', 0.5);
 }
+
+// Se junta un fragmento: dos notas suaves que suben
+export function fragmentoRecogido() {
+  tono(659, 0.25, 'sine', 0.9);
+  setTimeout(() => tono(988, 0.4, 'sine', 0.8), 110);
+}
+
+// Onda del escaneo: un barrido grave y suave
+export function ondaEscaneo() {
+  tono(220, 0.5, 'sine', 0.7);
+  setTimeout(() => tono(330, 0.6, 'sine', 0.5), 150);
+}
+
+// Sonido espacial continuo de un fragmento: se oye más fuerte cuanto más cerca está el jugador.
+// Devuelve { mover(x, y, z), detener() }, o null si no hay audio.
+export function crearZumbido(frecuencias, volumen, distanciaMax) {
+  const ctx = audio();
+  if (!ctx) return null;
+  try {
+    const panner = ctx.createPanner();
+    panner.panningModel = 'HRTF';
+    panner.distanceModel = 'linear'; // el volumen baja en línea recta hasta ser 0 a distanciaMax
+    panner.refDistance = 0.5;
+    panner.maxDistance = distanciaMax;
+    panner.rolloffFactor = 1;
+
+    const ganancia = ctx.createGain();
+    ganancia.gain.value = SONIDO.volumen * volumen;
+
+    // Respiración muy lenta del volumen (sin pulsos bruscos)
+    const lfo = ctx.createOscillator();
+    const profundidad = ctx.createGain();
+    lfo.frequency.value = 0.35;
+    profundidad.gain.value = SONIDO.volumen * volumen * 0.25;
+    lfo.connect(profundidad).connect(ganancia.gain);
+
+    const osciladores = frecuencias.map((f) => {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = f;
+      o.connect(ganancia);
+      return o;
+    });
+    ganancia.connect(panner).connect(ctx.destination);
+    lfo.start();
+    osciladores.forEach((o) => o.start());
+
+    return {
+      mover(x, y, z) {
+        if (panner.positionX) {
+          panner.positionX.value = x;
+          panner.positionY.value = y;
+          panner.positionZ.value = z;
+        } else {
+          panner.setPosition(x, y, z);
+        }
+      },
+      silenciar(silencio) {
+        ganancia.gain.value = silencio ? 0 : SONIDO.volumen * volumen;
+      },
+      detener() {
+        try {
+          lfo.stop();
+          osciladores.forEach((o) => o.stop());
+          panner.disconnect();
+        } catch (error) {
+          // ya estaba detenido
+        }
+      },
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+// Posición y orientación del oyente (la cabeza del jugador) para el sonido espacial
+export function actualizarOyente(px, py, pz, fx, fy, fz) {
+  const ctx = contexto;
+  if (!ctx) return;
+  const oyente = ctx.listener;
+  try {
+    if (oyente.positionX) {
+      oyente.positionX.value = px;
+      oyente.positionY.value = py;
+      oyente.positionZ.value = pz;
+      oyente.forwardX.value = fx;
+      oyente.forwardY.value = fy;
+      oyente.forwardZ.value = fz;
+      oyente.upX.value = 0;
+      oyente.upY.value = 1;
+      oyente.upZ.value = 0;
+    } else {
+      oyente.setPosition(px, py, pz);
+      oyente.setOrientation(fx, fy, fz, 0, 1, 0);
+    }
+  } catch (error) {
+    // sin audio espacial: no es grave
+  }
+}

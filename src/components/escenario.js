@@ -162,9 +162,9 @@ AFRAME.registerComponent('escenario-glitch', {
 
   crearCarteles(datos, zFrente) {
     const z = zFrente + 0.02;
-    const poner = (x, y, texto) =>
+    const poner = (x, y, texto, ancho = 1.1, alto = 0.5) =>
       crear(this.el, 'a-entity', {
-        cartel: `texto: ${texto}; ancho: 1.1; alto: 0.5`,
+        cartel: `texto: ${texto}; ancho: ${ancho}; alto: ${alto}`,
         position: `${x.toFixed(3)} ${y.toFixed(3)} ${z}`,
       });
 
@@ -172,11 +172,25 @@ AFRAME.registerComponent('escenario-glitch', {
     poner(-1.35, 1.5, 'Agarrá con el botón lateral');
     poner(1.35, 1.5, 'Bajá el brazo para subir');
 
-    // Un cartel de una línea la primera vez que aparece cada tipo, en un lugar libre cerca
-    const ocupado = (x, y) =>
-      datos.agarres.some((a) => Math.abs(a.x - x) < 0.8 && Math.abs(a.y - y) < 0.4) ||
-      datos.paneles.some((p) => Math.abs(p.x - x) < 1.4 && Math.abs(p.y - y) < 0.9) ||
-      datos.checkpoints.some((c) => Math.abs(c.y - y) < 0.5);
+    // Lugar libre cerca de un punto: sin agarres, paneles ni checkpoints debajo del cartel
+    const libre = (x, y, ancho, alto) =>
+      Math.abs(x) <= ESCENARIO.anchoPared / 2 - ancho / 2 - 0.1 &&
+      !datos.agarres.some((a) => Math.abs(a.x - x) < ancho / 2 + 0.25 && Math.abs(a.y - y) < alto / 2 + 0.15) &&
+      !datos.paneles.some((p) => Math.abs(p.x - x) < ancho / 2 + 0.85 && Math.abs(p.y - y) < alto / 2 + 0.65) &&
+      !datos.checkpoints.some((c) => Math.abs(c.y - y) < alto / 2 + 0.25);
+    const colocarCerca = (origen, texto, ancho = 1.1, alto = 0.5) => {
+      // Se prefiere un lugar a la misma altura o un poco más abajo, para que se lea antes de llegar
+      for (const dy of [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1]) {
+        for (const dx of [1.5, -1.5, 0.9, -0.9, 2.1, -2.1]) {
+          if (libre(origen.x + dx, origen.y + dy, ancho, alto)) {
+            poner(origen.x + dx, origen.y + dy, texto, ancho, alto);
+            return;
+          }
+        }
+      }
+    };
+
+    // Un cartel de una línea la primera vez que aparece cada tipo de agarre
     const primeros = {
       hunde: datos.agarres.find((a) => a.tipo === 'hunde'),
       lata: datos.agarres.find((a) => a.tipo === 'lata'),
@@ -184,17 +198,11 @@ AFRAME.registerComponent('escenario-glitch', {
       panel: datos.paneles[0],
     };
     Object.entries(primeros).forEach(([tipo, origen]) => {
-      if (!origen) return;
-      // Se prefiere un lugar a la misma altura o un poco más abajo, para que se lea antes de llegar
-      for (const dy of [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1]) {
-        for (const dx of [1.5, -1.5, 0.9, -0.9, 2.1, -2.1]) {
-          const x = origen.x + dx;
-          const y = origen.y + dy;
-          if (Math.abs(x) > ESCENARIO.anchoPared / 2 - 0.6 || ocupado(x, y)) continue;
-          poner(x, y, CARTELES_POR_TIPO[tipo]);
-          return;
-        }
-      }
+      if (origen) colocarCerca(origen, CARTELES_POR_TIPO[tipo]);
     });
+
+    // Fragmentos, escaneo y niebla, cerca del principio
+    colocarCerca({ x: 0, y: 2.4 }, 'Juntá un fragmento por tramo. Para escanear: tocá la pulsera, apretá A o X (en la compu, la tecla E)', 1.5, 0.75);
+    colocarCerca({ x: 0, y: 3.6 }, 'La niebla de píxeles sube: no te quedes quieto', 1.3, 0.5);
   },
 });

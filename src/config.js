@@ -41,6 +41,12 @@ export const COLORES = {
   pixeles: ['#36497a', '#32456f', '#3d5185', '#2d3d66'],
   resetApagado: '#5d4a8f', // botón RESET sin encender
   hueco: '#241b36', // huecos vacíos de los fragmentos
+  huecoEncendido: '#a78bfa', // hueco con su fragmento
+  fragmento: '#8f6fe0',
+  fragmentoBrillo: '#c1adf5',
+  niebla: '#b9a6dc', // niebla de píxeles: lila suave
+  nieblaPixel: '#a08ccf',
+  onda: '#8fc3e6', // onda del escaneo
 };
 
 // Ambiente general de la sala.
@@ -250,5 +256,72 @@ export const ESCRITORIO = {
     // dónde queda cada guante (respecto del rig) cuando no está agarrando: x, y, z en metros
     izquierda: [-0.3, 1.2, -0.55],
     derecha: [0.3, 1.2, -0.55],
+  },
+};
+
+// Fragmentos: hay uno por tramo; se juntan tocándolos con la mano. Los que la niebla se come aparecen
+// medio escondidos en la plataforma de arriba.
+export const FRAGMENTO = {
+  radio: 0.15, // tamaño del fragmento (m)
+  distanciaAlFrente: 0.3, // cuánto sale de la pared (m)
+  radioRecoger: 0.45, // distancia (m) de la mano a la que se recoge
+  radioRecogerCuerpo: 0.6, // en la plataforma de arriba también se recogen al pasar cerca (m)
+  velocidadPulso: 0.5, // Hz: el brillo respira muy despacio, sin parpadeo
+  // Escondites en la plataforma de arriba: x, y distancia (m) hacia afuera desde la pared
+  escondites: [
+    { x: -1.2, z: 0.45 },
+    { x: 1.15, z: 0.95 },
+    { x: 0.3, z: 0.2 },
+  ],
+  hundimiento: 0.02, // altura del centro respecto del piso de la plataforma: medio escondidos
+  sonido: {
+    distanciaMax: 8, // m: más lejos que esto no se oye
+    frecuencias: [523.25, 783.99], // do y sol, un sonido tranquilo
+    volumen: 0.9,
+  },
+};
+
+// Pulsera en la muñeca izquierda: contador de fragmentos y barra de espera del escaneo.
+export const PULSERA = {
+  ancho: 0.26,
+  alto: 0.13,
+  desplazamiento: [0, 0.17, 0], // dónde queda el panel respecto del guante (m)
+  radioToque: 0.09, // distancia (m) a la que la otra mano toca la pulsera
+};
+
+// Pulso de escaneo: una onda suave marca por un segundo dónde está el fragmento del tramo.
+export const ESCANEO = {
+  espera: 10, // s hasta poder volver a usarlo
+  duracionMarca: 1, // s que queda marcado el fragmento
+  duracionOnda: 1.2, // s que tarda la onda en recorrer la pared
+  radioOnda: 3.5, // m que alcanza la onda
+  tecla: 'KeyE', // en modo escritorio
+};
+
+// Niebla de píxeles: sube despacio desde abajo y a velocidad constante.
+export const NIEBLA = {
+  alturaInicial: -2, // m
+  velocidad: 0.1, // m/s
+  retardoInicio: 5, // s después de agarrarse por primera vez
+  retroceso: 3, // m por debajo del checkpoint donde queda al devolver al jugador
+  velocidadFinal: 2, // m/s: cuando el jugador llega arriba, se come lo que quedó sin juntar
+  distanciaAPlataforma: 0.8, // m: arriba se detiene por debajo del piso de la plataforma
+  ancho: 16, // m (igual que la sala)
+  alto: 30, // m de espesor
+  pixeles: 260, // cantidad de píxeles flotando en el borde de arriba
+  tamanoPixel: 0.5,
+  opacidad: 0.4,
+  fraccionCatch: 0.3, // m por encima de los pies a los que la niebla alcanza al jugador
+};
+
+// Frases del Glitch: aparecen en un cartel breve, con humor y sin burlarse.
+export const GLITCH = {
+  duracion: 3.5, // s que se ve cada frase
+  distancia: 1.0, // m delante de la cabeza
+  alturaExtra: 0.3, // m por encima de la mirada
+  suavizado: 4, // cuánto sigue a la cabeza (más alto = más rápido)
+  espera: 8, // s mínimos antes de repetir la misma frase
+  frases: {
+    comido: ['Ñam, este te lo escondo arriba'],
   },
 };

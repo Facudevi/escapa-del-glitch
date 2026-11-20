@@ -12,6 +12,7 @@ AFRAME.registerComponent('cartel', {
     texto: { type: 'string', default: '' },
     ancho: { type: 'number', default: 1 },
     alto: { type: 'number', default: 0.35 },
+    siempreVisible: { type: 'boolean', default: false }, // se dibuja por encima de todo (frases del Glitch)
   },
 
   init() {
@@ -19,7 +20,12 @@ AFRAME.registerComponent('cartel', {
     this.textura = new THREE.CanvasTexture(this.canvas);
     this.textura.colorSpace = THREE.SRGBColorSpace;
     this.material = new THREE.MeshBasicMaterial({ map: this.textura, transparent: true });
+    if (this.data.siempreVisible) {
+      this.material.depthTest = false;
+      this.material.depthWrite = false;
+    }
     this.malla = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.material);
+    if (this.data.siempreVisible) this.malla.renderOrder = 999;
     this.el.setObject3D('mesh', this.malla);
   },
 

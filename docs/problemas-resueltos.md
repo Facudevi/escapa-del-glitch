@@ -63,3 +63,24 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** el sorteo de tipos no consideraba los vecinos.
 - **Solución:** en la ruta garantizada, después de un agarre con tiempo (lata o bloque) siempre viene uno seguro, y los vecinos de un panel también son seguros. Así hay siempre dónde apoyarse y esperar.
 - **Aprendizaje:** la dificultad tiene que venir de la habilidad, no de situaciones donde no se puede hacer nada.
+
+## 9. La niebla podía devolver al jugador adentro de la niebla
+
+- **Qué pasó:** al pensar el regreso al checkpoint, si la niebla ya estaba por encima de él, el jugador reaparecía dentro de la niebla y volvía a ser alcanzado en un bucle.
+- **Por qué:** la niebla sigue su camino mientras el jugador cae, sin tener en cuenta adónde va a reaparecer.
+- **Solución:** cada vez que el jugador reaparece, la niebla baja hasta 3 m por debajo de ese checkpoint (`NIEBLA.retroceso`). Así siempre queda un respiro.
+- **Aprendizaje:** una amenaza que persigue al jugador tiene que dejarle una salida después de cada derrota.
+
+## 10. Un fragmento sin juntar podía dejar la partida sin solución
+
+- **Qué pasó:** el diseño dice que el Glitch se come los fragmentos que la niebla alcanza, pero si el jugador llega arriba antes de que la niebla suba tanto, esos fragmentos quedaban en la pared y no se podía juntar los tres.
+- **Por qué:** la niebla sube lento a propósito (0,1 m/s), así que un jugador rápido llega arriba antes que ella.
+- **Solución:** al llegar a la plataforma de arriba, la niebla sube rápido hasta comerse lo que quedó sin juntar y se detiene debajo de la plataforma, sin alcanzar al jugador. Entonces los fragmentos aparecen escondidos arriba. La partida nunca se traba, y buscarlos lleva más tiempo, que se refleja en la medalla.
+- **Aprendizaje:** cada regla del juego necesita una respuesta para el caso en que el jugador la evita.
+
+## 11. El cartel de ayuda tapaba la pulsera
+
+- **Qué pasó:** en modo escritorio, el cuadro de ayuda de abajo a la izquierda cubría la pulsera, que se ve ahí cerca del guante.
+- **Por qué:** los dos ocupaban la misma esquina de la pantalla.
+- **Solución:** la ayuda pasó a la esquina de arriba a la izquierda.
+- **Aprendizaje:** una interfaz dentro del mundo hay que revisarla junto con los textos de pantalla del modo escritorio.

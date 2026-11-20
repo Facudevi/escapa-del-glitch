@@ -104,6 +104,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se implementó la Etapa 6 (tramos completos): el setup gamer gigante con teclado, torre de PC y monitor, dificultad creciente, checkpoints entre tramos y el RESET apagado arriba de todo. Detalle en la entrada "Etapa 6" más abajo.
 
+### Prompt 16 — 2026-11-20
+
+> Bien, seguir Etapa 7
+
+**Respuesta:** se implementó la Etapa 7 (fragmentos, pulsera, escaneo y niebla): componentes `fragmentos`, `pulsera`, `escaneo`, `niebla` y `glitch`. Detalle en la entrada "Etapa 7" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -256,3 +262,40 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 - Probar la dificultad y las distancias de agarre con personas, idealmente de distintas alturas y en un casco.
 - Probar el rendimiento en el Quest (unas 140 entidades más decorado instanciado).
 - La tirolesa de la torre es de la etapa 9; hoy el tramo 2 se sube completo.
+
+### 2026-11-20 — Etapa 7: Fragmentos, pulsera, escaneo y niebla
+
+**Pedido:** "Bien, seguir Etapa 7": fragmentos con sonido espacial, pulsera con contador, pulso de escaneo, niebla de píxeles, y que el Glitch se coma los fragmentos y los esconda arriba.
+
+**Resumen de lo hecho:**
+- `fragmentos`: un hexágono violeta suave por tramo, con un brillo que respira muy despacio (0,5 Hz, sin parpadeo). Se juntan tocándolos con la mano (0,45 m). Cada uno que se junta enciende un hueco del RESET, en orden, y suena una campanita. Estados: pared → recogido, o pared → comido → escondido → recogido. El del tramo 1 está entre dos agarres de la ruta (en el camino).
+- **Sonido espacial** (`sonidos.js`): cada fragmento suena en el espacio con dos notas tranquilas (do y sol) y un volumen que baja en línea recta hasta ser 0 a 8 m, así que se oye más fuerte al acercarse. El oyente sigue a la cabeza. Se sintetiza con Web Audio, sin archivos.
+- `pulsera` (en la mano izquierda): panel dentro del mundo que mira a la cabeza, con los tres hexágonos (llenos los juntados), el contador `n/3` y una barra del escaneo que se llena durante la espera. Tocarla con la otra mano pide un escaneo.
+- `escaneo`: se pide con la pulsera, con A/X o con la **tecla E** en modo escritorio. Una onda celeste recorre la pared durante 1,2 s y marca por 1 s el fragmento del tramo en el que está el jugador (halo grande). Después hay 10 s de espera.
+- `niebla`: lila suave, con píxeles flotando en el borde. Empieza a subir 5 s después del primer agarre, a 0,1 m/s constante. Si alcanza al jugador, lo devuelve al último checkpoint (como una caída) y queda 3 m por debajo de ese checkpoint, para no devolverlo adentro de la niebla. Si alcanza un fragmento sin juntar, el Glitch se lo come.
+- **La partida nunca se traba:** al llegar a la plataforma de arriba, la niebla sube rápido hasta comerse lo que quedó sin juntar y se detiene debajo de la plataforma, sin alcanzar al jugador. Entonces los fragmentos comidos reaparecen medio escondidos (hundidos en el piso) en distintos puntos de la plataforma, y se juntan al pasar cerca.
+- `glitch`: cartel con frases del Glitch, por ahora «Ñam, este te lo escondo arriba» al comerse un fragmento. Flota delante de la cabeza, un poco más arriba de la mirada, con un leve retraso al seguirla y siempre por encima de todo. Cada frase tiene un tiempo de espera. Las demás frases son de la etapa 9.
+- Carteles nuevos cerca del inicio: cómo juntar y escanear (con A/X y con la tecla E) y que la niebla sube.
+- El cartel de ayuda del modo escritorio pasó a la esquina de arriba, porque tapaba la pulsera.
+- Todo en `config.js`: `FRAGMENTO`, `PULSERA`, `ESCANEO`, `NIEBLA` y `GLITCH`.
+
+**Buenas prácticas aplicadas (checklist de la etapa 7):**
+- Sonido espacial de los fragmentos como guía (p. 151–152).
+- Pulsera diegética con contador y barra de espera, sin HUD pegado a la pantalla (p. 102).
+- El escaneo tiene alternativa para escritorio: una tecla (p. 287).
+- Niebla de velocidad lenta y constante, color suave y sin parpadeos (p. 107).
+- Lo que pasó con un fragmento comido se explica con el cartel del Glitch, que se mueve con retraso (p. 109).
+- Tiempo de espera del escaneo visible en la propia pulsera (estado del sistema, p. 53).
+
+**Verificado en Chrome (reloj del juego avanzado a mano):**
+- Escaneo con la tecla E: marca el fragmento del tramo correcto, la barra pasa de 0 a 0,65 a los 6 s y a 1 a los 10 s; un segundo pedido durante la espera se ignora; la onda se ve y termina.
+- Recoger: con la mano cerca del fragmento del tramo 1, contador 1/3 y primer hueco encendido.
+- Niebla: no sube antes de agarrarse; mide 0,1 m/s; al alcanzar al jugador lo devuelve al checkpoint y queda por debajo de él; al alcanzar un fragmento se lo come y aparece la frase, que se desvanece a los 3,5 s y no se repite durante la espera.
+- Llegada arriba: la niebla acelera, se come el fragmento restante, los dos comidos aparecen en la plataforma y al pasar cerca el contador llega a 3/3 con los tres huecos encendidos.
+- Visual: se revisó el fragmento con su brillo, la pulsera con el contador y la barra, y la niebla vista desde arriba. `npm run build` OK.
+
+**Pendiente:**
+- Escuchar el sonido espacial (no se puede comprobar desde las pruebas automáticas) y ajustar volúmenes.
+- Probar con controles reales: tocar la pulsera con la otra mano y los botones A y X.
+- Ajustar el balance de la niebla (`NIEBLA.velocidad` y `retardoInicio`) jugando.
+- El botón RESET todavía no se activa: es la etapa 8.
