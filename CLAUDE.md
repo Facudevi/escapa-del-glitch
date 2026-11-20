@@ -4,6 +4,11 @@ Experiencia de realidad virtual (touchpoint del festival RESET) hecha con A-Fram
 
 **Fuente de verdad:** `docs/idea-final.md`. Si algo contradice a ese documento, manda la idea final. Referencias visuales: `docs/esquema-paredes.webp` (disposición de tramos, anterior a la versión final) y `docs/esquema-manos-pulsera.webp` (anillos de energía y pulsera).
 
+**Otros documentos que hay que respetar:**
+- `docs/consigna-tp4.md`: requisitos y entregas del TP4 (resumen del PDF oficial).
+- `docs/buenas-practicas-xr.md`: buenas prácticas de UX para XR del libro *UX for XR* (Hillmann, 2025), con un checklist por etapa.
+- `docs/problemas-resueltos.md`: registro de problemas resueltos, que pide la consigna para el informe.
+
 ## Repositorio: reglas estrictas
 
 - **Nunca ejecutes `git commit`, `git push`, ni nada que modifique el historial o el remoto** (branches remotas, merges, tags, PRs). Solo podés leer (`git status`, `git diff`, `git log`).
@@ -21,7 +26,7 @@ Experiencia de realidad virtual (touchpoint del festival RESET) hecha con A-Fram
 - **A-Frame 1.8** por npm, con **Vite** (servidor de desarrollo y build).
 - **Solo A-Frame y sus componentes.** Nada de motores de física ni librerías 3D externas. Trayectorias, caídas y movimientos se calculan a mano o con el componente `animation`.
 - **Todo con primitivas** (`a-box`, `a-cylinder`, `a-plane`, `a-sphere`, etc.). Sin modelos 3D externos.
-- **Controles:** `meta-touch-controls` con eventos `gripdown` y `gripup`, más un **modo escritorio** para probar sin casco: clic en un agarre lejano lleva al jugador hasta él, y con el mouse se escala (clic izquierdo/derecho = mano izquierda/derecha). El equipo no tiene casco por ahora, así que **toda mecánica nueva tiene que poder probarse en modo escritorio**: el modo mouse no tiene lógica propia, mueve las manos y dispara los mismos eventos que los controles (`mano-agarra`/`mano-suelta`).
+- **Controles:** `meta-touch-controls` con eventos `gripdown` y `gripup`, más un **modo escritorio** para probar sin casco: clic en un agarre lejano lleva al jugador hasta él, y con el mouse se escala (clic izquierdo/derecho = mano izquierda/derecha). El modo escritorio es **una entrega, no solo una ayuda**: la consigna dice que el docente abre el link en el navegador de escritorio, así que tiene que estar pulido y explicado en pantalla. Además, el equipo no tiene casco por ahora, así que **toda mecánica nueva tiene que poder probarse en modo escritorio**: el modo mouse no tiene lógica propia, mueve las manos y dispara los mismos eventos que los controles (`mano-agarra`/`mano-suelta`).
 - **Duración objetivo:** ~2 min 30 s de partida.
 - **Ambiente calmo:** penumbra cálida; colores de RESET suavizados (violeta, lavanda, celeste, ámbar suave, verde suave). Sin neón, destellos ni parpadeos fuertes.
 
@@ -38,11 +43,18 @@ Una etapa por vez (ver sección 7 de `INICIO-PROYECTO.md`): 1 Base, 2 Escalar, 3
 
 **Bitácora de prompts:** en cada mensaje del equipo, agregar a la sección "Bitácora de prompts" de `PROMPTS.md` una entrada numerada con la fecha, el texto del prompt tal cual y un resumen de la respuesta. Se hace en el mismo turno, no al final de la etapa.
 
+**Antes de empezar cada etapa:** leer `docs/buenas-practicas-xr.md`, aplicar el checklist de esa etapa (sección 4) y revisar que no contradiga `docs/idea-final.md` ni `docs/consigna-tp4.md`.
+
 Al terminar cada etapa:
 1. Mostrar cómo probarla.
-2. Agregar una entrada a "Entradas por tarea grande" de `PROMPTS.md` (fecha, pedido, resumen de lo hecho).
-3. Sugerir el mensaje de commit.
-4. Esperar la confirmación del equipo antes de seguir.
+2. Agregar una entrada a "Entradas por tarea grande" de `PROMPTS.md` (fecha, pedido, resumen de lo hecho), con las **buenas prácticas aplicadas** y las que quedaron pendientes.
+3. Si apareció y se resolvió un problema relevante, sumarlo a `docs/problemas-resueltos.md`.
+4. Sugerir el mensaje de commit.
+5. Esperar la confirmación del equipo antes de seguir.
+
+**Al terminar el desarrollo (etapa 10):** hacer la auditoría final descrita en la sección 6 de `docs/buenas-practicas-xr.md` y guardarla en `docs/auditoria-final.md`. Corregir las incongruencias que aparezcan antes de dar el proyecto por cerrado.
+
+**Intervención manual obligatoria (consigna):** el equipo tiene que modificar a mano al menos una parte del código generado y documentarla con antes y después. Recordárselo antes de la etapa 10 si todavía no la hizo.
 
 ## Cómo probar
 

@@ -8,6 +8,18 @@ TP4 — Santino Mosca, Rodrigo Masek y Facundo de Vichenzo.
 
 Documentación del diseño: [`docs/idea-final.md`](docs/idea-final.md). Registro de prompts del desarrollo: [`PROMPTS.md`](PROMPTS.md).
 
+## Documentación
+
+- [`docs/idea-final.md`](docs/idea-final.md): diseño completo de la experiencia.
+- [`docs/consigna-tp4.md`](docs/consigna-tp4.md): requisitos y entregas del TP4.
+- [`docs/buenas-practicas-xr.md`](docs/buenas-practicas-xr.md): buenas prácticas de UX para XR y checklist por etapa.
+- [`docs/problemas-resueltos.md`](docs/problemas-resueltos.md): problemas encontrados y cómo se resolvieron.
+- [`PROMPTS.md`](PROMPTS.md): bitácora de prompts.
+
+## Privacidad
+
+La experiencia no recoge ni envía datos personales ni de uso.
+
 ## Stack
 
 A-Frame 1.8 + Vite. Solo primitivas de A-Frame, sin modelos 3D ni librerías externas.
