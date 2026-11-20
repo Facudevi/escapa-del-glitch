@@ -36,9 +36,11 @@ Experiencia de realidad virtual (touchpoint del festival RESET) hecha con A-Fram
 
 Una etapa por vez (ver sección 7 de `INICIO-PROYECTO.md`): 1 Base, 2 Escalar, 3 Caída y checkpoints, 4 Energía por mano, 5 Agarres especiales, 6 Tramos completos, 7 Fragmentos/pulsera/escaneo/niebla, 8 Final, 9 Glitch y extras, 10 Pulido. Las etapas 1 a 8 son las prioritarias.
 
+**Bitácora de prompts:** en cada mensaje del equipo, agregar a la sección "Bitácora de prompts" de `PROMPTS.md` una entrada numerada con la fecha, el texto del prompt tal cual y un resumen de la respuesta. Se hace en el mismo turno, no al final de la etapa.
+
 Al terminar cada etapa:
 1. Mostrar cómo probarla.
-2. Agregar una entrada a `PROMPTS.md` (fecha, pedido, resumen de lo hecho).
+2. Agregar una entrada a "Entradas por tarea grande" de `PROMPTS.md` (fecha, pedido, resumen de lo hecho).
 3. Sugerir el mensaje de commit.
 4. Esperar la confirmación del equipo antes de seguir.
 
