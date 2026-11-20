@@ -42,6 +42,8 @@ AFRAME.registerComponent('modo-escritorio', {
     destino.y = Math.max(0, destino.y - ESCRITORIO.alturaAgarre);
     destino.z += ESCRITORIO.distanciaAlAgarre;
 
+    // Avisa a caida para que no deje caer al jugador mientras viaja
+    this.el.emit('escritorio-viaje', { duracion: ESCRITORIO.duracionViaje }, false);
     rig.setAttribute('animation__viaje', {
       property: 'position',
       to: `${destino.x} ${destino.y} ${destino.z}`,

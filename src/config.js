@@ -62,6 +62,27 @@ export const PARED_PRUEBA = {
   separacionLateral: 0.5, // las teclas alternan izquierda y derecha
   variacionLateral: 0.15, // desvío fijo para que no queden en fila perfecta
   tecla: { ancho: 0.4, alto: 0.14, profundidad: 0.3 },
+  // Checkpoint de prueba a mitad de la pared (la parte de arriba de la plataforma es el piso)
+  checkpoint: { altura: 3.0, ancho: 2.2, profundidad: 1.3 },
+};
+
+// Caída y reaparición. No hay game over: se cae, se funde a negro y se reaparece.
+export const CAIDA = {
+  graciaSoltar: 250, // ms con las dos manos sueltas en el aire antes de caer
+  fundidoSalida: 500, // ms que tarda la vista en irse a negro
+  pausaNegro: 150, // ms que se queda en negro antes de reaparecer
+  fundidoEntrada: 500, // ms que tarda la vista en volver
+  graciaReaparecer: 600, // ms sin poder caer justo después de reaparecer
+  graciaViaje: 3000, // ms extra sin caer después de un viaje en modo escritorio (para agarrarse)
+  toleranciaPiso: 0.05, // altura (m) hasta la que se considera que está parado en el piso
+  colorFundido: '#000000',
+};
+
+// Checkpoints: plataformas donde el jugador descansa y reaparece.
+export const CHECKPOINT = {
+  grosor: 0.12, // grosor (m) de la plataforma
+  toleranciaApoyo: 0.12, // cuánto (m) por debajo de la plataforma ya cuenta como parado en ella
+  alturaApoyo: 0.6, // hasta cuánto (m) por encima de la plataforma sigue contando como apoyado
 };
 
 // Modo escritorio (sin casco): pensado solo para probar.

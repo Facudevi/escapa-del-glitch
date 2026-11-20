@@ -1,5 +1,6 @@
-// Pared de prueba de la etapa 2: una pared con teclas firmes alternadas y los dos carteles
-// del tutorial. Sirve para probar la escalada; se reemplaza por los tramos reales en la etapa 6.
+// Pared de prueba (etapas 2 y 3): una pared con teclas firmes alternadas, los dos carteles
+// del tutorial y dos checkpoints (el piso de inicio y una plataforma a mitad de pared).
+// Sirve para probar la escalada y la caída; se reemplaza por los tramos reales en la etapa 6.
 import { COLORES, PARED_PRUEBA } from '../config.js';
 import { crear } from '../utilidades.js';
 
@@ -36,6 +37,18 @@ AFRAME.registerComponent('pared-prueba', {
         material: 'roughness: 0.8; metalness: 0',
       });
     }
+
+    // Checkpoints: la zona del piso de inicio (sin plataforma visible) y una plataforma a mitad de pared
+    crear(escena, 'a-entity', {
+      checkpoint: 'orden: 0; ancho: 6; profundidad: 6; dibujar: false',
+      position: '0 0 0',
+    });
+    const cp = c.checkpoint;
+    const frenteDePared = c.z + c.profundidad / 2;
+    crear(escena, 'a-entity', {
+      checkpoint: `orden: 1; ancho: ${cp.ancho}; profundidad: ${cp.profundidad}`,
+      position: `0 ${cp.altura} ${frenteDePared + cp.profundidad / 2}`,
+    });
 
     // Los dos carteles de inicio, a los costados de las primeras teclas
     const zCartel = c.z + c.profundidad / 2 + 0.02;

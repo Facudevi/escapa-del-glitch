@@ -33,8 +33,8 @@
       loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
     >
       <!-- Jugador: el rig se mueve, la cámara y las manos van adentro -->
-      <a-entity id="rig" position="0 0 0" climb>
-        <a-entity id="camara" camera look-controls="pointerLockEnabled: false" position="0 1.6 0"></a-entity>
+      <a-entity id="rig" position="0 0 0" climb caida>
+        <a-entity id="camara" camera look-controls="pointerLockEnabled: false" fundido position="0 1.6 0"></a-entity>
         <a-entity id="mano-izq" meta-touch-controls="hand: left" mano-guante="mano: izquierda"></a-entity>
         <a-entity id="mano-der" meta-touch-controls="hand: right" mano-guante="mano: derecha"></a-entity>
       </a-entity>
