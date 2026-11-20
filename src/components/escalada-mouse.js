@@ -16,6 +16,7 @@ const ID_MANO = { izquierda: '#mano-izq', derecha: '#mano-der' };
 AFRAME.registerComponent('escalada-mouse', {
   init() {
     this.agarradas = {}; // nombre de mano → true mientras el botón está apretado
+    this.resaltado = null; // agarre resaltado porque el cursor lo tiene al alcance
     this.rayo = new THREE.Raycaster();
     this.ndc = new THREE.Vector2();
     this.punto = new THREE.Vector3();
@@ -69,7 +70,7 @@ AFRAME.registerComponent('escalada-mouse', {
     Object.keys(ID_MANO).forEach((nombre) => this.ponerEnReposo(nombre));
   },
 
-  // Agarre bajo el cursor del mouse y al alcance, como { punto } (en coordenadas del mundo), o null
+  // Agarre bajo el cursor del mouse y al alcance, como { punto, agarre } (punto en coordenadas del mundo), o null
   agarreBajoElMouse(e) {
     const canvas = this.el.canvas;
     const camara = this.el.camera;
@@ -82,13 +83,31 @@ AFRAME.registerComponent('escalada-mouse', {
     );
     this.rayo.setFromCamera(this.ndc, camara);
 
-    const objetos = Array.from(this.el.querySelectorAll('.agarre')).map((el) => el.object3D);
+    // Solo las mallas de los agarres (sin anillos ni otros adornos)
+    const objetos = Array.from(this.el.querySelectorAll('.agarre')).map(
+      (el) => el.getObject3D('mesh') || el.object3D
+    );
     const toques = this.rayo.intersectObjects(objetos, true);
     if (!toques.length) return null;
 
     camara.getWorldPosition(this.posCamara);
     if (this.posCamara.distanceTo(toques[0].point) > ESCRITORIO.alcance) return null;
-    return toques[0].point;
+    return { punto: toques[0].point, agarre: toques[0].object.el };
+  },
+
+  // Resalta el agarre que está bajo el cursor (y al alcance) para que se vea qué se puede agarrar
+  resaltarBajoElMouse(e) {
+    const toque = this.agarreBajoElMouse(e);
+    const nuevo = toque ? toque.agarre : null;
+    if (nuevo === this.resaltado) return;
+    if (this.resaltado) this.resaltado.emit('apagar', { mano: 'mouse' }, false);
+    this.resaltado = nuevo;
+    if (nuevo) nuevo.emit('resaltar', { mano: 'mouse' }, false);
+  },
+
+  apagarResaltado() {
+    if (this.resaltado) this.resaltado.emit('apagar', { mano: 'mouse' }, false);
+    this.resaltado = null;
   },
 
   alBajarBoton_(e) {
@@ -96,8 +115,10 @@ AFRAME.registerComponent('escalada-mouse', {
     if (!nombre || this.agarradas[nombre]) return;
     if (this.el.is('vr-mode') || e.target !== this.el.canvas) return;
 
-    const punto = this.agarreBajoElMouse(e);
-    if (!punto) return; // sin agarre al alcance: el mouse sigue sirviendo para mirar
+    const toque = this.agarreBajoElMouse(e);
+    if (!toque) return; // sin agarre al alcance: el mouse sigue sirviendo para mirar
+    const punto = toque.punto;
+    this.apagarResaltado();
 
     const rig = document.querySelector('#rig');
     const mano = this.mano(nombre);
@@ -120,7 +141,10 @@ AFRAME.registerComponent('escalada-mouse', {
 
   alMoverMouse_(e) {
     const nombres = Object.keys(this.agarradas);
-    if (!nombres.length) return;
+    if (!nombres.length) {
+      if (!this.el.is('vr-mode') && e.target === this.el.canvas) this.resaltarBajoElMouse(e);
+      return;
+    }
 
     const dx = e.movementX * ESCRITORIO.metrosPorPixel;
     const dy = e.movementY * ESCRITORIO.metrosPorPixel;

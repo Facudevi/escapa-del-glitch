@@ -195,8 +195,8 @@ Pide pensar en el bienestar del usuario: límites de uso, descanso, privacidad y
 | Sin parpadeos ni destellos | Cumple | Cuidar en etapa 5 el bloque intermitente |
 | Grip para agarrar y vibración | Cumple (p. 108, 152) | — |
 | Texto de los carteles | Cumple: letra grande y contraste alto | Revisar tamaño dentro del casco |
-| Resaltado del agarre al acercar la mano | **Falta** (p. 108) | Agregar en la etapa 5 o 6 |
-| Sonido al agarrar | **Falta** (p. 152) | Adelantar un clic mínimo |
+| Resaltado del agarre al acercar la mano | Cumple desde la etapa 5 (p. 108): brillo propio al alcance de la mano o del cursor | — |
+| Sonido al agarrar | Cumple desde la etapa 5 (p. 152): clic sintetizado; faltan los demás sonidos | Etapa 9 |
 | Pantalla de inicio y aviso de seguridad | **Falta** (p. 26–27, 107) | Etapa 10, o antes si hay tiempo |
 | Opciones de accesibilidad (sentado, altura, rotación) | **Falta** (p. 47–49) | Evaluar en la etapa 10 |
 | Modo escritorio como entrega al docente | Parcial: funciona, pero `CLAUDE.md` lo trataba solo como prueba | Corregido en `CLAUDE.md` |

@@ -45,6 +45,7 @@ Otros comandos: `npm run build` (genera `dist/`) y `npm run preview` (sirve el b
   - **Escalar con mouse:** mantener el **clic izquierdo** (mano izquierda) o el **clic derecho** (mano derecha) sobre un agarre al alcance y **bajar el mouse** para subir. Con las dos manos agarradas se usan los dos botones.
   - **Caída:** si soltás las dos manos en el aire, la vista se funde a negro y reaparecés en el último checkpoint (plataforma verde, o el piso de inicio). Tras un clic de viaje tenés 3 segundos para agarrarte.
   - **Energía:** cada guante tiene un anillo (verde → ámbar → rojo). La mano agarrada gasta energía y la libre la recupera; sin energía la mano se suelta sola. Alternar las manos y llegar a un checkpoint recarga todo.
+  - **Agarres:** tecla firme (lavanda, sin límite), tecla que se hunde (lavanda profundo con flecha, baja despacio mientras la sostenés), lata que se rompe (ámbar, cruje y cae a los 3 s), bloque intermitente (celeste, mirá el anillo) y panel que gira (rosa, agarrate cuando está de frente). Los agarres al alcance se resaltan.
   - Para simular casco y controles, también sirve la extensión **Immersive Web Emulator** de Meta (pestaña WebXR de las herramientas de desarrollador).
 - **En el Quest por USB:** con el modo desarrollador activado, correr `adb reverse tcp:5173 tcp:5173` y abrir `http://localhost:5173` en el navegador del casco.
 - **En el Quest sin cable:** abrir el link público (HTTPS) en el navegador del casco y tocar el botón de gafas VR.

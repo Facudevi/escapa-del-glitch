@@ -24,6 +24,10 @@ export const COLORES = {
   cartelTexto: '#f0e9fb',
 
   anilloFondo: '#d3c9ea', // parte vacía del anillo de energía
+
+  lavandaHunde: '#8f7cc0', // tecla que se hunde: lavanda más profundo
+  flecha: '#3f3260', // flecha de la tecla que se hunde
+  panel: '#b8788c', // panel que gira: rosa suave
 };
 
 // Ambiente general de la sala.
@@ -52,20 +56,86 @@ export const VIBRACION = {
   duracion: 40, // ms
 };
 
-// Pared de prueba de la etapa 2 (en metros). Se reemplaza por los tramos reales en la etapa 6.
+// Pared de prueba (en metros). Muestra un ejemplo de cada tipo de agarre; se reemplaza por los
+// tramos reales en la etapa 6.
 export const PARED_PRUEBA = {
   ancho: 5,
-  alto: 7.5,
+  alto: 8,
   profundidad: 0.2,
-  z: -0.9, // centro de la pared; las teclas sobresalen hacia el jugador
-  filas: 10, // cantidad de teclas firmes
-  alturaPrimera: 1.2, // altura de la primera tecla
-  pasoVertical: 0.5, // distancia vertical entre teclas
-  separacionLateral: 0.5, // las teclas alternan izquierda y derecha
-  variacionLateral: 0.15, // desvío fijo para que no queden en fila perfecta
-  tecla: { ancho: 0.4, alto: 0.14, profundidad: 0.3 },
-  // Checkpoint de prueba a mitad de la pared (la parte de arriba de la plataforma es el piso)
-  checkpoint: { altura: 3.0, ancho: 2.2, profundidad: 1.3 },
+  z: -0.9, // centro de la pared; los agarres sobresalen hacia el jugador
+  tecla: { ancho: 0.4, alto: 0.14, profundidad: 0.3 }, // medida de la tecla firme y la que se hunde
+  // Agarres: tipo ('firme', 'hunde', 'lata' o 'intermitente'), posición x e y, y fase (s) del intermitente
+  agarres: [
+    { tipo: 'firme', x: -0.65, y: 1.2 },
+    { tipo: 'firme', x: 0.5, y: 1.7 },
+    { tipo: 'hunde', x: -0.5, y: 2.2 },
+    { tipo: 'firme', x: 0.5, y: 2.7 },
+    { tipo: 'lata', x: -0.4, y: 3.2 },
+    { tipo: 'firme', x: 0.5, y: 3.7 },
+    { tipo: 'firme', x: 1.35, y: 3.6 }, // agarre lejano hacia la plataforma
+    { tipo: 'intermitente', x: -0.5, y: 4.2, fase: 0 },
+    { tipo: 'intermitente', x: 0.5, y: 4.7, fase: 2.5 },
+    { tipo: 'firme', x: -0.5, y: 5.2 },
+  ],
+  panel: { x: 0.1, y: 6.3, separacionAgarres: 0.3, fase: 0 },
+  // Checkpoint al costado de la pared (la parte de arriba de la plataforma es el piso)
+  checkpoint: { x: 1.9, altura: 2.3, ancho: 1.2, profundidad: 1.3 },
+};
+
+// Tecla que se hunde: baja despacio y a velocidad constante mientras está agarrada.
+export const HUNDE = {
+  velocidad: 0.12, // m/s
+  hundimientoMaximo: 0.45, // m: hasta dónde llega a bajar
+  retorno: 0.5, // m/s con que vuelve a su lugar al soltarla
+};
+
+// Lata que se rompe: cruje al agarrarla y cae a los 3 segundos.
+export const LATA = {
+  segundos: 3, // s desde que se agarra por primera vez hasta que se rompe
+  inclinacionMaxima: 6, // grados del temblor justo antes de romperse (solo visual)
+  frecuenciaTemblor: 12, // Hz
+  pulsoCada: 0.5, // s entre cada crujido (sonido y vibración)
+  gravedad: 9, // m/s² al caer
+  duracionCaida: 1, // s que se ve caer antes de desaparecer
+  reaparece: 6, // s hasta que vuelve a estar en su lugar
+  duracionAparicion: 0.4, // s que tarda en reaparecer creciendo
+  radio: 0.13,
+  alto: 0.26,
+};
+
+// Bloque intermitente: aparece y desaparece con un fundido suave (sin parpadeos).
+export const INTERMITENTE = {
+  visible: 3, // s que está visible
+  oculto: 2, // s que está oculto
+  fundido: 0.4, // s que tardan en aparecer y desaparecer
+  opacidadMinimaParaAgarrar: 0.6, // solo se puede agarrar cuando se ve casi completo
+  ancho: 0.4,
+  alto: 0.2,
+  profundidad: 0.3,
+  radioAnilloInterno: 0.27, // anillo que muestra cuánto tiempo le queda visible
+  radioAnilloExterno: 0.3,
+};
+
+// Panel que gira: muestra agarres de un lado y después gira.
+export const PANEL = {
+  ancho: 1.1,
+  alto: 0.8,
+  grosor: 0.12,
+  z: -0.62, // centro del panel
+  segundosDeFrente: 3, // s con los agarres de frente
+  segundosDeEspaldas: 3, // s del lado liso
+  segundosGiro: 0.8, // s que tarda en girar (lento, para no marear)
+  anguloMaximoDeAgarre: 60, // grados: más girado que esto, los agarres ya no se pueden agarrar
+};
+
+// Resaltado de un agarre cuando la mano (o el mouse) está al alcance.
+export const RESALTADO = {
+  intensidad: 0.35, // brillo propio del agarre, de 0 a 1
+};
+
+// Sonidos sintetizados (no hay archivos de audio).
+export const SONIDO = {
+  volumen: 0.12, // de 0 a 1
 };
 
 // Caída y reaparición. No hay game over: se cae, se funde a negro y se reaparece.

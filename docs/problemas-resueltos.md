@@ -33,3 +33,19 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** el viaje coloca al jugador junto al agarre pero no lo agarra.
 - **Solución:** después de un viaje hay `CAIDA.graciaViaje` (3 s) sin caída, para que el jugador se agarre con el mouse. Si no lo hace, cae como corresponde.
 - **Aprendizaje:** cada mecánica nueva puede cambiar el comportamiento de las anteriores. Conviene probar combinaciones, no solo cada una por separado.
+
+---
+
+## 5. En modo escritorio, la primera tecla estaba siempre resaltada
+
+- **Qué pasó:** al agregar el resaltado de los agarres al alcance, la tecla más baja se veía brillante todo el tiempo.
+- **Por qué:** el guante izquierdo en reposo (abajo a la izquierda, en modo escritorio) quedaba a menos de 18 cm de esa tecla, así que el juego creía que la mano estaba por agarrarla.
+- **Solución:** en modo escritorio las manos quedan quietas, así que el resaltado lo da solo el cursor del mouse. El resaltado por distancia de la mano queda para VR.
+- **Aprendizaje:** una posición de reposo pensada para que se vea el guante puede activar la lógica de interacción. Conviene probar cada función nueva también con las manos en reposo.
+
+## 6. Los agarres que se mueven no arrastraban al jugador
+
+- **Qué pasó:** la tecla que se hundía bajaba, pero el jugador se quedaba en su lugar y su mano se separaba de la tecla.
+- **Por qué:** la escalada solo movía al jugador según el movimiento de su mano, no según el del agarre.
+- **Solución:** `climb` mide también cuánto se movió el agarre en el mundo y mueve al jugador con él. Con eso funcionan la tecla que se hunde y el panel que gira sin código extra en cada tipo.
+- **Aprendizaje:** una mecánica general (agarrarse a algo) tiene que contemplar que ese algo se mueva.
