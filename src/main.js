@@ -3,5 +3,9 @@ import 'aframe';
 
 import './components/ambiente-calido.js';
 import './components/sala-base.js';
+import './components/cartel.js';
+import './components/pared-prueba.js';
 import './components/mano-guante.js';
+import './components/climb.js';
 import './components/modo-escritorio.js';
+import './components/escalada-mouse.js';

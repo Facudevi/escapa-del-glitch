@@ -21,7 +21,7 @@ Experiencia de realidad virtual (touchpoint del festival RESET) hecha con A-Fram
 - **A-Frame 1.8** por npm, con **Vite** (servidor de desarrollo y build).
 - **Solo A-Frame y sus componentes.** Nada de motores de física ni librerías 3D externas. Trayectorias, caídas y movimientos se calculan a mano o con el componente `animation`.
 - **Todo con primitivas** (`a-box`, `a-cylinder`, `a-plane`, `a-sphere`, etc.). Sin modelos 3D externos.
-- **Controles:** `meta-touch-controls` con eventos `gripdown` y `gripup`, más un **modo escritorio** para probar sin casco (clic en un agarre lleva al jugador hasta él).
+- **Controles:** `meta-touch-controls` con eventos `gripdown` y `gripup`, más un **modo escritorio** para probar sin casco: clic en un agarre lejano lleva al jugador hasta él, y con el mouse se escala (clic izquierdo/derecho = mano izquierda/derecha). El equipo no tiene casco por ahora, así que **toda mecánica nueva tiene que poder probarse en modo escritorio**: el modo mouse no tiene lógica propia, mueve las manos y dispara los mismos eventos que los controles (`mano-agarra`/`mano-suelta`).
 - **Duración objetivo:** ~2 min 30 s de partida.
 - **Ambiente calmo:** penumbra cálida; colores de RESET suavizados (violeta, lavanda, celeste, ámbar suave, verde suave). Sin neón, destellos ni parpadeos fuertes.
 

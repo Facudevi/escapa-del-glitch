@@ -1,5 +1,6 @@
-// Modo escritorio (solo para probar sin casco): WASD para caminar y clic en un agarre
+// Modo escritorio (solo para probar sin casco): WASD para caminar y clic en un agarre lejano
 // para llevar al jugador hasta él. Se desactiva solo al entrar en VR. Va en la <a-scene>.
+// Los agarres al alcance se agarran con el mouse (ver escalada-mouse).
 import { ESCRITORIO } from '../config.js';
 
 AFRAME.registerComponent('modo-escritorio', {
@@ -7,6 +8,13 @@ AFRAME.registerComponent('modo-escritorio', {
     this.teclas = {};
     this.rig = null;
     this.direccion = new THREE.Vector3();
+    this.manosMouse = 0; // manos agarradas con el mouse (las informa escalada-mouse)
+    this.ultimoCambio = 0; // cuándo cambió por última vez (ms)
+
+    this.el.addEventListener('escalada-mouse-cambio', (e) => {
+      this.manosMouse = e.detail.activas;
+      this.ultimoCambio = performance.now();
+    });
 
     window.addEventListener('keydown', (e) => (this.teclas[e.code] = true));
     window.addEventListener('keyup', (e) => (this.teclas[e.code] = false));
@@ -21,6 +29,8 @@ AFRAME.registerComponent('modo-escritorio', {
 
   alClickear(e) {
     if (this.enVR()) return;
+    // Un clic que termina de agarrar o soltar con el mouse no es un pedido de viaje
+    if (this.manosMouse > 0 || performance.now() - this.ultimoCambio < 150) return;
     const objetivo = e.target;
     if (!objetivo || !objetivo.classList.contains('agarre')) return;
 
@@ -41,7 +51,7 @@ AFRAME.registerComponent('modo-escritorio', {
   },
 
   tick(tiempo, dt) {
-    if (this.enVR()) return;
+    if (this.enVR() || this.manosMouse > 0) return; // colgado de un agarre no se camina
     if (!this.rig) this.rig = document.querySelector('#rig');
     const camara = document.querySelector('#camara');
     if (!this.rig || !camara) return;

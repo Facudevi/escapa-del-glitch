@@ -17,20 +17,23 @@
   </head>
   <body>
     <div id="ayuda">
-      <b>Modo escritorio:</b> arrastrá para mirar, WASD para caminar, clic en un agarre para ir hasta él.
-      Para jugar con casco, tocá el botón de gafas VR.
+      <b>Modo escritorio:</b> arrastrá para mirar y WASD para caminar. Clic en un agarre lejano para ir hasta él.
+      <b>Escalar:</b> mantené el clic izquierdo (mano izquierda) o derecho (mano derecha) sobre una tecla cercana y bajá el mouse.
+      Con casco: apretá el botón lateral (grip) cerca de una tecla y bajá el brazo para subir.
     </div>
 
     <a-scene
       ambiente-calido
       sala-base
+      pared-prueba
       modo-escritorio
+      escalada-mouse
       renderer="antialias: true"
       webxr="optionalFeatures: local-floor, bounded-floor"
       loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
     >
       <!-- Jugador: el rig se mueve, la cámara y las manos van adentro -->
-      <a-entity id="rig" position="0 0 0">
+      <a-entity id="rig" position="0 0 0" climb>
         <a-entity id="camara" camera look-controls="pointerLockEnabled: false" position="0 1.6 0"></a-entity>
         <a-entity id="mano-izq" meta-touch-controls="hand: left" mano-guante="mano: izquierda"></a-entity>
         <a-entity id="mano-der" meta-touch-controls="hand: right" mano-guante="mano: derecha"></a-entity>

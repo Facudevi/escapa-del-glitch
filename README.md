@@ -27,7 +27,11 @@ Otros comandos: `npm run build` (genera `dist/`) y `npm run preview` (sirve el b
 
 ## Cómo probarlo
 
-- **En la compu (sin casco):** abrir en Chrome. Arrastrar para mirar, **WASD** para caminar y **clic en un agarre** para ir hasta él. Para simular casco y controles, usar la extensión **Immersive Web Emulator** de Meta.
+- **En la compu (sin casco):** abrir en Chrome.
+  - Arrastrar para mirar y **WASD** para caminar.
+  - **Clic en un agarre lejano:** lleva al jugador hasta él.
+  - **Escalar con mouse:** mantener el **clic izquierdo** (mano izquierda) o el **clic derecho** (mano derecha) sobre un agarre al alcance y **bajar el mouse** para subir. Con las dos manos agarradas se usan los dos botones.
+  - Para simular casco y controles, también sirve la extensión **Immersive Web Emulator** de Meta (pestaña WebXR de las herramientas de desarrollador).
 - **En el Quest por USB:** con el modo desarrollador activado, correr `adb reverse tcp:5173 tcp:5173` y abrir `http://localhost:5173` en el navegador del casco.
 - **En el Quest sin cable:** abrir el link público (HTTPS) en el navegador del casco y tocar el botón de gafas VR.
 
