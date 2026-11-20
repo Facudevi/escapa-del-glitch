@@ -4,7 +4,7 @@ import 'aframe';
 import './components/ambiente-calido.js';
 import './components/sala-base.js';
 import './components/cartel.js';
-import './components/pared-prueba.js';
+import './components/escenario.js';
 import './components/mano-guante.js';
 import './components/agarre.js';
 import './components/tecla-hunde.js';

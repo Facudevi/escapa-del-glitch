@@ -28,19 +28,33 @@ export const COLORES = {
   lavandaHunde: '#8f7cc0', // tecla que se hunde: lavanda más profundo
   flecha: '#3f3260', // flecha de la tecla que se hunde
   panel: '#b8788c', // panel que gira: rosa suave
+
+  // Decorado del setup gigante (apagado, para que los agarres se destaquen)
+  paredBase: '#4d4166',
+  teclas: ['#40364f', '#463b58', '#4b4060', '#3b3249'],
+  torre: '#43405f',
+  rejilla: '#2a2438',
+  ventilador: '#55537a',
+  led: '#6fae8f',
+  marcoMonitor: '#5c5079',
+  pantalla: '#2f3f63',
+  pixeles: ['#36497a', '#32456f', '#3d5185', '#2d3d66'],
+  resetApagado: '#5d4a8f', // botón RESET sin encender
+  hueco: '#241b36', // huecos vacíos de los fragmentos
 };
 
 // Ambiente general de la sala.
 export const AMBIENTE = {
   nieblaDensidad: 0.02,
   intensidadAmbiente: 1.0,
-  intensidadPunto: 1.1,
+  intensidadPunto: 0.8,
+  alturasLuz: [4, 11, 18, 24], // luces puntuales cálidas repartidas en altura
 };
 
 // Medidas de la sala de pruebas de la etapa 1 (en metros).
 export const SALA = {
   lado: 16, // la sala es un cuadrado de lado x lado
-  altoParedes: 8, // paredes que marcan los límites
+  altoParedes: 26, // paredes que marcan los límites (tienen que llegar a lo más alto de la escalada)
 };
 
 // Jugador y manos.
@@ -56,30 +70,78 @@ export const VIBRACION = {
   duracion: 40, // ms
 };
 
-// Pared de prueba (en metros). Muestra un ejemplo de cada tipo de agarre; se reemplaza por los
-// tramos reales en la etapa 6.
-export const PARED_PRUEBA = {
-  ancho: 5,
-  alto: 8,
-  profundidad: 0.2,
+// Escenario: la pared de escalada completa (en metros). Cada tramo es una pared amplia sin camino
+// marcado; el generador (src/tramos.js) arma una ruta garantizada y agarres de más, con dificultad creciente.
+export const ESCENARIO = {
+  semilla: 20261120, // cambia la distribución de los agarres (la misma semilla da siempre la misma pared)
+  anchoPared: 6.4, // la pared va de -ancho/2 a +ancho/2 en x
   z: -0.9, // centro de la pared; los agarres sobresalen hacia el jugador
+  profundidadPared: 0.2,
   tecla: { ancho: 0.4, alto: 0.14, profundidad: 0.3 }, // medida de la tecla firme y la que se hunde
-  // Agarres: tipo ('firme', 'hunde', 'lata' o 'intermitente'), posición x e y, y fase (s) del intermitente
-  agarres: [
-    { tipo: 'firme', x: -0.65, y: 1.2 },
-    { tipo: 'firme', x: 0.5, y: 1.7 },
-    { tipo: 'hunde', x: -0.5, y: 2.2 },
-    { tipo: 'firme', x: 0.5, y: 2.7 },
-    { tipo: 'lata', x: -0.4, y: 3.2 },
-    { tipo: 'firme', x: 0.5, y: 3.7 },
-    { tipo: 'firme', x: 1.35, y: 3.6 }, // agarre lejano hacia la plataforma
-    { tipo: 'intermitente', x: -0.5, y: 4.2, fase: 0 },
-    { tipo: 'intermitente', x: 0.5, y: 4.7, fase: 2.5 },
-    { tipo: 'firme', x: -0.5, y: 5.2 },
+  primerAgarre: 1.2, // altura del primer agarre sobre cada plataforma
+  separacionMinima: 0.5, // distancia mínima (m) entre agarres
+  zonaFragmento: 1.3, // radio (m) alrededor de un fragmento donde los agarres son más difíciles
+  panel: { separacionAgarres: 0.3 }, // los dos agarres de cada panel quedan a ±esto del centro
+  checkpoint: { ancho: 5, profundidad: 1.3 },
+  final: { ancho: 3.2, profundidad: 1.6, alturaPared: 3.5 }, // plataforma de arriba, donde está el RESET
+
+  // Tramos de abajo hacia arriba. `alto` es lo que sube cada uno (la parte de arriba del checkpoint).
+  //   paso: separación vertical (m) entre agarres al principio y al final del tramo (sube con la dificultad)
+  //   distanciaMax: distancia máxima (m) entre agarres consecutivos de la ruta garantizada
+  //   amplitud: cuánto se aparta de la columna central la ruta (m); xMax: hasta dónde llegan los agarres
+  //   reglas: tipos especiales, desde qué fracción del tramo aparecen y con qué probabilidad
+  //   paneles: fracciones del tramo donde la ruta pasa por un panel que gira
+  //   extras: agarres de más por cada agarre de la ruta (la pared es amplia y hay donde elegir)
+  //   fragmento: fracción de altura del fragmento; enRuta = está justo en el camino (tutorial)
+  //   tiposDificiles: tipos con los que se endurece la zona del fragmento
+  tramos: [
+    {
+      nombre: 'Teclado',
+      alto: 6,
+      paso: [0.45, 0.6],
+      distanciaMax: 0.8,
+      amplitud: [0.35, 0.9],
+      xMax: 2.4,
+      reglas: [{ tipo: 'hunde', desde: 0.7, prob: 0.5 }],
+      paneles: [],
+      extras: 1.3,
+      fragmento: { fraccion: 0.4, enRuta: true },
+      tiposDificiles: [],
+    },
+    {
+      nombre: 'Torre de PC',
+      alto: 7,
+      paso: [0.5, 0.68],
+      distanciaMax: 0.85,
+      amplitud: [0.4, 1.0],
+      xMax: 2.4,
+      reglas: [
+        { tipo: 'lata', desde: 0.25, prob: 0.5 },
+        { tipo: 'hunde', desde: 0.15, prob: 0.3 },
+      ],
+      paneles: [0.25, 0.55],
+      extras: 1.3,
+      fragmento: { fraccion: 0.65, enRuta: false },
+      tiposDificiles: ['lata', 'hunde'],
+    },
+    {
+      nombre: 'Monitor',
+      alto: 8,
+      paso: [0.5, 0.75],
+      distanciaMax: 1.05,
+      amplitud: [0.5, 1.6],
+      xMax: 2.9,
+      reglas: [
+        { tipo: 'intermitente', desde: 0, prob: 0.75 },
+        { tipo: 'lata', desde: 0.4, prob: 0.15 },
+        { tipo: 'hunde', desde: 0.2, prob: 0.1 },
+      ],
+      paneles: [0.25, 0.5, 0.75],
+      extras: 1.1,
+      fragmento: { fraccion: 0.7, enRuta: false },
+      tiposDificiles: ['intermitente', 'lata'],
+    },
   ],
-  panel: { x: 0.1, y: 6.3, separacionAgarres: 0.3, fase: 0 },
-  // Checkpoint al costado de la pared (la parte de arriba de la plataforma es el piso)
-  checkpoint: { x: 1.9, altura: 2.3, ancho: 1.2, profundidad: 1.3 },
 };
 
 // Tecla que se hunde: baja despacio y a velocidad constante mientras está agarrada.

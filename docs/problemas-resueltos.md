@@ -49,3 +49,17 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** la escalada solo movía al jugador según el movimiento de su mano, no según el del agarre.
 - **Solución:** `climb` mide también cuánto se movió el agarre en el mundo y mueve al jugador con él. Con eso funcionan la tecla que se hunde y el panel que gira sin código extra en cada tipo.
 - **Aprendizaje:** una mecánica general (agarrarse a algo) tiene que contemplar que ese algo se mueva.
+
+## 7. Dos paneles se superponían y no se podía pasar de uno al otro
+
+- **Qué pasó:** en el tramo del monitor, un jugador automático caía una y otra vez cerca de los paneles que giran.
+- **Por qué:** el generador dejó dos paneles a 0,66 m de altura, y cada panel mide 0,8 m: se pisaban, y como giraban con fases distintas era imposible sincronizarse. Además, un panel había quedado pegado a la plataforma final.
+- **Solución:** el generador exige 1,7 m de separación entre paneles y 1,8 m respecto de cualquier checkpoint, los limita a su propio tramo y hace que todos giren a la par.
+- **Aprendizaje:** una pared generada al azar necesita reglas de separación y una prueba automática que la recorra, no solo mirarla.
+
+## 8. Un agarre con tiempo podía romperse mientras el jugador esperaba en él
+
+- **Qué pasó:** si la ruta tenía una lata o un bloque intermitente seguido de otro agarre con tiempo (o de un panel), el jugador tenía que esperar colgado de uno que se rompe o se apaga, y caía.
+- **Por qué:** el sorteo de tipos no consideraba los vecinos.
+- **Solución:** en la ruta garantizada, después de un agarre con tiempo (lata o bloque) siempre viene uno seguro, y los vecinos de un panel también son seguros. Así hay siempre dónde apoyarse y esperar.
+- **Aprendizaje:** la dificultad tiene que venir de la habilidad, no de situaciones donde no se puede hacer nada.

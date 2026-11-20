@@ -2,7 +2,7 @@
 // que se presiona, y arrastra al jugador si no sigue subiendo (climb mueve al jugador con el agarre).
 // Al soltarla vuelve a su lugar. Va en una entidad con el componente agarre.
 // Lleva una flecha hacia abajo en la cara frontal para que se reconozca de lejos.
-import { COLORES, HUNDE, PARED_PRUEBA } from '../config.js';
+import { COLORES, ESCENARIO, HUNDE } from '../config.js';
 
 AFRAME.registerComponent('tecla-hunde', {
   init() {
@@ -19,7 +19,7 @@ AFRAME.registerComponent('tecla-hunde', {
       new THREE.ShapeGeometry(forma),
       new THREE.MeshBasicMaterial({ color: COLORES.flecha, side: THREE.DoubleSide })
     );
-    this.flecha.position.z = PARED_PRUEBA.tecla.profundidad / 2 + 0.002;
+    this.flecha.position.z = ESCENARIO.tecla.profundidad / 2 + 0.002;
     this.el.setObject3D('flecha', this.flecha);
   },
 

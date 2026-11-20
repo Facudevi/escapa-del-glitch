@@ -98,6 +98,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se implementó la Etapa 5 (agarres especiales) aplicando el checklist de `docs/buenas-practicas-xr.md`. Detalle en la entrada "Etapa 5" más abajo.
 
+### Prompt 15 — 2026-11-20
+
+> Bien, seguir Etapa 6
+
+**Respuesta:** se implementó la Etapa 6 (tramos completos): el setup gamer gigante con teclado, torre de PC y monitor, dificultad creciente, checkpoints entre tramos y el RESET apagado arriba de todo. Detalle en la entrada "Etapa 6" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -215,3 +221,38 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 - Probar la sensación de los movimientos que arrastran al jugador en un casco (comodidad).
 - Los tiempos de cada tipo (`HUNDE`, `LATA`, `INTERMITENTE`, `PANEL`) son una primera estimación para ajustar al jugar.
 - Durante el giro, el panel atraviesa visualmente la pared de fondo; en los tramos reales (etapa 6) conviene dejarle un hueco.
+
+### 2026-11-20 — Etapa 6: Tramos completos
+
+**Pedido:** "Bien, seguir Etapa 6": teclado, torre y monitor, con la dificultad creciente y un checkpoint entre cada tramo.
+
+**Resumen de lo hecho:**
+- La pared de prueba se reemplazó por el escenario completo: **22 m de escalada** en tres tramos (teclado 0–6 m, torre de PC 6–13 m, monitor 13–21 m), con un checkpoint verde al final de cada uno y la plataforma violeta de arriba, que también es checkpoint (orden 3).
+- `src/tramos.js` genera la distribución de agarres a partir de `ESCENARIO` en `config.js`, con una semilla fija (todos prueban la misma pared):
+  - **Ruta garantizada** en zigzag, con agarres a distancias alcanzables (máximo 0,8 m en el teclado, 0,85 en la torre y 1,05 en el monitor, donde hay que estirarse hacia los costados).
+  - **Agarres de más** al azar, para que la pared sea amplia y no haya un camino marcado.
+  - **Dificultad creciente en cada tramo:** la separación vertical media sube de 0,51 a 0,61 m, y los tipos especiales aparecen más cerca del checkpoint.
+  - **Tipos por tramo:** teclado, firmes y las primeras teclas que se hunden cerca del checkpoint; torre, firmes, que se hunden, latas y dos paneles; monitor, bloques intermitentes, lata, panel y agarres lejanos.
+  - **Fragmentos** (la etapa 7 los dibuja): el del tramo 1 queda entre dos agarres de la ruta, imposible de pasar de largo; los otros dos quedan al costado, con una cadena de agarres que lleva hasta ellos y una zona endurecida alrededor.
+- `src/decorado.js`: teclado con teclas apagadas, torre con rejillas, ventiladores y una tira de luz suave, y monitor con pantalla azul oscura, píxeles apagados y marco ancho. Las teclas y los píxeles son mallas instanciadas (una sola pieza de dibujo), para no pesar en el casco.
+- `escenario-glitch` (componente) arma todo: agarres, paneles, checkpoints, el botón RESET apagado con tres huecos vacíos y un cartel grande que se lee desde el piso («Juntá los 3 fragmentos para encender el RESET»), y un cartel de una línea la primera vez que aparece cada tipo. Deja los datos en `escena.escalada` para las etapas siguientes.
+- Las paredes de la sala suben a 26 m y las luces cálidas se reparten en altura.
+
+**Buenas prácticas aplicadas (checklist de la etapa 6):**
+- Dificultad creciente sin camino marcado, con una referencia para orientarse: el RESET apagado y su cartel, visibles arriba de todo.
+- Descanso: un checkpoint cada 6 a 8 m, y la energía obliga a alternar manos.
+- Distancias de agarre configurables (`distanciaMax` por tramo) para ajustarlas a distintas alturas de jugador.
+- Cada tramo respeta los colores del setup, apagados y calmos, sin destellos.
+
+**Problemas que aparecieron y se resolvieron** (en `docs/problemas-resueltos.md`): dos paneles se superponían y un panel quedaba pegado a una plataforma; una lata o un bloque en la ruta podían romperse o apagarse mientras el jugador esperaba en ellos.
+
+**Verificado en Chrome:**
+- Generador: 88 agarres y 4 paneles; la distancia máxima entre agarres de la ruta es 1,05 m; ningún agarre cae dentro de una plataforma.
+- Un jugador automático (usa el mismo modo mouse que cualquier persona) subió **toda la pared sin caerse**: teclado en 9 s, torre en 18 s y monitor en 27 s de juego (unos 54 s en total, sin dudar). Una persona va a tardar bastante más, en línea con los 2 min 30 s objetivo. Llegó a la plataforma de arriba y quedó apoyado.
+- Visual: se revisaron los tres tramos y la vista desde la plataforma de arriba con el RESET apagado.
+- `npm run build` OK.
+
+**Pendiente:**
+- Probar la dificultad y las distancias de agarre con personas, idealmente de distintas alturas y en un casco.
+- Probar el rendimiento en el Quest (unas 140 entidades más decorado instanciado).
+- La tirolesa de la torre es de la etapa 9; hoy el tramo 2 se sube completo.

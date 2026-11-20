@@ -15,6 +15,7 @@ AFRAME.registerComponent('checkpoint', {
     ancho: { type: 'number', default: 2 }, // medida en x
     profundidad: { type: 'number', default: 1.4 }, // medida en z
     dibujar: { type: 'boolean', default: true },
+    color: { type: 'color', default: COLORES.verde },
   },
 
   init() {
@@ -27,7 +28,7 @@ AFRAME.registerComponent('checkpoint', {
         width: this.data.ancho,
         height: CHECKPOINT.grosor,
         depth: this.data.profundidad,
-        color: COLORES.verde,
+        color: this.data.color,
         material: 'roughness: 0.9; metalness: 0',
       });
     }

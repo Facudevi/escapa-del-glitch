@@ -16,6 +16,16 @@ Documentación del diseño: [`docs/idea-final.md`](docs/idea-final.md). Registro
 - [`docs/problemas-resueltos.md`](docs/problemas-resueltos.md): problemas encontrados y cómo se resolvieron.
 - [`PROMPTS.md`](PROMPTS.md): bitácora de prompts.
 
+## El escenario
+
+El jugador escala un setup gamer gigante de unos 22 m, en tres tramos con un checkpoint entre cada uno:
+
+1. **Teclado:** teclas firmes para aprender; cerca del checkpoint aparecen las primeras teclas que se hunden.
+2. **Torre de PC:** teclas que se hunden, latas que se rompen y los primeros paneles que giran.
+3. **Monitor:** bloques intermitentes, paneles y agarres lejanos hacia los costados. Es el más exigente.
+
+Arriba de todo está el botón RESET apagado. La distribución de agarres la genera `src/tramos.js` con una semilla fija (`ESCENARIO.semilla` en `src/config.js`); cambiarla da otra pared. Con `distanciaMax` de cada tramo se ajusta qué tan lejos están los agarres.
+
 ## Privacidad
 
 La experiencia no recoge ni envía datos personales ni de uso.

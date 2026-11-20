@@ -19,13 +19,15 @@ AFRAME.registerComponent('ambiente-calido', {
     );
     escena.appendChild(ambiente);
 
-    // Luz puntual cálida sobre la zona de juego
-    const punto = document.createElement('a-entity');
-    punto.setAttribute(
-      'light',
-      `type: point; color: ${COLORES.luzPunto}; intensity: ${AMBIENTE.intensidadPunto}; distance: 30; decay: 1.5`
-    );
-    punto.setAttribute('position', '0 5 1');
-    escena.appendChild(punto);
+    // Luces puntuales cálidas repartidas en altura, para que toda la pared quede iluminada
+    AMBIENTE.alturasLuz.forEach((altura) => {
+      const punto = document.createElement('a-entity');
+      punto.setAttribute(
+        'light',
+        `type: point; color: ${COLORES.luzPunto}; intensity: ${AMBIENTE.intensidadPunto}; distance: 22; decay: 1.5`
+      );
+      punto.setAttribute('position', `0 ${altura} 2`);
+      escena.appendChild(punto);
+    });
   },
 });
