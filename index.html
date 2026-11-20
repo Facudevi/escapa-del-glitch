@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Escapá del Glitch</title>
+    <style>
+      body { margin: 0; background: #1d1727; }
+      #ayuda {
+        position: fixed; left: 12px; bottom: 12px; z-index: 10;
+        max-width: 320px; padding: 10px 12px; border-radius: 10px;
+        background: rgba(29, 23, 39, 0.8); color: #e9e2f5;
+        font: 13px/1.4 system-ui, sans-serif; pointer-events: none;
+      }
+      #ayuda b { color: #d9a15b; }
+    </style>
+  </head>
+  <body>
+    <div id="ayuda">
+      <b>Modo escritorio:</b> arrastrá para mirar, WASD para caminar, clic en un agarre para ir hasta él.
+      Para jugar con casco, tocá el botón de gafas VR.
+    </div>
+
+    <a-scene
+      ambiente-calido
+      sala-base
+      modo-escritorio
+      renderer="antialias: true"
+      webxr="optionalFeatures: local-floor, bounded-floor"
+      loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
+    >
+      <!-- Jugador: el rig se mueve, la cámara y las manos van adentro -->
+      <a-entity id="rig" position="0 0 0">
+        <a-entity id="camara" camera look-controls="pointerLockEnabled: false" position="0 1.6 0"></a-entity>
+        <a-entity id="mano-izq" meta-touch-controls="hand: left" mano-guante="mano: izquierda"></a-entity>
+        <a-entity id="mano-der" meta-touch-controls="hand: right" mano-guante="mano: derecha"></a-entity>
+      </a-entity>
+
+      <!-- Cursor de mouse: solo apunta a los agarres (modo escritorio) -->
+      <a-entity cursor="rayOrigin: mouse" raycaster="objects: .agarre"></a-entity>
+    </a-scene>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

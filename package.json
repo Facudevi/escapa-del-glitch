@@ -1,0 +1,18 @@
+{
+  "name": "escapa-del-glitch",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Escapá del Glitch: experiencia VR de escalada, touchpoint del festival RESET.",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "aframe": "^1.8.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
+  }
+}
