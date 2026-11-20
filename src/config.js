@@ -22,6 +22,8 @@ export const COLORES = {
   paredEscalada: '#5f4f7a',
   cartelFondo: '#2b2140',
   cartelTexto: '#f0e9fb',
+
+  anilloFondo: '#d3c9ea', // parte vacía del anillo de energía
 };
 
 // Ambiente general de la sala.
@@ -76,6 +78,23 @@ export const CAIDA = {
   graciaViaje: 3000, // ms extra sin caer después de un viaje en modo escritorio (para agarrarse)
   toleranciaPiso: 0.05, // altura (m) hasta la que se considera que está parado en el piso
   colorFundido: '#000000',
+};
+
+// Energía de cada mano (de 0 a 1). La mano agarrada gasta, la mano libre recupera.
+export const ENERGIA = {
+  segundosAgarrando: 7, // s que dura la energía completa de una mano agarrada (con la otra suelta)
+  factorDosManos: 0.6, // con las dos manos agarradas cada una gasta a este ritmo (menos de 1 = más lento)
+  segundosRecuperar: 5, // s que tarda una mano libre en recuperar la energía completa
+  minimoParaAgarrar: 0.15, // energía mínima para poder agarrar (evita agarrar y soltarse enseguida)
+
+  // Color del anillo: verde con mucha energía, ámbar en el medio, rojo al final (con transición suave)
+  verdeDesde: 0.65,
+  ambarEn: 0.4,
+  rojoDesde: 0.15,
+
+  radioInterno: 0.075, // anillo alrededor del guante (m)
+  radioExterno: 0.092,
+  segmentos: 40,
 };
 
 // Checkpoints: plataformas donde el jugador descansa y reaparece.

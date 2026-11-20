@@ -37,6 +37,10 @@ AFRAME.registerComponent('climb', {
     const mano = e.target;
     if (this.sujetas[nombre]) return;
 
+    // Sin energía en esa mano no se puede agarrar (si el rig tiene el componente energia)
+    const energia = this.el.components.energia;
+    if (energia && !energia.puedeAgarrar(nombre)) return;
+
     mano.object3D.getWorldPosition(this.tmp);
     const agarre = this.agarreCercano(this.tmp);
     if (!agarre) return; // apretó el grip lejos de cualquier agarre: no pasa nada
@@ -46,7 +50,7 @@ AFRAME.registerComponent('climb', {
     mano.emit('agarre-tomado', { agarre }, false);
   },
 
-  // Suelta la mano indicada (por el jugador o por otro componente)
+  // Suelta la mano indicada (por el jugador o por otro componente, como energia)
   soltar(nombre) {
     const sujeta = this.sujetas[nombre];
     if (!sujeta) return;

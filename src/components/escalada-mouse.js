@@ -36,10 +36,16 @@ AFRAME.registerComponent('escalada-mouse', {
     window.addEventListener('contextmenu', this.alMenuContexto);
 
     // Guantes en su posición de reposo (en VR los pisan los controles reales)
-    const ponerReposo = () => this.ponerTodasEnReposo();
-    if (this.el.hasLoaded) ponerReposo();
-    else this.el.addEventListener('loaded', ponerReposo);
-    this.el.addEventListener('exit-vr', ponerReposo);
+    // y atentos a que el juego los suelte solo (por ejemplo, sin energía)
+    const alCargar = () => {
+      this.ponerTodasEnReposo();
+      Object.keys(ID_MANO).forEach((nombre) => {
+        this.mano(nombre).addEventListener('agarre-soltado', () => this.alSoltarElJuego(nombre));
+      });
+    };
+    if (this.el.hasLoaded) alCargar();
+    else this.el.addEventListener('loaded', alCargar);
+    this.el.addEventListener('exit-vr', () => this.ponerTodasEnReposo());
   },
 
   remove() {
@@ -133,6 +139,15 @@ AFRAME.registerComponent('escalada-mouse', {
     if (!nombre || !this.agarradas[nombre]) return;
     delete this.agarradas[nombre];
     this.mano(nombre).emit('mano-suelta', { mano: nombre });
+    this.ponerEnReposo(nombre);
+    if (!Object.keys(this.agarradas).length) this.pausarMirada(false);
+    this.avisarCambio();
+  },
+
+  // El juego soltó la mano (sin energía): se deja de seguir al mouse aunque el botón siga apretado
+  alSoltarElJuego(nombre) {
+    if (!this.agarradas[nombre]) return; // la soltó el propio jugador: ya está resuelto
+    delete this.agarradas[nombre];
     this.ponerEnReposo(nombre);
     if (!Object.keys(this.agarradas).length) this.pausarMirada(false);
     this.avisarCambio();

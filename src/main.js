@@ -7,6 +7,8 @@ import './components/cartel.js';
 import './components/pared-prueba.js';
 import './components/mano-guante.js';
 import './components/climb.js';
+import './components/energia.js';
+import './components/anillo-energia.js';
 import './components/fundido.js';
 import './components/checkpoint.js';
 import './components/caida.js';
