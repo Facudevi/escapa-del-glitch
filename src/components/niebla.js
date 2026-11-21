@@ -78,7 +78,17 @@ AFRAME.registerComponent('niebla', {
     this.y = Math.min(this.y, alturaCheckpoint - NIEBLA.retroceso);
   },
 
+  // Vuelve a empezar: abajo del todo y quieta hasta que el jugador se agarre
+  reiniciar() {
+    this.y = NIEBLA.alturaInicial;
+    this.iniciaEn = Infinity;
+    this.modoFinal = false;
+    this.terminada = false;
+    this.grupo.position.y = this.y;
+  },
+
   tick(tiempo, dt) {
+    if (this.el.juegoTerminado) return; // después del final no hay niebla que avance
     const fragmentos = this.el.components.fragmentos;
     if (!this.rig) this.rig = document.querySelector('#rig');
     if (!this.rig || this.terminada) return;

@@ -142,6 +142,31 @@ AFRAME.registerComponent('fragmentos', {
     this.el.emit('fragmentos-revelados', {}, false);
   },
 
+  // Vuelve a empezar: los tres fragmentos otra vez en la pared y los huecos del RESET apagados
+  reiniciar() {
+    const datos = this.el.escalada;
+    this.lista.forEach((f, i) => {
+      const origen = datos.fragmentos[i];
+      f.estado = 'pared';
+      f.x = origen.x;
+      f.y = origen.y;
+      f.z = this.zFrente + FRAGMENTO.distanciaAlFrente;
+      f.grupo.position.set(f.x, f.y, f.z);
+      f.grupo.visible = true;
+      f.marcaHasta = 0;
+      if (f.zumbido) f.zumbido.detener();
+      f.zumbido = crearZumbido(FRAGMENTO.sonido.frecuencias, FRAGMENTO.sonido.volumen, FRAGMENTO.sonido.distanciaMax);
+      if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
+    });
+    this.recogidos = 0;
+    [0, 1, 2].forEach((i) => {
+      const hueco = document.querySelector(`#reset-hueco-${i}`);
+      if (hueco) {
+        hueco.setAttribute('material', `color: ${COLORES.hueco}; emissive: ${COLORES.hueco}; emissiveIntensity: 0; roughness: 1; metalness: 0`);
+      }
+    });
+  },
+
   tick(tiempo, dt) {
     if (!this.construido) {
       if (!this.el.escalada) return;

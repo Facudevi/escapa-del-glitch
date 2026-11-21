@@ -172,3 +172,26 @@ export function actualizarOyente(px, py, pz, fx, fy, fz) {
     // sin audio espacial: no es grave
   }
 }
+
+// Golpe contra el botón RESET apagado: un toque sordo, sin consecuencias
+export function golpeSordo() {
+  tono(120, 0.18, 'triangle', 0.7);
+}
+
+// El botón RESET se enciende: una nota clara
+export function resetListo() {
+  tono(784, 0.5, 'sine', 0.8);
+  setTimeout(() => tono(1175, 0.7, 'sine', 0.6), 160);
+}
+
+// Se rompe la pantalla: un golpe grave y un crujido de vidrio
+export function roturaPantalla() {
+  tono(90, 0.5, 'triangle', 1);
+  ruido(0.6, 2600, 0.9);
+  setTimeout(() => ruido(0.4, 3400, 0.5), 180);
+}
+
+// Amanecer: un acorde que sube despacio
+export function amanecer() {
+  [392, 523, 659, 784].forEach((f, i) => setTimeout(() => tono(f, 1.6, 'sine', 0.6), i * 220));
+}

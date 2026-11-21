@@ -63,6 +63,14 @@ AFRAME.registerComponent('glitch', {
     return this.objetivo;
   },
 
+  // Vuelve a empezar: sin frase en pantalla y sin tiempos de espera
+  reiniciar() {
+    this.ultimaVez = {};
+    this.indices = {};
+    this.hasta = 0;
+    this.cartel.object3D.visible = false;
+  },
+
   tick(tiempo, dt) {
     if (!this.cartel.object3D.visible) return;
     const ahora = performance.now();

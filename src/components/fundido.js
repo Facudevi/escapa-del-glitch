@@ -30,7 +30,12 @@ AFRAME.registerComponent('fundido', {
     this.alTerminar = null;
   },
 
-  // Lleva la opacidad a `hasta` (0 = transparente, 1 = negro) en `ms` milisegundos
+  // Cambia el color del fundido (por defecto negro; el final usa la luz cálida del amanecer)
+  color(hex) {
+    this.material.color.set(hex);
+  },
+
+  // Lleva la opacidad a `hasta` (0 = transparente, 1 = el color del fundido) en `ms` milisegundos
   ir(hasta, ms) {
     if (this.alTerminar) this.alTerminar(); // si había un fundido en curso, lo da por terminado
     this.desde = this.opacidad;

@@ -130,6 +130,9 @@ AFRAME.registerComponent('escenario-glitch', {
     const y = datos.alturaFinal;
     crear(this.el, 'a-cylinder', {
       id: 'reset-boton',
+      class: 'golpeable',
+      golpeable: '',
+      'reset-boton': '',
       position: `0 ${y + 1.1} ${zFrente + 0.1}`,
       rotation: '90 0 0',
       radius: 0.38,

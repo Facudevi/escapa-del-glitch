@@ -32,6 +32,8 @@
       escaneo
       niebla
       glitch
+      cronometro
+      final
       renderer="antialias: true"
       webxr="optionalFeatures: local-floor, bounded-floor"
       loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
@@ -44,7 +46,7 @@
       </a-entity>
 
       <!-- Cursor de mouse: solo apunta a los agarres (modo escritorio) -->
-      <a-entity cursor="rayOrigin: mouse" raycaster="objects: .agarre"></a-entity>
+      <a-entity cursor="rayOrigin: mouse" raycaster="objects: .agarre, .golpeable"></a-entity>
     </a-scene>
 
     <script type="module" src="/src/main.js"></script>

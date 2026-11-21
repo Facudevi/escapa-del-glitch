@@ -84,3 +84,17 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** los dos ocupaban la misma esquina de la pantalla.
 - **Solución:** la ayuda pasó a la esquina de arriba a la izquierda.
 - **Aprendizaje:** una interfaz dentro del mundo hay que revisarla junto con los textos de pantalla del modo escritorio.
+
+## 12. Al volver a jugar, la sala quedaba con la niebla del exterior
+
+- **Qué pasó:** después de reiniciar, la sala se veía con la bruma suave del exterior en vez de su niebla oscura.
+- **Por qué:** para restaurar el ambiente se guardaba el resultado de `getAttribute('fog')`, pero A-Frame devuelve el mismo objeto que después se modifica; al cambiar la niebla, lo «guardado» cambiaba también.
+- **Solución:** se guardan copias de los valores antes de entrar al exterior.
+- **Aprendizaje:** al guardar un valor para restaurarlo después, hay que copiarlo y no guardar una referencia.
+
+## 13. El golpe con el casco no se detectaba
+
+- **Qué pasó:** con una mano simulada que golpeaba el botón RESET con fuerza, nunca se activaba.
+- **Por qué:** había dos errores a la vez. Primero, la dirección «hacia la pared» se calculaba con la orientación del propio botón, que está girado 90° para que su cara mire al jugador, así que apuntaba para arriba. Segundo, la posición anterior de la mano se actualizaba antes de calcular la velocidad, y la velocidad daba siempre cero.
+- **Solución:** se usa la orientación del objeto que contiene al botón y se calcula la velocidad antes de guardar la posición nueva. Se probó con golpes rápidos, pasadas lentas, barridos laterales, golpes lejanos y dobles golpes.
+- **Aprendizaje:** una detección por movimiento necesita pruebas con casos que deben activarse y casos que no.

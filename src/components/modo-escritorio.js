@@ -1,7 +1,7 @@
 // Modo escritorio (solo para probar sin casco): WASD para caminar y clic en un agarre lejano
 // para llevar al jugador hasta él. Se desactiva solo al entrar en VR. Va en la <a-scene>.
 // Los agarres al alcance se agarran con el mouse (ver escalada-mouse).
-import { ESCRITORIO } from '../config.js';
+import { ESCRITORIO, FINAL } from '../config.js';
 
 AFRAME.registerComponent('modo-escritorio', {
   init() {
@@ -32,6 +32,13 @@ AFRAME.registerComponent('modo-escritorio', {
     // Un clic que termina de agarrar o soltar con el mouse no es un pedido de viaje
     if (this.manosMouse > 0 || performance.now() - this.ultimoCambio < 150) return;
     const objetivo = e.target;
+    // Un botón (RESET, volver a jugar): el clic hace de golpe si está al alcance
+    if (objetivo && objetivo.classList.contains('golpeable')) {
+      const camara = document.querySelector('#camara').object3D.getWorldPosition(new THREE.Vector3());
+      const posBoton = objetivo.object3D.getWorldPosition(new THREE.Vector3());
+      if (camara.distanceTo(posBoton) <= FINAL.alcanceClic) objetivo.components.golpeable.golpear('mouse');
+      return;
+    }
     if (!objetivo || !objetivo.classList.contains('agarre')) return;
 
     const rig = document.querySelector('#rig');

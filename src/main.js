@@ -24,3 +24,7 @@ import './components/pulsera.js';
 import './components/escaneo.js';
 import './components/niebla.js';
 import './components/glitch.js';
+import './components/golpeable.js';
+import './components/reset-boton.js';
+import './components/cronometro.js';
+import './components/final.js';

@@ -47,6 +47,19 @@ export const COLORES = {
   niebla: '#b9a6dc', // niebla de píxeles: lila suave
   nieblaPixel: '#a08ccf',
   onda: '#8fc3e6', // onda del escaneo
+
+  // Exterior al amanecer
+  cielo: ['#8fb4de', '#bcd4ea', '#f3d9b8', '#f6c5a0'], // de arriba (celeste) a la línea del horizonte (durazno)
+  pasto: '#7fae8a',
+  montanas: ['#8c7fb3', '#a392c7', '#7c88b8', '#9a8fc0'],
+  sol: '#f7c982',
+  nieblaExterior: '#f3d3b5',
+  luzRotura: '#ffe9c7', // luz cálida que sale de la grieta del RESET
+  grieta: '#efe6ff',
+  resetListo: '#9b82e6', // botón RESET encendido
+  oro: '#e0b34a',
+  plata: '#c9cdd8',
+  bronce: '#c18a5a',
 };
 
 // Ambiente general de la sala.
@@ -323,5 +336,28 @@ export const GLITCH = {
   espera: 8, // s mínimos antes de repetir la misma frase
   frases: {
     comido: ['Ñam, este te lo escondo arriba'],
+    reset: ['Bueno, ganaste. Nos vemos afuera'],
+    faltan: ['El RESET todavía no enciende: faltan fragmentos'],
+  },
+};
+
+// Final: el botón RESET, la rotura de la pantalla, el exterior al amanecer y la medalla.
+export const FINAL = {
+  umbralGolpe: 1.0, // m/s hacia el botón para que cuente como golpe con la mano (solo con casco)
+  radioGolpe: 0.4, // m de distancia a la que la mano puede golpear el botón
+  alcanceClic: 2.0, // m: en modo escritorio, hasta dónde se puede hacer clic en el botón
+  enfriamientoGolpe: 1.2, // s hasta que el mismo botón vuelve a aceptar un golpe
+  medallas: { oro: 120, plata: 180 }, // s: menos de 2 min oro, menos de 3 min plata, el resto bronce
+  frase: 'Subiste de nivel, adentro y afuera de la pantalla',
+  teclaReiniciar: 'KeyR', // en modo escritorio, para volver a jugar
+  duracionGrietas: 0.9, // s que tardan las grietas en abrirse
+  pausaAntesDeLuz: 1.2, // s entre el golpe y el comienzo del fundido (tiempo para leer la frase del Glitch)
+  duracionLuz: 1.5, // s del fundido hacia la luz del amanecer (y de vuelta)
+  radioLuz: 7, // m que llega a abrirse la luz sobre la pantalla
+  grietas: 9, // cantidad de grietas que salen del botón
+  exterior: {
+    x: 300, // el exterior está lejos de la sala, en x
+    radioLimite: 9, // m: hasta dónde se puede caminar
+    densidadNiebla: 0.004,
   },
 };

@@ -110,6 +110,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se implementó la Etapa 7 (fragmentos, pulsera, escaneo y niebla): componentes `fragmentos`, `pulsera`, `escaneo`, `niebla` y `glitch`. Detalle en la entrada "Etapa 7" más abajo.
 
+### Prompt 17 — 2026-11-20
+
+> Bien, seguir Etapa 8
+
+**Respuesta:** se implementó la Etapa 8 (final): botón RESET, rotura de la pantalla, exterior al amanecer, frase, medalla y volver a jugar. Detalle en la entrada "Etapa 8" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -299,3 +305,38 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 - Probar con controles reales: tocar la pulsera con la otra mano y los botones A y X.
 - Ajustar el balance de la niebla (`NIEBLA.velocidad` y `retardoInicio`) jugando.
 - El botón RESET todavía no se activa: es la etapa 8.
+
+### 2026-11-20 — Etapa 8: Final
+
+**Pedido:** "Bien, seguir Etapa 8": botón RESET, escena exterior, frase y medalla.
+
+**Resumen de lo hecho:**
+- `golpeable`: un objeto que se activa con un golpe. **Con casco**, cuenta una mano que llega a menos de 0,4 m del botón con más de 1 m/s hacia la pared y moviéndose sobre todo hacia él: rozarlo, pasar la mano despacio o de costado no lo activa. Hay 1,2 s de espera entre golpes. **En modo escritorio** es un clic del mouse a menos de 2 m.
+- `reset-boton`: el botón RESET está apagado hasta juntar los tres fragmentos; ahí se enciende en lila claro con una nota. Golpeado apagado hace un toque sordo y el Glitch avisa «El RESET todavía no enciende: faltan fragmentos», sin consecuencias.
+- `cronometro` (invisible): empieza al primer agarre y se detiene al activar el RESET.
+- `final`: al golpear el RESET suena la rotura y el Glitch dice «Bueno, ganaste. Nos vemos afuera»; se abren 9 grietas finas desde el botón sobre la pantalla y una luz cálida se abre desde ellas. Después de 1,2 s (para leer la frase) la vista se funde despacio hacia esa luz (1,5 s, sin destellos). El jugador aparece al aire libre al amanecer (pasto, montañas, cielo en degradé celeste a durazno y sol bajo), con el paisaje acomodado justo delante de adonde mira, y la vista vuelve (1,5 s) con un acorde que sube.
+- Delante del jugador: la frase «Subiste de nivel, adentro y afuera de la pantalla», la medalla con el tiempo (oro menos de 2 min, plata menos de 3, bronce el resto) y un botón para volver a jugar. En el exterior no se puede caminar más allá de 9 m.
+- **Volver a jugar** (golpear el botón, clic en escritorio o tecla R): reinicia fragmentos, huecos del RESET, niebla, cronómetro, energía, checkpoints, el botón y el ambiente de la sala, **sin recargar la página**, para no cortar la sesión de VR.
+- Después del final la niebla y las caídas se detienen.
+- Todo en `config.js`: `FINAL` (umbral del golpe, tiempos de la transición, medallas, exterior) y colores del exterior.
+
+**Buenas prácticas aplicadas (checklist de la etapa 8):**
+- Golpe deliberado, no accidental: velocidad y dirección mínimas, espera entre golpes, y solo con los tres fragmentos (p. 53–54, 102–103).
+- Transición con fundido lento hacia una luz cálida, sin cortes ni destellos (p. 46, 107).
+- El paisaje exterior es estático y calmo; la frase y la medalla se quedan hasta que el jugador decide volver a jugar.
+- Se puede volver a jugar fácilmente, sin salir de la sesión (heurística de control y libertad, p. 53).
+- Retroalimentación cuando falta algo: toque sordo y aviso del Glitch en vez de no hacer nada (visibilidad del estado, p. 53).
+
+**Problemas que aparecieron y se resolvieron** (en `docs/problemas-resueltos.md`): la niebla de la sala no se restauraba al volver a jugar, y el golpe con el casco no se detectaba por dos errores (la dirección "hacia la pared" y el orden del cálculo de velocidad).
+
+**Verificado en Chrome:**
+- Botón apagado: el golpe no lo activa y aparece el aviso; con los 3 fragmentos se enciende.
+- Golpe con el mouse: grietas 0 → 81 de 81, luz cálida creciendo, fundido, aparición en el exterior; la medalla sale oro con 1:35, plata con 2:30 y bronce con 3:20.
+- Golpe con la mano en un casco simulado: un golpe rápido hacia la pared activa; una pasada lenta, un barrido de costado, un golpe lejos y alejarse rápido no; dos golpes seguidos cuentan uno.
+- Volver a jugar: fragmentos otra vez en la pared, huecos apagados, niebla abajo y quieta, cronómetro en cero, botón apagado y ambiente de la sala restaurado.
+- Visual: se revisaron las grietas, el exterior y la pantalla de resultado. `npm run build` OK.
+
+**Pendiente:**
+- Probar el golpe con controles reales (el umbral de 1 m/s es una estimación, `FINAL.umbralGolpe`).
+- Escuchar los sonidos del final.
+- Ver cuánto tardan personas reales: los tiempos de la medalla (2 y 3 min) se ajustan en `FINAL.medallas`.
