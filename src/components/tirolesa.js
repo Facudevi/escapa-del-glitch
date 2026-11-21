@@ -39,7 +39,7 @@ AFRAME.registerComponent('tirolesa', {
       if (climb.sujetas[mano].agarre === this.el) climb.soltar(mano);
     });
     // No se puede caer mientras dura el recorrido
-    rig.components.caida.protegidoHasta = performance.now() + (this.largo / TIROLESA.velocidad) * 1000 + 800;
+    rig.components.caida.protegidoHasta = performance.now() + (this.largo / TIROLESA.velocidad) * 1000 + TIROLESA.margenProteccion;
 
     deslizar();
     this.deslizando = true;

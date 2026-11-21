@@ -237,6 +237,9 @@ AFRAME.registerComponent('escenario-glitch', {
       }
     };
 
+    // Aviso de seguridad para quien juega con casco (la pantalla de inicio de la página no se ve en VR)
+    colocarCerca({ x: 0, y: 2.1 }, 'Antes de subir: despejá 2 metros a tu alrededor y movete con cuidado', 1.5, 0.6);
+
     // Un cartel de una línea la primera vez que aparece cada tipo de agarre
     const primeros = {
       hunde: datos.agarres.find((a) => a.tipo === 'hunde'),

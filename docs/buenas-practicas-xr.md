@@ -187,6 +187,8 @@ Pide pensar en el bienestar del usuario: límites de uso, descanso, privacidad y
 
 ## 5. Hallazgos de la revisión de las etapas 1 a 4
 
+> Esta tabla es de la revisión inicial. El estado final de todas las prácticas está en `docs/auditoria-final.md`.
+
 | Tema | Estado | Acción |
 |---|---|---|
 | Caída con fundido, sin movimiento | Cumple (p. 46, 107) | — |

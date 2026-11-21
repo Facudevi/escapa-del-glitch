@@ -5,7 +5,7 @@
 // que faltan fragmentos (sin consecuencias).
 //
 // Eventos sobre la escena: 'reset-listo' y 'reset-activado'.
-import { COLORES } from '../config.js';
+import { COLORES, FRAGMENTO } from '../config.js';
 import { golpeSordo, resetListo } from '../sonidos.js';
 
 AFRAME.registerComponent('reset-boton', {
@@ -13,7 +13,7 @@ AFRAME.registerComponent('reset-boton', {
     this.estado = 'apagado'; // 'apagado' | 'listo' | 'activado'
     this.el.addEventListener('golpeado', () => this.alGolpear());
     this.el.sceneEl.addEventListener('fragmento-recogido', (e) => {
-      if (e.detail.total >= 3) this.encender();
+      if (e.detail.total >= FRAGMENTO.total) this.encender();
     });
   },
 

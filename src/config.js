@@ -228,6 +228,7 @@ export const CAIDA = {
   pausaNegro: 150, // ms que se queda en negro antes de reaparecer
   fundidoEntrada: 500, // ms que tarda la vista en volver
   graciaReaparecer: 600, // ms sin poder caer justo después de reaparecer
+  graciaReinicio: 1500, // ms sin poder caer después de volver a jugar
   graciaViaje: 3000, // ms extra sin caer después de un viaje en modo escritorio (para agarrarse)
   toleranciaPiso: 0.05, // altura (m) hasta la que se considera que está parado en el piso
   colorFundido: '#000000',
@@ -277,6 +278,7 @@ export const ESCRITORIO = {
 // Fragmentos: hay uno por tramo; se juntan tocándolos con la mano. Los que la niebla se come aparecen
 // medio escondidos en la plataforma de arriba.
 export const FRAGMENTO = {
+  total: 3, // fragmentos que hay que juntar para encender el RESET
   radio: 0.15, // tamaño del fragmento (m)
   distanciaAlFrente: 0.3, // cuánto sale de la pared (m)
   radioRecoger: 0.45, // distancia (m) de la mano a la que se recoge
@@ -367,6 +369,7 @@ export const TIROLESA = {
   radioCable: 0.03,
   alturaArco: 0.4, // m que se levanta el camino a mitad de recorrido
   curvaZ: 0.35, // m que sale el cable hacia el jugador a mitad de recorrido
+  margenProteccion: 800, // ms extra sin caer después de llegar al checkpoint
   enchufe: { ancho: 0.24, alto: 0.12, profundidad: 0.34 },
 };
 
@@ -389,4 +392,12 @@ export const FINAL = {
     radioLimite: 9, // m: hasta dónde se puede caminar
     densidadNiebla: 0.004,
   },
+};
+
+// Modo fácil: para quien quiere más margen (se elige en la pantalla de inicio o con ?facil=1 en el link).
+// Los números son multiplicadores sobre los valores normales.
+export const FACIL = {
+  factorAlcance: 1.4, // agarrar desde más lejos (JUGADOR.radioAgarre)
+  factorEnergia: 1.6, // la energía de cada mano dura más (ENERGIA.segundosAgarrando)
+  factorNiebla: 0.6, // la niebla sube más despacio (NIEBLA.velocidad)
 };

@@ -122,6 +122,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se implementó la Etapa 9 (Glitch y extras): frases del Glitch con cola y tiempos de espera, tirolesa de cable USB en la torre, música de fondo y volumen general con silencio. Detalle en la entrada "Etapa 9" más abajo.
 
+### Prompt 19 — 2026-11-20
+
+> Seguir Etapa 10
+
+**Respuesta:** se implementó la Etapa 10 (pulido): pantalla de inicio con aviso de seguridad, modo fácil, auditoría final contra el libro y la consigna, guías para las pruebas y la intervención manual, y README final. Detalle en la entrada "Etapa 10" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -383,3 +389,36 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 - **Escuchar todo**: la música, el balance entre efectos y los volúmenes (`SONIDO`, `MUSICA`).
 - Probar B e Y con controles reales.
 - Ver si la tirolesa se siente cómoda en un casco (`TIROLESA.velocidad`).
+
+### 2026-11-20 — Etapa 10: Pulido y auditoría final
+
+**Pedido:** "Seguir Etapa 10": pulido, ajuste de tiempos, README final y el chequeo completo de las prácticas aplicadas, sin incongruencias.
+
+**Resumen de lo hecho:**
+- **Pantalla de inicio** (`pantalla-inicio` + `index.html`): al abrir el link explica de qué se trata, los controles con casco y en la compu, y da un **aviso de seguridad** (2 m libres, movimientos con cuidado, pausas, descansar en una plataforma verde, sin datos personales). Es salteable (botón, Enter, entrar en VR o el primer agarre). Para quien juega con casco, el aviso también está escrito dentro del mundo.
+- **Modo fácil** (`dificultad.js`): más alcance para agarrar (×1,4), la energía dura más (×1,6) y la niebla sube más lenta (×0,6). Se elige en la pantalla de inicio o con `?facil=1` en el link. Cambia valores de `config.js` en vivo, sin tocar el resto del juego.
+- Cartel de descanso en el exterior («tomá agua y descansá la vista un rato»), por el diseño consciente del libro y el espíritu de RESET.
+- Valores que estaban sueltos en los componentes pasaron a `config.js` (el total de fragmentos, tiempos de protección tras reiniciar y tras la tirolesa).
+- **Auditoría final** (`docs/auditoria-final.md`): 56 puntos revisados (checklists por etapa y las diez heurísticas de Nielsen): 40 cumplen y están verificados, 7 cumplen pero falta confirmarlos con casco o personas, 3 están pendientes de prueba real, 4 son parciales y 2 no aplican (con la razón). Incluye los requisitos de la consigna, las incongruencias encontradas con `idea-final.md` y lo que no se pudo verificar.
+- `docs/guia-de-pruebas.md`: protocolo para probar con tres personas (qué decirles, qué medir, preguntas y cómo ajustar `config.js` con lo que se encuentre).
+- `docs/intervencion-manual.md`: cómo hacer y documentar la intervención manual obligatoria, con ideas de bloques y una tabla para completar.
+- **README final** reescrito: cómo se juega, cómo correrlo y probarlo, estructura, configuración, documentación y límites conocidos. `CLAUDE.md` actualizado.
+
+**Buenas prácticas aplicadas (checklist de la etapa 10):**
+- Pantalla de inicio con instrucciones por dispositivo y aviso de seguridad (p. 26–27, 107).
+- Tutorial salteable y modo fácil, para distintos tipos de jugador (p. 47–49, 107).
+- Diseño consciente: sin datos personales, invitación a descansar, sesión corta (p. 158–161).
+- Auditoría con las heurísticas de Nielsen y métricas para medir con personas (p. 53–54, 362).
+
+**Verificado en Chrome:**
+- Pantalla de inicio: se muestra al abrir, el botón de modo fácil cambia alcance, energía y niebla (0,252 m, 11,2 s y 0,06 m/s), Enter la cierra y `?facil=1` activa el modo fácil.
+- Recorrido completo del jugador automático con el juego normal: teclado 9 s, torre 19 s y monitor 28 s, 0 caídas; los fragmentos comidos aparecen arriba, se juntan, el RESET se enciende y se activa; medalla de oro con 1:28; y volver a jugar deja todo como al principio.
+- Rendimiento: 31 llamadas de dibujo, 8.820 triángulos y 156 entidades por cuadro; 0 errores en la consola.
+- Último deploy público exitoso (corresponde al commit de la etapa 9).
+- `npm run build` OK.
+
+**Pendiente (depende del equipo):**
+- Intervención manual del código, con commit antes y después (`docs/intervencion-manual.md`).
+- Probar en un casco y con al menos tres personas, y ajustar `config.js` con lo que encuentren.
+- Escuchar el sonido y ajustar volúmenes.
+- Informe visual 16:9 (Figma y PDF) y exposición de 5 minutos.

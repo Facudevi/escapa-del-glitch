@@ -14,7 +14,7 @@
 // otra, espera su turno (hasta GLITCH.maxEnCola). El cartel flota delante de la cabeza, un poco más arriba
 // de la mirada, con un leve retraso al seguirla (como una interfaz que tiene peso), se dibuja por encima de
 // todo para que siempre se lea y suena un pitido corto y suave.
-import { GLITCH } from '../config.js';
+import { FRAGMENTO, GLITCH } from '../config.js';
 import { blipGlitch } from '../sonidos.js';
 import { crear } from '../utilidades.js';
 
@@ -50,7 +50,7 @@ AFRAME.registerComponent('glitch', {
     escena.addEventListener('checkpoint-alcanzado', (e) => {
       const datos = escena.escalada;
       const fragmentos = escena.components.fragmentos;
-      if (datos && e.detail.orden === datos.checkpoints.length && fragmentos && fragmentos.recogidos < 3) {
+      if (datos && e.detail.orden === datos.checkpoints.length && fragmentos && fragmentos.recogidos < FRAGMENTO.total) {
         this.decir('sinFragmentos');
       }
     });

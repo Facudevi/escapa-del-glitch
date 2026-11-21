@@ -4,7 +4,7 @@
 //
 // Tocar la pulsera con la otra mano pide un escaneo (evento 'escaneo-pedido'). Es interfaz dentro del
 // mundo: no hay HUD pegado a la pantalla.
-import { COLORES, PULSERA } from '../config.js';
+import { COLORES, FRAGMENTO, PULSERA } from '../config.js';
 
 const FUENTE = 'system-ui, "Segoe UI", Roboto, Arial, sans-serif';
 
@@ -72,7 +72,7 @@ AFRAME.registerComponent('pulsera', {
     ctx.globalAlpha = 1;
 
     // Tres fragmentos: llenos los que se juntaron, con borde punteado los que faltan
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < FRAGMENTO.total; i++) {
       const x = 70 + i * 82;
       hexagono(ctx, x, 92, 34);
       if (i < recogidos) {
@@ -92,7 +92,7 @@ AFRAME.registerComponent('pulsera', {
     ctx.font = `bold 78px ${FUENTE}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${recogidos}/3`, 330, 96);
+    ctx.fillText(`${recogidos}/${FRAGMENTO.total}`, 330, 96);
 
     // Barra del escaneo: se llena durante la espera y queda completa cuando está listo
     ctx.fillStyle = COLORES.anilloFondo;

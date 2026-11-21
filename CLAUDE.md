@@ -35,9 +35,11 @@ Experiencia de realidad virtual (touchpoint del festival RESET) hecha con A-Fram
 - Código y comentarios **en español**.
 - **Un componente propio por archivo**, en `src/components/`.
 - **Todos los tiempos, velocidades y colores viven en `src/config.js`**, para ajustarlos al probar. No hardcodear números de juego en los componentes.
-- Estructura: `index.html`, `src/main.js`, `src/config.js`, `src/components/`, `.github/workflows/deploy.yml`.
+- Estructura: `index.html`, `src/main.js`, `src/config.js`, `src/tramos.js` (generador de la pared), `src/decorado.js`, `src/dificultad.js`, `src/sonidos.js`, `src/utilidades.js`, `src/components/`, `.github/workflows/deploy.yml`.
 
 ## Flujo de trabajo
+
+**Estado:** las etapas 1 a 10 están completas. La auditoría final está en `docs/auditoria-final.md`; lo que falta (probar con casco y con personas, la intervención manual y el informe) depende del equipo.
 
 Una etapa por vez (ver sección 7 de `INICIO-PROYECTO.md`): 1 Base, 2 Escalar, 3 Caída y checkpoints, 4 Energía por mano, 5 Agarres especiales, 6 Tramos completos, 7 Fragmentos/pulsera/escaneo/niebla, 8 Final, 9 Glitch y extras, 10 Pulido. Las etapas 1 a 8 son las prioritarias.
 

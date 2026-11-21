@@ -159,7 +159,7 @@ AFRAME.registerComponent('fragmentos', {
       if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
     });
     this.recogidos = 0;
-    [0, 1, 2].forEach((i) => {
+    Array.from({ length: FRAGMENTO.total }, (_, i) => i).forEach((i) => {
       const hueco = document.querySelector(`#reset-hueco-${i}`);
       if (hueco) {
         hueco.setAttribute('material', `color: ${COLORES.hueco}; emissive: ${COLORES.hueco}; emissiveIntensity: 0; roughness: 1; metalness: 0`);

@@ -139,6 +139,11 @@ AFRAME.registerComponent('final', {
       cartel: 'texto: Volver a jugar (golpealo, o tecla R); ancho: 1.5; alto: 0.5',
       position: '1.6 1.65 -2.2',
     });
+    // Diseño consciente: RESET habla de bienestar, así que el final también invita a descansar
+    crear(this.grupo, 'a-entity', {
+      cartel: 'texto: Antes de seguir: tomá agua y descansá la vista un rato; ancho: 1.6; alto: 0.6',
+      position: '-1.7 1.4 -2.2',
+    });
   },
 
   // Medalla según el tiempo: oro menos de 2 min, plata menos de 3 min, bronce el resto
@@ -290,7 +295,7 @@ AFRAME.registerComponent('final', {
     caida.ultimo = null;
     caida.estado = 'normal';
     caida.sinApoyo = 0;
-    caida.protegidoHasta = performance.now() + 1500;
+    caida.protegidoHasta = performance.now() + CAIDA.graciaReinicio;
     rig.components.energia.recargar();
     ['fragmentos', 'niebla', 'cronometro', 'glitch'].forEach((nombre) => {
       const componente = this.escena.components[nombre];
