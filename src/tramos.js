@@ -8,7 +8,7 @@
 //   3. Se ubican los fragmentos (el del tramo 1 en el camino, los demás a un costado, con un desvío)
 //      y se endurece la zona que los rodea.
 // La misma semilla da siempre la misma pared, así todos prueban lo mismo.
-import { ESCENARIO } from './config.js';
+import { ESCENARIO, TIROLESA } from './config.js';
 
 // Generador de números al azar con semilla (mulberry32)
 function crearAzar(semilla) {
@@ -194,6 +194,43 @@ export function generarEscalada() {
     }
   });
 
+  // 4. Tirolesa: el enchufe del cable USB, en lo alto de la torre, en un lugar libre a un costado
+  let tirolesa = null;
+  const torre = tramos[1];
+  if (torre) {
+    const libreParaEnchufe = (x, y) =>
+      !agarres.some((a) => distancia(a, { x, y }) < 0.9) &&
+      !paneles.some((p) => Math.abs(p.x - x) < 1.1 && Math.abs(p.y - y) < 0.85) &&
+      !fragmentos.some((f) => distancia(f, { x, y }) < 1.1);
+    busqueda: for (const dy of [0, 0.3, -0.3, 0.6, -0.6, 0.9, -0.9]) {
+      for (const lado of [1, -1]) {
+        const x = lado * TIROLESA.x;
+        const y = torre.y1 - TIROLESA.altoBajoCheckpoint + dy;
+        if (libreParaEnchufe(x, y)) {
+          tirolesa = { x, y, lado };
+          break busqueda;
+        }
+      }
+    }
+
+    // Lugar para el cartel que explica la tirolesa, hacia el centro de la pared. Se despejan los agarres
+    // de más que estén ahí; si hay un agarre de la ruta o un panel, se prueba otra altura.
+    if (tirolesa) {
+      const cartelX = tirolesa.x - tirolesa.lado * 1.5;
+      for (const dy of [0, -0.7, 0.7, -1.4, 1.4]) {
+        const y = tirolesa.y + dy;
+        const tapa = (a) => Math.abs(a.x - cartelX) < 0.85 && Math.abs(a.y - y) < 0.45;
+        const estorba = agarres.some((a) => (a.ruta || a.desvio) && tapa(a)) ||
+          paneles.some((p) => Math.abs(p.x - cartelX) < 1.4 && Math.abs(p.y - y) < 0.9) ||
+          checkpoints.some((c) => Math.abs(c.y - y) < 0.5);
+        if (estorba) continue;
+        for (let i = agarres.length - 1; i >= 0; i--) if (tapa(agarres[i])) agarres.splice(i, 1);
+        tirolesa.cartel = { x: cartelX, y };
+        break;
+      }
+    }
+  }
+
   agarres.sort((a, b) => a.y - b.y);
-  return { agarres, paneles, fragmentos, checkpoints, tramos, alturaFinal, alturaTotal: tope };
+  return { agarres, paneles, fragmentos, checkpoints, tramos, tirolesa, alturaFinal, alturaTotal: tope };
 }

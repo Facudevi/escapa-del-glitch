@@ -47,6 +47,8 @@ export const COLORES = {
   niebla: '#b9a6dc', // niebla de píxeles: lila suave
   nieblaPixel: '#a08ccf',
   onda: '#8fc3e6', // onda del escaneo
+  cable: '#9a98b8', // cable USB de la tirolesa
+  enchufe: '#c9cdd8',
 
   // Exterior al amanecer
   cielo: ['#8fb4de', '#bcd4ea', '#f3d9b8', '#f6c5a0'], // de arriba (celeste) a la línea del horizonte (durazno)
@@ -334,11 +336,38 @@ export const GLITCH = {
   alturaExtra: 0.3, // m por encima de la mirada
   suavizado: 4, // cuánto sigue a la cabeza (más alto = más rápido)
   espera: 8, // s mínimos antes de repetir la misma frase
+  esperaPorFrase: { quieto: 45, niebla: 15 }, // tiempos de espera propios de algunas frases (s)
+  quietoSegundos: 25, // s sin moverse (después del primer agarre) para que el Glitch comente
+  maxEnCola: 2, // frases que pueden esperar su turno mientras se muestra otra
   frases: {
     comido: ['Ñam, este te lo escondo arriba'],
+    caida: ['Ese agarre no te quería'],
+    quieto: ['¿Te tomaste un cooldown?'],
+    sinFragmentos: ['¿No te olvidaste de algo?'],
+    niebla: ['La niebla te alcanzó: volvé a subir'],
     reset: ['Bueno, ganaste. Nos vemos afuera'],
     faltan: ['El RESET todavía no enciende: faltan fragmentos'],
   },
+};
+
+// Música de fondo: acordes suaves que cambian despacio.
+export const MUSICA = {
+  volumen: 1.1, // relativo al volumen general de SONIDO
+  segundosPorAcorde: 8,
+  ataque: 2.5, // s que tarda cada acorde en subir
+  cola: 3, // s extra que tarda en apagarse
+  teclaSilencio: 'KeyM', // en modo escritorio; con casco, botón B o Y
+};
+
+// Tirolesa: un cable USB en lo alto de la torre que lleva solo hasta el segundo checkpoint.
+export const TIROLESA = {
+  velocidad: 1.5, // m/s, constante (sin aceleraciones, para no marear)
+  altoBajoCheckpoint: 2.1, // m por debajo del checkpoint donde está el enchufe
+  x: 2.2, // m: a qué distancia de la columna central está (se busca un lugar libre)
+  radioCable: 0.03,
+  alturaArco: 0.4, // m que se levanta el camino a mitad de recorrido
+  curvaZ: 0.35, // m que sale el cable hacia el jugador a mitad de recorrido
+  enchufe: { ancho: 0.24, alto: 0.12, profundidad: 0.34 },
 };
 
 // Final: el botón RESET, la rotura de la pantalla, el exterior al amanecer y la medalla.

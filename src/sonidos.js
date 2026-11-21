@@ -1,8 +1,44 @@
 // Sonidos simples sintetizados con la Web Audio API: no hay archivos de audio que cargar.
 // Todos son suaves y cortos. Si el navegador no permite audio, no pasa nada.
-import { SONIDO } from './config.js';
+import { MUSICA, SONIDO } from './config.js';
 
 let contexto = null;
+let maestro = null; // volumen general: todos los sonidos pasan por acá, así se pueden silenciar juntos
+let mudo = false;
+
+try {
+  mudo = window.localStorage.getItem('glitch-silencio') === '1'; // se recuerda la elección (si el navegador lo permite)
+} catch (error) {
+  mudo = false;
+}
+
+// Salida común de todos los sonidos
+function salida(ctx) {
+  if (!maestro) {
+    maestro = ctx.createGain();
+    maestro.gain.value = mudo ? 0 : 1;
+    maestro.connect(ctx.destination);
+  }
+  return maestro;
+}
+
+// ¿Está todo silenciado?
+export function estaSilenciado() {
+  return mudo;
+}
+
+// Silencia o devuelve el sonido de todo el juego (efectos y música). Devuelve el nuevo estado.
+export function alternarSilencio() {
+  mudo = !mudo;
+  const ctx = audio();
+  if (ctx) salida(ctx).gain.value = mudo ? 0 : 1;
+  try {
+    window.localStorage.setItem('glitch-silencio', mudo ? '1' : '0');
+  } catch (error) {
+    // no se pudo guardar: solo vale para esta visita
+  }
+  return mudo;
+}
 
 // El contexto de audio se crea al primer uso (los navegadores lo habilitan tras un gesto del usuario)
 function audio() {
@@ -30,7 +66,7 @@ function tono(frecuencia, duracion, tipo = 'sine', volumen = 1) {
   oscilador.frequency.setValueAtTime(frecuencia, ahora);
   ganancia.gain.setValueAtTime(SONIDO.volumen * volumen, ahora);
   ganancia.gain.exponentialRampToValueAtTime(0.0001, ahora + duracion);
-  oscilador.connect(ganancia).connect(ctx.destination);
+  oscilador.connect(ganancia).connect(salida(ctx));
   oscilador.start(ahora);
   oscilador.stop(ahora + duracion);
 }
@@ -53,7 +89,7 @@ function ruido(duracion, frecuenciaFiltro, volumen = 1) {
   filtro.frequency.setValueAtTime(frecuenciaFiltro, ahora);
   ganancia.gain.setValueAtTime(SONIDO.volumen * volumen, ahora);
   ganancia.gain.exponentialRampToValueAtTime(0.0001, ahora + duracion);
-  fuente.connect(filtro).connect(ganancia).connect(ctx.destination);
+  fuente.connect(filtro).connect(ganancia).connect(salida(ctx));
   fuente.start(ahora);
 }
 
@@ -116,7 +152,7 @@ export function crearZumbido(frecuencias, volumen, distanciaMax) {
       o.connect(ganancia);
       return o;
     });
-    ganancia.connect(panner).connect(ctx.destination);
+    ganancia.connect(panner).connect(salida(ctx));
     lfo.start();
     osciladores.forEach((o) => o.start());
 
@@ -194,4 +230,69 @@ export function roturaPantalla() {
 // Amanecer: un acorde que sube despacio
 export function amanecer() {
   [392, 523, 659, 784].forEach((f, i) => setTimeout(() => tono(f, 1.6, 'sine', 0.6), i * 220));
+}
+
+// Frase del Glitch: un pitido digital corto y suave
+export function blipGlitch() {
+  tono(740, 0.07, 'square', 0.25);
+  setTimeout(() => tono(555, 0.09, 'square', 0.2), 70);
+}
+
+// Deslizarse por el cable: un soplido suave
+export function deslizar() {
+  ruido(1.4, 600, 0.5);
+}
+
+// Música tranquila de fondo: acordes suaves que cambian despacio (la y fa mayor séptima, do y sol con sexta)
+const ACORDES = [
+  [220.0, 261.63, 329.63, 392.0],
+  [174.61, 220.0, 261.63, 329.63],
+  [261.63, 329.63, 392.0, 493.88],
+  [196.0, 246.94, 293.66, 392.0],
+];
+let musicaActiva = false;
+let acordeActual = 0;
+
+function tocarAcorde() {
+  const ctx = audio();
+  if (!ctx || ctx.state !== 'running') return; // todavía no hay un gesto del usuario: se reintenta
+  const ahora = ctx.currentTime;
+  const duracion = MUSICA.segundosPorAcorde + MUSICA.cola;
+  const acorde = ACORDES[acordeActual % ACORDES.length];
+  acordeActual += 1;
+
+  const filtro = ctx.createBiquadFilter();
+  filtro.type = 'lowpass';
+  filtro.frequency.value = 900;
+  filtro.connect(salida(ctx));
+  acorde.forEach((frecuencia, i) => {
+    const oscilador = ctx.createOscillator();
+    const ganancia = ctx.createGain();
+    oscilador.type = 'sine';
+    oscilador.frequency.value = frecuencia;
+    oscilador.detune.value = (i - 1.5) * 4; // un poco desafinadas entre sí, para que suene más cálido
+    const pico = (SONIDO.volumen * MUSICA.volumen) / acorde.length;
+    ganancia.gain.setValueAtTime(0.0001, ahora);
+    ganancia.gain.linearRampToValueAtTime(pico, ahora + MUSICA.ataque);
+    ganancia.gain.linearRampToValueAtTime(0.0001, ahora + duracion);
+    oscilador.connect(ganancia).connect(filtro);
+    oscilador.start(ahora);
+    oscilador.stop(ahora + duracion + 0.1);
+  });
+}
+
+// Empieza la música (una sola vez). Si todavía no se puede reproducir, reintenta cada acorde.
+export function iniciarMusica() {
+  if (musicaActiva) return;
+  const ctx = audio();
+  if (!ctx) return;
+  musicaActiva = true;
+  if (ctx.state === 'running') tocarAcorde();
+  else ctx.resume().then(tocarAcorde).catch(() => {}); // arranca en cuanto el navegador lo permite
+  setInterval(tocarAcorde, MUSICA.segundosPorAcorde * 1000);
+}
+
+// Estado del audio, para diagnóstico: { contexto: 'running' | 'suspended' | null, musica, silenciado }
+export function estadoDeAudio() {
+  return { contexto: contexto ? contexto.state : null, musica: musicaActiva, silenciado: mudo };
 }

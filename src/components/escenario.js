@@ -6,7 +6,7 @@
 //
 // Deja los datos de la escalada en escena.escalada (agarres, paneles, fragmentos, checkpoints) para que
 // los usen las etapas siguientes (fragmentos, niebla, tirolesa).
-import { COLORES, ESCENARIO, INTERMITENTE, LATA, PANEL } from '../config.js';
+import { COLORES, ESCENARIO, INTERMITENTE, LATA, PANEL, TIROLESA } from '../config.js';
 import { crearBase, crearMonitor, crearTeclado, crearTorre } from '../decorado.js';
 import { generarEscalada } from '../tramos.js';
 import { crear } from '../utilidades.js';
@@ -43,6 +43,9 @@ AFRAME.registerComponent('escenario-glitch', {
 
     // Paneles que giran, con dos teclas firmes en la cara frontal
     datos.paneles.forEach((p) => this.crearPanel(p));
+
+    // Tirolesa: un cable USB en lo alto de la torre que lleva hasta el segundo checkpoint
+    this.crearTirolesa(datos, zFrente);
 
     // Checkpoints: la zona del piso de inicio y una plataforma al final de cada tramo
     crear(escena, 'a-entity', {
@@ -123,6 +126,45 @@ AFRAME.registerComponent('escenario-glitch', {
     });
   },
 
+  // Enchufe USB en la pared (un agarre especial) y el cable que sale de él hasta el segundo checkpoint
+  crearTirolesa(datos, zFrente) {
+    const t = datos.tirolesa;
+    if (!t) return;
+    const E = TIROLESA.enchufe;
+    const zEnchufe = zFrente + E.profundidad / 2 - 0.05;
+    const enchufe = crear(this.el, 'a-box', {
+      agarre: 'tipo: tirolesa',
+      tirolesa: '',
+      position: `${t.x.toFixed(3)} ${t.y.toFixed(3)} ${zEnchufe.toFixed(3)}`,
+      width: E.ancho,
+      height: E.alto,
+      depth: E.profundidad,
+      color: COLORES.enchufe,
+      material: 'roughness: 0.6; metalness: 0',
+    });
+    // Lengüeta del conector
+    crear(enchufe, 'a-box', {
+      position: `0 0 ${E.profundidad / 2 + 0.05}`,
+      width: E.ancho * 0.65,
+      height: E.alto * 0.4,
+      depth: 0.12,
+      color: COLORES.cable,
+      material: 'roughness: 0.8; metalness: 0',
+    });
+
+    // Cable: baja en curva desde el enchufe hasta el borde del checkpoint
+    const checkpoint = datos.checkpoints[1];
+    const inicio = new THREE.Vector3(t.x, t.y + E.alto / 2, zEnchufe - 0.05);
+    const fin = new THREE.Vector3(t.x * 0.45, checkpoint.y - 0.06, zFrente + 0.45);
+    const control = inicio.clone().lerp(fin, 0.5).add(new THREE.Vector3(0, -0.5, TIROLESA.curvaZ));
+    const curva = new THREE.QuadraticBezierCurve3(inicio, control, fin);
+    const cable = new THREE.Mesh(
+      new THREE.TubeGeometry(curva, 28, TIROLESA.radioCable, 6, false),
+      new THREE.MeshStandardMaterial({ color: COLORES.cable, roughness: 0.9, metalness: 0 })
+    );
+    crear(this.el, 'a-entity').setObject3D('cable', cable);
+  },
+
   // Botón RESET apagado y los tres huecos de los fragmentos, arriba de todo. Se ven desde el principio
   // como referencia de adónde ir. Las etapas 7 y 8 los encienden.
   crearReset(datos, zFrente) {
@@ -180,10 +222,12 @@ AFRAME.registerComponent('escenario-glitch', {
       Math.abs(x) <= ESCENARIO.anchoPared / 2 - ancho / 2 - 0.1 &&
       !datos.agarres.some((a) => Math.abs(a.x - x) < ancho / 2 + 0.25 && Math.abs(a.y - y) < alto / 2 + 0.15) &&
       !datos.paneles.some((p) => Math.abs(p.x - x) < ancho / 2 + 0.85 && Math.abs(p.y - y) < alto / 2 + 0.65) &&
-      !datos.checkpoints.some((c) => Math.abs(c.y - y) < alto / 2 + 0.25);
+      !datos.checkpoints.some((c) => Math.abs(c.y - y) < alto / 2 + 0.25) &&
+      // Tampoco encima del enchufe de la tirolesa
+      !(datos.tirolesa && Math.abs(datos.tirolesa.x - x) < ancho / 2 + 0.35 && Math.abs(datos.tirolesa.y - y) < alto / 2 + 0.25);
     const colocarCerca = (origen, texto, ancho = 1.1, alto = 0.5) => {
       // Se prefiere un lugar a la misma altura o un poco más abajo, para que se lea antes de llegar
-      for (const dy of [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1]) {
+      for (const dy of [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1, -2.8, 2.8]) {
         for (const dx of [1.5, -1.5, 0.9, -0.9, 2.1, -2.1]) {
           if (libre(origen.x + dx, origen.y + dy, ancho, alto)) {
             poner(origen.x + dx, origen.y + dy, texto, ancho, alto);
@@ -203,6 +247,11 @@ AFRAME.registerComponent('escenario-glitch', {
     Object.entries(primeros).forEach(([tipo, origen]) => {
       if (origen) colocarCerca(origen, CARTELES_POR_TIPO[tipo]);
     });
+
+    // La tirolesa: el cartel se pone junto al enchufe
+    if (datos.tirolesa && datos.tirolesa.cartel) {
+      poner(datos.tirolesa.cartel.x, datos.tirolesa.cartel.y, 'Un cable USB: agarrá el enchufe y te lleva solo hasta el checkpoint', 1.4, 0.6);
+    }
 
     // Fragmentos, escaneo y niebla, cerca del principio
     colocarCerca({ x: 0, y: 2.4 }, 'Juntá un fragmento por tramo. Para escanear: tocá la pulsera, apretá A o X (en la compu, la tecla E)', 1.5, 0.75);

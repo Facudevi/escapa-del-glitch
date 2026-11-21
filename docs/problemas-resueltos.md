@@ -98,3 +98,10 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** había dos errores a la vez. Primero, la dirección «hacia la pared» se calculaba con la orientación del propio botón, que está girado 90° para que su cara mire al jugador, así que apuntaba para arriba. Segundo, la posición anterior de la mano se actualizaba antes de calcular la velocidad, y la velocidad daba siempre cero.
 - **Solución:** se usa la orientación del objeto que contiene al botón y se calcula la velocidad antes de guardar la posición nueva. Se probó con golpes rápidos, pasadas lentas, barridos laterales, golpes lejanos y dobles golpes.
 - **Aprendizaje:** una detección por movimiento necesita pruebas con casos que deben activarse y casos que no.
+
+## 14. El cartel de la tirolesa quedaba encima del enchufe
+
+- **Qué pasó:** el cartel que explica la tirolesa tapaba el enchufe que explicaba.
+- **Por qué:** al buscar un lugar libre para el cartel no se consideraba el enchufe, y además la pared tiene tantos agarres que casi no queda espacio.
+- **Solución:** el generador, que ya elige el lugar del enchufe, reserva un hueco para el cartel hacia el centro de la pared y despeja ahí los agarres que sobran (nunca los de la ruta).
+- **Aprendizaje:** el espacio para los carteles hay que reservarlo al diseñar la pared, no buscarlo después.

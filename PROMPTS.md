@@ -116,6 +116,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se implementó la Etapa 8 (final): botón RESET, rotura de la pantalla, exterior al amanecer, frase, medalla y volver a jugar. Detalle en la entrada "Etapa 8" más abajo.
 
+### Prompt 18 — 2026-11-20
+
+> Bien, seguir Etapa 9
+
+**Respuesta:** se implementó la Etapa 9 (Glitch y extras): frases del Glitch con cola y tiempos de espera, tirolesa de cable USB en la torre, música de fondo y volumen general con silencio. Detalle en la entrada "Etapa 9" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -340,3 +346,40 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 - Probar el golpe con controles reales (el umbral de 1 m/s es una estimación, `FINAL.umbralGolpe`).
 - Escuchar los sonidos del final.
 - Ver cuánto tardan personas reales: los tiempos de la medalla (2 y 3 min) se ajustan en `FINAL.medallas`.
+
+### 2026-11-20 — Etapa 9: Glitch y extras
+
+**Pedido:** "Bien, seguir Etapa 9": frases del Glitch, tirolesa y sonidos.
+
+**Resumen de lo hecho:**
+- **Frases del Glitch** (`glitch`): ya dice una en cada momento puntual del diseño.
+  - Caída: «Ese agarre no te quería».
+  - Quedarse quieto: «¿Te tomaste un cooldown?» (a los 25 s sin moverse, solo después del primer agarre).
+  - Llegar arriba sin los tres fragmentos: «¿No te olvidaste de algo?».
+  - Comerse un fragmento: «Ñam, este te lo escondo arriba».
+  - Romper el RESET: «Bueno, ganaste. Nos vemos afuera».
+  - Extras: cuando la niebla lo alcanza («La niebla te alcanzó: volvé a subir») y al golpear el RESET apagado.
+  - Cada frase tiene su tiempo de espera para no repetirse (8 s en general; 45 s la de quedarse quieto). Si llegan dos juntas, la segunda espera su turno (hasta 2 en cola). Cada una suena con un pitido corto y suave.
+- **Tirolesa** (`tirolesa`): un enchufe USB gris en lo alto de la torre, a un costado, con un cable en curva que llega hasta el segundo checkpoint. Quien se agarra del enchufe se desliza solo hasta ahí, a **1,5 m/s constante** (por longitud de arco), sin aceleraciones, en unos 2,8 s. No se puede caer durante el recorrido. Es una alternativa a subir el tramo completo. El generador busca un lugar libre y reserva uno para su cartel.
+- **Sonidos y audio general** (`sonidos.js`, `audio-juego`):
+  - Todo pasa por un volumen general: se puede **silenciar con la tecla M** (o el botón B o Y del control) y aparece un aviso. La elección se recuerda en el navegador.
+  - **Música tranquila de fondo**: cuatro acordes suaves que cambian cada 8 s, sintetizados; arranca con el primer gesto del jugador.
+  - Más sonidos: pitido del Glitch y soplido de la tirolesa. Ya estaban el clic al agarrar, el crujido y la rotura de la lata, el brillo espacial de los fragmentos, la campanita al juntar, el golpe y rotura del RESET y el acorde del amanecer.
+- Todo en `config.js`: `GLITCH` (frases y tiempos), `MUSICA` y `TIROLESA`.
+
+**Buenas prácticas aplicadas (checklist de la etapa 9):**
+- Frases cortas, legibles (cartel por encima de todo, con retraso al seguir la cabeza) y con tiempo de espera (p. 109, 53).
+- Tirolesa a velocidad constante, sin aceleraciones (p. 107).
+- Sonidos suaves y de volumen parejo, con posibilidad de silenciar (p. 152) y aviso del estado (p. 53).
+- Una alternativa en la torre para quien no quiere o no puede subir todo el tramo (inclusión, p. 47–49).
+
+**Verificado en Chrome (reloj del juego avanzado a mano):**
+- Tirolesa: el paso por cuadro es idéntico en todo el recorrido (0,024 m, mínimo igual a máximo); llega al checkpoint 2 sin caerse y se puede repetir.
+- Frases: cada momento dispara la suya; la niebla habla por ella y no se suma la de caída; las que llegan juntas se encolan y salen una detrás de otra; no se repiten dentro de su tiempo de espera; la de quedarse quieto no sale antes del primer agarre, sale a los 26 s y no se repite antes de 45 s.
+- Audio: la música arranca con el primer gesto; M, B e Y silencian y reactivan, muestran el aviso y se guardan; el contexto de audio queda en marcha.
+- `npm run build` OK.
+
+**Pendiente:**
+- **Escuchar todo**: la música, el balance entre efectos y los volúmenes (`SONIDO`, `MUSICA`).
+- Probar B e Y con controles reales.
+- Ver si la tirolesa se siente cómoda en un casco (`TIROLESA.velocidad`).
