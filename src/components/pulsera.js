@@ -1,10 +1,11 @@
-// Pulsera en la muñeca izquierda: muestra cuántos fragmentos lleva el jugador (0/3) durante toda la
-// partida y, con una barra, cuánto falta para poder volver a usar el escaneo. Va en la entidad de la
-// mano izquierda (junto a mano-guante).
+// Reloj de pulsera en la muñeca izquierda: una correa, una caja redonda con la esfera (el contador y un arco
+// de espera del escaneo) y, flotando sobre la mano, un panel grande con lo mismo para leerlo bien: cuántos
+// fragmentos lleva el jugador (0/3) durante toda la partida y, con una barra, cuánto falta para poder volver
+// a usar el escaneo. Va en la entidad de la mano izquierda (junto a mano-guante).
 //
 // Tocar la pulsera con la otra mano pide un escaneo (evento 'escaneo-pedido'). Es interfaz dentro del
 // mundo: no hay HUD pegado a la pantalla.
-import { COLORES, FRAGMENTO, PULSERA } from '../config.js';
+import { COLORES, FRAGMENTO, JUGADOR, PULSERA } from '../config.js';
 
 const FUENTE = 'system-ui, "Segoe UI", Roboto, Arial, sans-serif';
 
@@ -35,16 +36,37 @@ AFRAME.registerComponent('pulsera', {
     );
     this.panel.position.set(...PULSERA.desplazamiento);
 
-    // La banda alrededor de la muñeca
-    this.banda = new THREE.Mesh(
-      new THREE.TorusGeometry(0.05, 0.012, 8, 24),
-      new THREE.MeshBasicMaterial({ color: COLORES.lavanda })
-    );
-    this.banda.rotation.x = Math.PI / 2;
-    this.banda.position.set(0, 0, 0.07);
+    // Reloj en la muñeca: correa alrededor de la manga, caja redonda en el dorso de la mano y una esfera
+    // con el contador. En la mano izquierda, el dorso mira hacia -x y la muñeca queda hacia +z.
+    const z = 0.0545;
+    const correa = new THREE.MeshStandardMaterial({ color: COLORES.lavanda, roughness: 0.7 });
+    const carcasa = new THREE.MeshStandardMaterial({ color: '#4a4666', roughness: 0.4, metalness: 0.5 });
+    this.canvasReloj = document.createElement('canvas');
+    this.canvasReloj.width = this.canvasReloj.height = 128;
+    this.texturaReloj = new THREE.CanvasTexture(this.canvasReloj);
+    this.texturaReloj.colorSpace = THREE.SRGBColorSpace;
+
+    this.reloj = new THREE.Group();
+    this.reloj.scale.setScalar(JUGADOR.mano.escala); // acompaña el tamaño de la mano
+    this.reloj.add(new THREE.Mesh(new THREE.TorusGeometry(0.043, 0.008, 8, 28), correa).translateZ(z));
+    const caja = new THREE.Mesh(new THREE.CylinderGeometry(0.029, 0.029, 0.014, 24), carcasa);
+    caja.rotation.z = Math.PI / 2;
+    caja.position.set(-0.053, 0, z);
+    this.reloj.add(caja);
+    const bisel = new THREE.Mesh(new THREE.TorusGeometry(0.027, 0.004, 8, 24), new THREE.MeshStandardMaterial({ color: COLORES.violeta, roughness: 0.5 }));
+    bisel.rotation.y = Math.PI / 2;
+    bisel.position.set(-0.0605, 0, z);
+    this.reloj.add(bisel);
+    this.esfera = new THREE.Mesh(new THREE.CircleGeometry(0.0235, 28), new THREE.MeshBasicMaterial({ map: this.texturaReloj }));
+    this.esfera.rotation.y = -Math.PI / 2;
+    this.esfera.position.set(-0.0612, 0, z);
+    this.reloj.add(this.esfera);
+    const corona = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.008, 0.012), carcasa);
+    corona.position.set(-0.05, 0, z - 0.03);
+    this.reloj.add(corona);
 
     this.grupo = new THREE.Group();
-    this.grupo.add(this.panel, this.banda);
+    this.grupo.add(this.panel, this.reloj);
     this.el.setObject3D('pulsera', this.grupo);
 
     this.escena = this.el.sceneEl;
@@ -55,6 +77,31 @@ AFRAME.registerComponent('pulsera', {
     this.posPanel = new THREE.Vector3();
     this.posMano = new THREE.Vector3();
     this.posCamara = new THREE.Vector3();
+  },
+
+  // Esfera del reloj: arco con la espera del escaneo y el contador de fragmentos
+  dibujarReloj(recogidos, barra) {
+    const ctx = this.canvasReloj.getContext('2d');
+    const w = 128;
+    ctx.fillStyle = COLORES.cartelFondo;
+    ctx.fillRect(0, 0, w, w);
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = 'rgba(211, 201, 234, 0.25)';
+    ctx.beginPath();
+    ctx.arc(64, 64, 52, 0, Math.PI * 2);
+    ctx.stroke();
+    if (barra > 0.01) {
+      ctx.strokeStyle = COLORES.celeste;
+      ctx.beginPath();
+      ctx.arc(64, 64, 52, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(barra, 1));
+      ctx.stroke();
+    }
+    ctx.fillStyle = recogidos >= FRAGMENTO.total ? COLORES.fragmentoBrillo : COLORES.cartelTexto;
+    ctx.font = `bold 46px ${FUENTE}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${recogidos}/${FRAGMENTO.total}`, 64, 66);
+    this.texturaReloj.needsUpdate = true;
   },
 
   dibujar(recogidos, barra) {
@@ -118,6 +165,7 @@ AFRAME.registerComponent('pulsera', {
     if (recogidos !== this.ultimo.recogidos || barra !== this.ultimo.barra) {
       this.ultimo = { recogidos, barra };
       this.dibujar(recogidos, barra);
+      this.dibujarReloj(recogidos, barra);
     }
 
     // El panel mira a la cabeza para que se lea de frente
@@ -144,8 +192,13 @@ AFRAME.registerComponent('pulsera', {
     this.el.removeObject3D('pulsera');
     this.panel.geometry.dispose();
     this.panel.material.dispose();
-    this.banda.geometry.dispose();
-    this.banda.material.dispose();
+    this.reloj.traverse((m) => {
+      if (m.isMesh) {
+        m.geometry.dispose();
+        m.material.dispose();
+      }
+    });
     this.textura.dispose();
+    this.texturaReloj.dispose();
   },
 });

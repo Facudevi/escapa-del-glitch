@@ -147,7 +147,7 @@ Es un juego muy liviano para el casco. El jugador automático no duda ni busca, 
 | Requisito | Estado |
 |---|---|
 | Entorno 3D navegable: piso, límites y ambientación | ✅ |
-| Al menos 3 objetos 3D con intención espacial | ✅ (teclas, plataformas, guantes, paneles, botón RESET, cable, fragmentos) |
+| Al menos 3 objetos 3D con intención espacial | ✅ (teclas, pisos de los escalones, manos con dedos, paneles, botón RESET, cable, fragmentos, medalla) |
 | Al menos 1 mecánica central funcional | ✅ (escalar con los brazos) |
 | Ejecutable en el navegador por un link | ✅ (GitHub Pages, último deploy exitoso) |
 | Preparado para modo VR | ✅ ⏳ (falta probarlo en un casco) |

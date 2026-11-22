@@ -20,6 +20,7 @@ AFRAME.registerComponent('agarre', {
     this.alAlcance = {}; // manos (o el mouse) que lo tienen al alcance
     this.disponible = true;
     this.el.classList.add('agarre');
+    this.el.addEventListener('object3dset', () => this.actualizarBrillo()); // brillo base apenas se dibuja
 
     this.el.addEventListener('agarrado', (e) => (this.manos[e.detail.mano] = true));
     this.el.addEventListener('soltado', (e) => delete this.manos[e.detail.mano]);
@@ -61,6 +62,6 @@ AFRAME.registerComponent('agarre', {
     if (!material || !material.emissive) return;
     const resaltado = this.disponible && Object.keys(this.alAlcance).length > 0;
     material.emissive.copy(material.color);
-    material.emissiveIntensity = resaltado ? RESALTADO.intensidad : 0;
+    material.emissiveIntensity = resaltado ? RESALTADO.intensidad : RESALTADO.base;
   },
 });

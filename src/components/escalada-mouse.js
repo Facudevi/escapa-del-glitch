@@ -130,6 +130,7 @@ AFRAME.registerComponent('escalada-mouse', {
     mano.emit('mano-agarra', { mano: nombre });
 
     if (!rig.components.climb.sujetas[nombre]) {
+      mano.emit('mano-suelta', { mano: nombre }); // no agarró nada: la mano vuelve a abrirse
       this.ponerEnReposo(nombre);
       return;
     }

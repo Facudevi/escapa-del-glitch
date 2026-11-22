@@ -29,6 +29,6 @@ import './components/golpeable.js';
 import './components/reset-boton.js';
 import './components/cronometro.js';
 import './components/final.js';
-import './components/tirolesa.js';
+import './components/ascenso.js';
 import './components/audio-juego.js';
 import './components/pantalla-inicio.js';

@@ -16,7 +16,8 @@
 // Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-recogido' { tramo, total } y
 // 'fragmentos-revelados'. Escucha 'niebla-termino' para esconder arriba los fragmentos comidos.
 // Para otros componentes: recogidos, lista, marcar(tramo, ms), comer(tramo, reubicar) y revelar().
-import { COLORES, ESCENARIO, FRAGMENTO } from '../config.js';
+import { COLORES, FRAGMENTO } from '../config.js';
+import { frenteTramo } from '../utilidades.js';
 import { actualizarOyente, crearZumbido, fragmentoRecogido } from '../sonidos.js';
 
 // Textura de brillo suave: un círculo que se desvanece hacia los bordes
@@ -50,9 +51,7 @@ AFRAME.registerComponent('fragmentos', {
 
   construir() {
     const datos = this.el.escalada;
-    const zFrente = ESCENARIO.z + ESCENARIO.profundidadPared / 2;
     this.alturaFinal = datos.alturaFinal;
-    this.zFrente = zFrente;
 
     datos.fragmentos.forEach((f) => {
       const grupo = new THREE.Group();
@@ -76,7 +75,7 @@ AFRAME.registerComponent('fragmentos', {
       halo.position.z = -0.03;
       grupo.add(prisma, halo);
 
-      const z = zFrente + FRAGMENTO.distanciaAlFrente;
+      const z = frenteTramo(f.tramo) + FRAGMENTO.distanciaAlFrente;
       grupo.position.set(f.x, f.y, z);
       this.el.object3D.add(grupo);
 
@@ -151,6 +150,7 @@ AFRAME.registerComponent('fragmentos', {
       f.tramoActual = refugio.tramo;
       f.x = refugio.sitio.x;
       f.y = refugio.sitio.y;
+      f.z = frenteTramo(refugio.tramo) + FRAGMENTO.distanciaAlFrente;
       f.grupo.position.set(f.x, f.y, f.z);
       if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
       this.el.emit('fragmento-comido', { tramo, destino: 'tramo' }, false);
@@ -191,7 +191,7 @@ AFRAME.registerComponent('fragmentos', {
       f.reubicaciones = 0;
       f.x = origen.x;
       f.y = origen.y;
-      f.z = this.zFrente + FRAGMENTO.distanciaAlFrente;
+      f.z = frenteTramo(f.tramo) + FRAGMENTO.distanciaAlFrente;
       f.grupo.position.set(f.x, f.y, f.z);
       f.grupo.visible = true;
       f.marcaHasta = 0;

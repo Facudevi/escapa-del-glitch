@@ -134,6 +134,19 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** rediseño visual y de juego en una sola tanda: decorado detallado con profundidad (escritorio, teclado TKL, torre con ventiladores y parlantes, monitor), pared más ancha con más agarres, entrepaños con profundidad para pararse, límites invisibles para el jugador, piso de arriba con RESET grande y objetos de videojuegos, mensaje al pie, fragmentos que se reubican en el tramo siguiente, niebla más rápida y enchufe USB más difícil. Detalle en la entrada "Rediseño visual y de juego" más abajo.
 
+### Prompt 21 — 2026-11-22
+
+> La mayoría de las cosas las cumpliste, pero quiero hacer un par de correcciones:
+>
+> * Al estar tan bien detallados los tramos, los agarres algunos no se distinguen, mientras que otros parecen que estan flotando en el aire, quiero que el diseño de los tramos esté relacionado al componente, pero que no sea tan detallado, sino no se entiende que es un agarré y que no
+> * El tramo 1 debe ser solo un teclado, no hace falta el resto de cosas.
+> * Al terminar un tramo, el jugador va a tener una base/piso (no tan largo, que sería el checkpoint). Adelante suyo podra ver el siguiente tramo y así con el último. Basicamente quiero que hagas lo mismo de la base del final, pero con cada checkpoint (obviamente un espacio más corto) en lugar de que sea una base encima de la escalada que interrumpe la vista y no se entiende
+> * Quiero que coloques bien los agarres, ya que hay espacios que quedan demasiado libres y quedan agarres que no te llevan a ningún lado
+> * Çuando toco el botón RESET y me lleva a la escena final, el personaje aparece en otro lado, lejos del mensaje final y la medalla. Debes acomodarlo para que quede bien. Además, dale un diseño más realista a los objetos del final: la frase debe aparecer en el cielo, frente al personaje sin ese formato de cuadro de texto; la medalla no debe ser solo un circulo de diferente color, debe tener más detalle; y el boton lo mismo que con la medalla, se debe entender y no debe aparecer suelto así como si nada en el aire. Me imaginaba más un boton con una base vertical que lo sostiene
+> * Nuevo: Las manos y el reloj deben ser un poco más realistas, pensaba en algo como las manos de los personajes del juego "REC ROOM". Diseñalas para que no sean solo dos circulos y un medio anillo
+
+**Respuesta:** se reestructuró el escenario en tres escalones con piso arriba de cada uno (el siguiente tramo se ve de frente), decorado simple y reconocible, tramo 1 solo teclado, agarres con poste y mejor repartidos, reborde para subir al piso, exterior del final rehecho (frase en el cielo, podio con medalla, pedestal con botón, cartel de madera) y manos y reloj nuevos. Detalle en la entrada "Escalones, agarres y final" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -463,4 +476,38 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Probar con casco: alcance real a los agarres, comodidad del enchufe USB y rendimiento en Quest.
 - Medir la duración de la partida con personas; si se alargó por los desvíos, ajustar `config.js`.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Escalones, agarres y final (correcciones del rediseño)
+
+**Pedido:** agarres que se distingan y no floten; tramo 1 solo teclado; un piso corto arriba de cada tramo desde el que se ve el siguiente (como el piso final); agarres bien repartidos y sin callejones; el final con el jugador bien ubicado y objetos más reales (frase en el cielo, medalla con detalle, botón con base vertical); manos y reloj estilo Rec Room.
+
+**Resumen de lo hecho:**
+- **Tres escalones** (`decorado.js`, `plataformas.js`, `utilidades.js`): cada tramo es una pared sólida (teclado, torre, monitor) que queda 2,7 m más atrás que la anterior, con un piso de baldosas arriba. Desde ese piso se ve de frente la pared siguiente, y arriba del último está el piso final. Ya no hay entrepaños tapando la vista de la escalada.
+- **Decorado simple:** se sacaron los detalles chicos (leyendas, tornillos, perforaciones, escritorio, mouse, taza, cuaderno). El tramo 1 es solo un teclado completo (teclas de 50 cm, carcasa y apoyamuñecas); la torre tiene tres ventiladores y dos parlantes; el monitor, marco y pantalla.
+- **Agarres que no flotan:** cada agarre firme lleva un poste que lo une con la pared, tienen más brillo propio y los colores del decorado quedaron más apagados que los suyos.
+- **Subir al piso** (`ascenso.js`, reemplaza a `tirolesa.js`): arriba de cada pared hay un **reborde verde**; al agarrarse, el jugador sube solo, a velocidad constante, y queda parado en el piso mirando la pared siguiente. El enchufe USB usa el mismo componente.
+- **Agarres bien ubicados** (`tramos.js`): filas de salida sobre el piso, relleno parejo de la pared y **poda** de los agarres que no llevan a ningún lado (sin camino desde abajo, sin camino hacia el reborde o con un solo vecino). Quedan unos 210 agarres y ningún hueco de más de 1,2 m.
+- **Límites** adaptados a cada escalón (`limites.js`). La causa de que el jugador apareciera lejos en el final era que los límites lo devolvían a la sala: ahora no actúan en el exterior.
+- **Final** (`objetosFinal.js`, `final.js`): el exterior se acomoda delante de la cabeza del jugador y de adonde mira; la frase flota en el cielo sin cuadro (`cartel` con `sinFondo`); podio con medalla (disco, borde, anillo, estrella extruida y cinta en V) que cambia de color según oro, plata o bronce y se mece; pedestal con poste y cabezal donde está el botón; cartel de madera del descanso. Luz propia de amanecer.
+- **Manos y reloj** (`mano-guante.js`, `pulsera.js`): manos de dibujos animados con palma, cuatro dedos de tres falanges, pulgar y manga, que se cierran en puño al agarrar; el control no se dibuja (`model: false`). El reloj tiene correa, caja, bisel y una esfera con el contador y el arco del escaneo.
+- Todo lo nuevo salió a `config.js` (`ESCENARIO`, `LIMITES`, `ASCENSO`, `FINAL`, `JUGADOR.mano`, `DECORADO`).
+
+**Buenas prácticas aplicadas:**
+- Affordance: lo que se agarra tiene forma, color y brillo propios y está unido a la pared; el decorado queda en segundo plano.
+- Referencias espaciales: desde cada piso se ve el próximo tramo, que sirve de meta visible.
+- Movimiento automático lento y constante, con aviso visual (reborde verde) y sin posibilidad de caer mientras dura.
+- Presencia corporal: manos con dedos que reflejan el estado (abierta, apretando, agarrando).
+- Interfaz dentro del mundo sin cuadros sobrepuestos en el cielo (frase) y con el reloj como indicador físico.
+- Modo escritorio completo: se probó una escalada con clics reales del mouse por los tres tramos.
+
+**Verificado en Chrome (modo escritorio):**
+- Jugador automático con eventos de mouse: escaló los tres tramos de punta a punta con 0 caídas, subió al piso de cada escalón por el reborde y llegó al piso final.
+- Límites en el piso de la sala; el ascenso lleva a los tres pisos con su checkpoint.
+- Final completo: el jugador aparece delante del podio, la frase se ve en el cielo, la medalla y el botón de volver a jugar están a su alcance.
+- 0 errores en la consola; entre 60 y 70 llamadas de dibujo vistas de lejos.
+
+**Pendiente (depende del equipo):**
+- Probar con casco: alcance a los agarres y al reborde (a 0,75 m del jugador), tamaño de las manos y comodidad del ascenso.
+- Con unos 210 agarres, vigilar el rendimiento en Quest; si hace falta, subir `separacion` en `ESCENARIO.tramos`.
 - Intervención manual con commit antes y después.

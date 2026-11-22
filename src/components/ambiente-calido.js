@@ -19,14 +19,14 @@ AFRAME.registerComponent('ambiente-calido', {
     );
     escena.appendChild(ambiente);
 
-    // Luces puntuales cálidas repartidas en altura, para que toda la pared quede iluminada
-    AMBIENTE.alturasLuz.forEach((altura) => {
+    // Luces puntuales cálidas delante de cada escalón, para que toda la pared quede iluminada
+    AMBIENTE.luces.forEach(({ y: altura, z }) => {
       const punto = document.createElement('a-entity');
       punto.setAttribute(
         'light',
         `type: point; color: ${COLORES.luzPunto}; intensity: ${AMBIENTE.intensidadPunto}; distance: 22; decay: 1.5`
       );
-      punto.setAttribute('position', `0 ${altura} 2`);
+      punto.setAttribute('position', `0 ${altura} ${z}`);
       escena.appendChild(punto);
     });
   },

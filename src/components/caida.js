@@ -13,6 +13,7 @@
 //   'reaparecer'           { orden }   cuando el jugador reaparece
 // Escucha 'escritorio-viaje' (modo escritorio) para no dejar caer al jugador mientras viaja.
 import { CAIDA } from '../config.js';
+import { lugarFrenteAlTramo } from '../utilidades.js';
 import { checkpoints } from './checkpoint.js';
 
 const esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms));
@@ -99,7 +100,7 @@ AFRAME.registerComponent('caida', {
   reaparecer() {
     this.el.removeAttribute('animation__viaje'); // corta un viaje de modo escritorio en curso
     if (this.ultimo) this.ultimo.puntoDeReaparicion(this.destino);
-    else this.destino.set(0, 0, 0);
+    else this.destino.set(0, 0, lugarFrenteAlTramo(0)); // todavía no tocó ningún piso: vuelve al principio
     this.el.object3D.position.copy(this.destino);
   },
 });

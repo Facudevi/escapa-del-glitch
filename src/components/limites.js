@@ -3,13 +3,13 @@
 // para que vuelva a quedar adentro, así que se siente como una pared invisible.
 //
 // La zona permitida depende de dónde está parado:
-//   - en el piso de la sala: toda la sala, menos el lugar que ocupa la pared de escalada;
-//   - sobre un entrepaño o el piso de arriba: la superficie de ese checkpoint (con un margen del borde);
-//   - en la pared (agarrado o en el aire): un pasillo angosto delante de la pared, del ancho de la pared.
+//   - en el piso de la sala: toda la sala, menos el lugar que ocupa el primer escalón;
+//   - sobre el piso de un escalón: la superficie de ese piso (con un margen del borde);
+//   - en la pared (agarrado o en el aire): un pasillo angosto delante de la pared que está escalando.
+// No actúa mientras un ascenso automático lleva al jugador, ni en el exterior del final (ahí hay otro límite).
 import { ESCENARIO, LIMITES } from '../config.js';
+import { frenteTramo, lugarFrenteAlTramo } from '../utilidades.js';
 import { checkpoints } from './checkpoint.js';
-
-const FRENTE = ESCENARIO.z + ESCENARIO.profundidadPared / 2; // frente de la pared
 
 const acotar = (valor, minimo, maximo) => Math.min(maximo, Math.max(minimo, valor));
 
@@ -25,7 +25,7 @@ AFRAME.registerComponent('limites', {
     const climb = this.el.components.climb;
     const agarrando = climb && Object.keys(climb.sujetas).length > 0;
 
-    // Parado sobre un entrepaño o el piso de arriba (los checkpoints de orden mayor que 0)
+    // Parado sobre el piso de un escalón (los checkpoints de orden mayor que 0)
     let apoyo = null;
     if (!agarrando) {
       checkpoints.forEach((cp) => {
@@ -39,20 +39,27 @@ AFRAME.registerComponent('limites', {
 
     // En el piso de la sala
     if (!agarrando && posRig.y <= LIMITES.pisoTolerancia) {
-      return { x0: -LIMITES.sala + m, x1: LIMITES.sala - m, z0: LIMITES.piso.zAtras, z1: LIMITES.sala - m };
+      return {
+        x0: -LIMITES.sala + m,
+        x1: LIMITES.sala - m,
+        z0: frenteTramo(0) + LIMITES.piso.cercaDeLaPared,
+        z1: LIMITES.sala - m,
+      };
     }
 
-    // Colgado de la pared o en el aire: se queda delante de la pared, dentro de su ancho
+    // Colgado de la pared o en el aire: se queda delante de la pared de su tramo, dentro de su ancho
+    const datos = this.el.sceneEl.escalada;
+    const tramo = datos ? datos.tramoEn(posRig.y).indice : 0;
+    const base = lugarFrenteAlTramo(tramo);
     const mitad = ESCENARIO.anchoPared / 2;
-    const base = ESCENARIO.plataforma.spawnZ;
     return { x0: -mitad, x1: mitad, z0: base + LIMITES.aire.zAtras, z1: base + LIMITES.aire.zAdelante };
   },
 
   tick() {
+    const escena = this.el.sceneEl;
+    if (escena.rigAutomatico || escena.juegoTerminado) return;
     if (!this.camara) this.camara = document.querySelector('#camara');
     if (!this.camara) return;
-    // Mientras la tirolesa lleva al jugador, la ruta ya está dentro de la zona: no se corrige
-    if (this.el.sceneEl.tirolesaActiva) return;
 
     const posRig = this.el.object3D.position;
     this.camara.object3D.getWorldPosition(this.posCamara);

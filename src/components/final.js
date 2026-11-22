@@ -5,14 +5,16 @@
 //   2. Una luz cálida se abre desde la grieta y la vista se funde hacia ella (despacio, sin destellos).
 //   3. El jugador aparece en un paisaje al aire libre al amanecer: pasto, montañas y cielo abierto, que
 //      contrasta con el interior del setup.
-//   4. Delante tiene la frase «Subiste de nivel, adentro y afuera de la pantalla», la medalla según su
-//      tiempo (oro menos de 2 min, plata menos de 3 min, bronce el resto) y un botón para volver a jugar.
+//   4. Delante tiene la frase «Subiste de nivel, adentro y afuera de la pantalla» flotando en el cielo, un
+//      podio con la medalla según su tiempo (oro menos de 2 min, plata menos de 3 min, bronce el resto) y un
+//      pedestal con el botón para volver a jugar. Todo se acomoda delante de donde aparece el jugador.
 //
 // Volver a jugar (botón golpeable, clic en escritorio o tecla R) reinicia todo sin recargar la página,
 // así no se corta la sesión de VR.
 import { CAIDA, COLORES, ESCENARIO, FINAL } from '../config.js';
+import { crearCartelDeMadera, crearPedestalDelBoton, crearPodioConMedalla } from '../objetosFinal.js';
 import { amanecer, roturaPantalla } from '../sonidos.js';
-import { crear } from '../utilidades.js';
+import { crear, lugarFrenteAlTramo } from '../utilidades.js';
 
 const esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms));
 
@@ -104,46 +106,43 @@ AFRAME.registerComponent('final', {
     this.paisaje = paisaje;
     this.grupo.setObject3D('paisaje', paisaje);
 
-    // Frase, medalla y botón de volver a jugar (se completan al llegar)
+    // Luz del amanecer, solo para los objetos del exterior (se enciende y apaga junto con el grupo)
+    const luzSol = new THREE.DirectionalLight(COLORES.luzSolExterior, FINAL.exterior.intensidadSol);
+    luzSol.position.set(-4, 7, 5);
+    this.grupo.object3D.add(luzSol);
+
+    // Frase en el cielo, delante del jugador y sin cuadro de texto
+    const C = FINAL.cielo;
     this.frase = crear(this.grupo, 'a-entity', {
-      cartel: `texto: ${FINAL.frase}; ancho: 4.6; alto: 1.1`,
-      position: '0 2.9 -4.2',
+      cartel: `texto: ${FINAL.frase}; ancho: ${C.ancho}; alto: ${C.alto}; sinFondo: true; pixelesPorMetro: 60`,
+      position: `0 ${C.y} ${-C.distancia}`,
     });
-    this.medalla = crear(this.grupo, 'a-cylinder', {
-      position: '0 1.55 -3.2',
+
+    // Podio con la medalla, justo adelante
+    this.podio = crearPodioConMedalla();
+    this.podio.grupo.position.set(0, 0, -3.6);
+    this.grupo.object3D.add(this.podio.grupo);
+
+    // Pedestal con el botón de volver a jugar, a la derecha. El botón es golpeable: lo golpea la mano o el clic
+    const pedestal = crearPedestalDelBoton();
+    const pedestalEl = crear(this.grupo, 'a-entity', { position: '2.0 0 -2.5' });
+    pedestalEl.setObject3D('pedestal', pedestal.grupo);
+    this.reiniciarBoton = crear(pedestalEl, 'a-cylinder', {
+      position: `${pedestal.posicionBoton.x} ${pedestal.posicionBoton.y} ${pedestal.posicionBoton.z}`,
       rotation: '90 0 0',
-      radius: 0.38,
-      height: 0.07,
-      color: COLORES.oro,
-      material: 'shader: flat',
-    });
-    this.textoMedalla = crear(this.grupo, 'a-entity', {
-      cartel: 'texto: Medalla; ancho: 1.7; alto: 0.4',
-      position: '0 0.98 -3.2',
-    });
-    this.textoTiempo = crear(this.grupo, 'a-entity', {
-      cartel: 'texto: Tiempo; ancho: 1.3; alto: 0.34',
-      position: '0 0.6 -3.2',
-    });
-    this.reiniciarBoton = crear(this.grupo, 'a-cylinder', {
-      position: '1.6 1.15 -2.2',
-      rotation: '90 0 0',
-      radius: 0.22,
-      height: 0.08,
+      radius: 0.15,
+      height: 0.1,
       color: COLORES.violeta,
       golpeable: '',
-      material: 'shader: flat',
+      material: 'roughness: 0.5; metalness: 0.1',
     });
     this.reiniciarBoton.addEventListener('golpeado', () => this.escena.emit('volver-a-jugar', {}, false));
-    crear(this.grupo, 'a-entity', {
-      cartel: 'texto: Volver a jugar (golpealo, o tecla R); ancho: 1.5; alto: 0.5',
-      position: '1.6 1.65 -2.2',
-    });
+
     // Diseño consciente: RESET habla de bienestar, así que el final también invita a descansar
-    crear(this.grupo, 'a-entity', {
-      cartel: 'texto: Antes de seguir: tomá agua y descansá la vista un rato; ancho: 1.6; alto: 0.6',
-      position: '-1.7 1.4 -2.2',
-    });
+    const cartelMadera = crearCartelDeMadera(['Antes de seguir:', 'tomá agua y descansá', 'la vista un rato']);
+    cartelMadera.position.set(-2.1, 0, -2.4);
+    cartelMadera.rotation.y = 0.35;
+    this.grupo.object3D.add(cartelMadera);
   },
 
   // Medalla según el tiempo: oro menos de 2 min, plata menos de 3 min, bronce el resto
@@ -155,9 +154,7 @@ AFRAME.registerComponent('final', {
 
   mostrarResultado(segundos) {
     const tipo = this.tipoDeMedalla(segundos);
-    this.medalla.setAttribute('color', COLORES[tipo]);
-    this.textoMedalla.setAttribute('cartel', 'texto', `Medalla de ${tipo}`);
-    this.textoTiempo.setAttribute('cartel', 'texto', `Tiempo: ${formatoTiempo(segundos)}`);
+    this.podio.pintar(tipo, `Tiempo: ${formatoTiempo(segundos)}`);
     this.ultimoResultado = { tipo, segundos };
   },
 
@@ -247,10 +244,16 @@ AFRAME.registerComponent('final', {
     if (mouse) mouse.soltarTodas();
     Object.keys(rig.components.climb.sujetas).forEach((mano) => rig.components.climb.soltar(mano));
 
-    // El paisaje se acomoda para que quede justo delante de adonde mira el jugador
-    this.grupo.object3D.rotation.y = camara.object3D.rotation.y;
-    this.grupo.object3D.visible = true;
+    // El jugador aparece en el exterior y todo se acomoda delante de él, justo adonde mira (con casco, la
+    // cabeza puede estar corrida del centro del rig, así que se toma la posición real de la cámara)
     rig.object3D.position.set(FINAL.exterior.x, 0, 0);
+    rig.object3D.updateMatrixWorld(true);
+    const cabeza = new THREE.Vector3();
+    camara.object3D.getWorldPosition(cabeza);
+    const orientacion = new THREE.Euler().setFromQuaternion(camara.object3D.getWorldQuaternion(new THREE.Quaternion()), 'YXZ');
+    this.grupo.object3D.position.set(cabeza.x, 0, cabeza.z);
+    this.grupo.object3D.rotation.y = orientacion.y;
+    this.grupo.object3D.visible = true;
 
     // Aire libre: la niebla de la sala se cambia por una bruma suave de amanecer
     // Se guardan copias: getAttribute devuelve el mismo objeto que después se modifica
@@ -288,7 +291,7 @@ AFRAME.registerComponent('final', {
 
     // Adentro: todo vuelve al principio
     const rig = document.querySelector('#rig');
-    rig.object3D.position.set(0, 0, 0);
+    rig.object3D.position.set(0, 0, lugarFrenteAlTramo(0));
     this.escena.juegoTerminado = false;
     const caida = rig.components.caida;
     caida.ultimo = null;
@@ -308,7 +311,8 @@ AFRAME.registerComponent('final', {
     this.enCurso = false;
   },
 
-  tick() {
+  tick(tiempo) {
+    if (this.activo && this.podio) this.podio.mecer(tiempo / 1000);
     // Animación de grietas y luz mientras dura la rotura
     if (this.rotura && this.grietas) {
       const transcurrido = (performance.now() - this.rotura.desde) / 1000;

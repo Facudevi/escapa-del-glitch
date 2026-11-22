@@ -126,3 +126,24 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** el refugio se elegía por una fórmula que podía repetirse.
 - **Solución:** se descartan los refugios que están a menos de 1,5 m de otro fragmento que sigue en la pared.
 - **Aprendizaje:** un sorteo repartido por fórmula hay que comprobarlo con varios casos seguidos.
+
+## 18. Los entrepaños de descanso tapaban la escalada
+
+- **Qué pasó:** las plataformas de los checkpoints salían hacia adelante, cruzaban la pared y no dejaban ver los agarres; además no se entendía adónde llevaban.
+- **Por qué:** estaban pensadas como estantes pegados a una sola pared continua.
+- **Solución:** cada tramo pasó a ser un escalón sólido con su piso arriba y la pared siguiente más atrás. Para llegar al piso se agarra un reborde que sube al jugador solo, a velocidad constante.
+- **Aprendizaje:** una referencia espacial que se ve de frente ayuda más que un objeto que interrumpe la vista.
+
+## 19. Agarres que no llevaban a ningún lado
+
+- **Qué pasó:** quedaban zonas vacías y agarres alejados sin camino hacia arriba.
+- **Por qué:** los agarres de más se repartían al azar sin revisar si se podían alcanzar ni si servían para seguir subiendo.
+- **Solución:** relleno parejo y una poda que saca los agarres sin camino desde abajo, sin camino hacia el reborde o con un solo vecino. Al medirlo en Node, ningún hueco supera 1,2 m.
+- **Aprendizaje:** una regla de aleatoriedad necesita una comprobación de conectividad; si la separación entre agarres se acerca al alcance, la poda borra casi todo.
+
+## 20. En el final, el jugador aparecía lejos del mensaje y la medalla
+
+- **Qué pasó:** al golpear el RESET, el personaje quedaba en otro lugar del exterior, lejos de todo.
+- **Por qué:** el componente de límites seguía activo y devolvía al jugador a la sala, a 300 m del exterior.
+- **Solución:** los límites no actúan al terminar el juego, y el exterior se acomoda delante de la posición real de la cámara y de adonde mira, no del centro del rig.
+- **Aprendizaje:** un sistema nuevo (los límites) puede romper lo que ya andaba: hay que revisar los otros estados del juego cuando se agrega.

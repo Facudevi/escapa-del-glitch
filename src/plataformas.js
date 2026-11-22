@@ -1,11 +1,9 @@
-// Plataformas del setup: los entrepaños de descanso de los tramos 1 y 2 (con rejilla y soportes, para que
-// no parezcan flotar y para que se vean los agarres a través de ellos) y el piso grande de arriba, sobre el
-// monitor, con el botón RESET al fondo y objetos de videojuegos donde se esconden los fragmentos.
+// Pisos del setup: arriba de cada escalón hay un piso de baldosas (el checkpoint) donde el jugador descansa
+// y desde donde ve de frente la pared del tramo siguiente. El de arriba de todo, sobre el monitor, es un piso
+// grande con el botón RESET al fondo y objetos de videojuegos donde se esconden los fragmentos.
 // Son piezas de adorno: dónde se puede parar el jugador lo decide el componente checkpoint.
 import { DECORADO as D, ESCENARIO as E } from './config.js';
 import { fusionar } from './fusion.js';
-
-const ZF = E.z + E.profundidadPared / 2; // frente de la pared
 
 const materiales = new Map();
 function material(color, basico = false) {
@@ -44,39 +42,43 @@ function instanciadas(g, piezas) {
   g.add(malla);
 }
 
-// ---------- Entrepaño con rejilla ----------
+// ---------- Piso de cada escalón ----------
 
-// Superficie (y) del entrepaño; sale de la pared `profundidad` metros hacia el jugador
-function entrepano(g, y, profundidad, ancho) {
-  const medio = ZF + profundidad / 2;
-
-  // Rejilla metálica: barras paralelas con huecos, por las que se ve hacia arriba y hacia abajo
-  const barras = [];
-  for (let x = -ancho / 2 + 0.1; x <= ancho / 2 - 0.05; x += 0.16) {
-    barras.push({ x, y: y - 0.035, z: medio, ancho: 0.07, alto: 0.07, profundidad: profundidad, color: D.rejilla });
-  }
-  instanciadas(g, barras);
-  // Vigas de abajo, que sostienen la rejilla
-  [0.1, profundidad * 0.35, profundidad * 0.7, profundidad - 0.1].forEach((z) =>
-    caja(g, ancho, 0.14, 0.14, 0, y - 0.14, ZF + z, D.soporte)
-  );
-  // Borde del frente y de los costados, con una franja de luz suave que marca el checkpoint
-  caja(g, ancho, 0.22, 0.14, 0, y - 0.04, ZF + profundidad, D.soporte);
-  caja(g, ancho - 0.3, 0.04, 0.03, 0, y + 0.08, ZF + profundidad + 0.05, D.luzCheckpoint, { basico: true });
-  [-1, 1].forEach((lado) => caja(g, 0.14, 0.22, profundidad, lado * (ancho / 2), y - 0.04, medio, D.soporte));
-
-  // Escuadras que la sostienen de la pared (para que no parezca que flota)
-  const posiciones = [-5, -2.5, 0, 2.5, 5].map((x) => x * (ancho / 12));
-  posiciones.forEach((x) => {
-    const dy = 1.5;
-    const dz = profundidad - 0.3;
-    const largo = Math.hypot(dy, dz);
-    // Barra diagonal: de la pared (abajo) a la viga del frente (arriba)
-    const brazo = caja(g, 0.14, 0.14, largo, x, y - 0.2 - dy / 2, ZF + 0.05 + dz / 2, D.soporte);
-    brazo.rotation.x = -Math.atan2(dy, dz); // sube hacia el frente
-    caja(g, 0.5, 0.5, 0.1, x, y - 0.2 - dy, ZF + 0.05, D.soporte); // placa en la pared
-    [-0.17, 0.17].forEach((dx) => poner(g, new THREE.CylinderGeometry(0.04, 0.04, 0.05, 8), D.metal, x + dx, y - 0.2 - dy, ZF + 0.12, { rot: [Math.PI / 2, 0, 0] }));
+// Baranda baja a los costados del piso
+function barandas(g, y, ancho, zFrente, zFondo) {
+  const largo = zFrente - zFondo;
+  [-1, 1].forEach((lado) => {
+    const x = lado * (ancho / 2 - 0.05);
+    caja(g, 0.08, 0.08, largo, x, y + 1.0, (zFrente + zFondo) / 2, D.metal);
+    caja(g, 0.06, 0.06, largo, x, y + 0.5, (zFrente + zFondo) / 2, D.soporte);
+    for (let z = zFondo + 0.2; z <= zFrente; z += 2) poner(g, new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8), D.metal, x, y + 0.5, z);
   });
+}
+
+// Piso de baldosas sobre el bloque del escalón, entre su frente (zFrente) y la pared siguiente (zFondo),
+// con una franja de luz suave en el borde de adelante que marca el checkpoint
+function pisoDeBaldosas(g, y, zFrente, zFondo) {
+  const ancho = E.anchoPared;
+  const profundidad = zFrente - zFondo;
+  const columnas = 8;
+  const filas = Math.max(1, Math.round(profundidad / 1.5));
+  const baldosas = [];
+  for (let i = 0; i < columnas; i++) {
+    for (let j = 0; j < filas; j++) {
+      baldosas.push({
+        x: -ancho / 2 + ((i + 0.5) * ancho) / columnas,
+        y: y + 0.015,
+        z: zFrente - ((j + 0.5) * profundidad) / filas,
+        ancho: ancho / columnas - 0.04,
+        alto: 0.03,
+        profundidad: profundidad / filas - 0.04,
+        color: (i + j) % 2 ? D.pisoFinalBaldosa : D.pisoFinal,
+      });
+    }
+  }
+  instanciadas(g, baldosas);
+  caja(g, ancho, 0.08, 0.16, 0, y + 0.04, zFrente - 0.08, D.luzCheckpoint, { basico: true });
+  barandas(g, y, ancho, zFrente, zFondo);
 }
 
 // ---------- Piso de arriba ----------
@@ -173,42 +175,11 @@ function chiquitos(g, y) {
   instanciadas(g, cubos);
 }
 
-// Baranda baja a los costados del piso de arriba
-function barandas(g, y, ancho, zFrente, zFondo) {
-  const largo = zFrente - zFondo;
-  [-1, 1].forEach((lado) => {
-    const x = lado * (ancho / 2 - 0.05);
-    caja(g, 0.08, 0.08, largo, x, y + 1.0, (zFrente + zFondo) / 2, D.metal);
-    caja(g, 0.06, 0.06, largo, x, y + 0.5, (zFrente + zFondo) / 2, D.soporte);
-    for (let z = zFondo + 0.2; z <= zFrente; z += 2) poner(g, new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8), D.metal, x, y + 0.5, z);
-  });
-}
-
-// Piso de arriba: la parte de rejilla que sale hacia el jugador, el piso macizo hasta el fondo de la sala,
-// el panel de atrás con la consola del botón RESET, las barandas y los objetos de videojuegos
-function pisoFinal(g, y) {
+// Piso de arriba: baldosas, el panel de atrás con la consola del botón RESET, las barandas y los
+// objetos de videojuegos
+function pisoFinal(g, y, zFrente) {
   const F = E.final;
-  entrepano(g, y, F.bordeZ - ZF, F.ancho);
-
-  // Piso macizo de baldosas, desde la pared hasta el fondo
-  const profundidad = ZF - F.fondoZ;
-  caja(g, F.ancho, 0.4, profundidad, 0, y - 0.2, (ZF + F.fondoZ) / 2, D.pisoFinal);
-  const baldosas = [];
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 4; j++) {
-      baldosas.push({
-        x: -F.ancho / 2 + 0.75 + i * 1.5,
-        y: y + 0.012,
-        z: ZF - 0.75 - j * 1.5,
-        ancho: 1.46,
-        alto: 0.02,
-        profundidad: 1.46,
-        color: (i + j) % 2 ? D.pisoFinalBaldosa : D.pisoFinal,
-      });
-    }
-  }
-  instanciadas(g, baldosas);
-  barandas(g, y, F.ancho, ZF, F.fondoZ);
+  pisoDeBaldosas(g, y, zFrente, F.fondoZ);
 
   // Panel del fondo y consola donde está el botón RESET grande
   caja(g, F.ancho, F.altoFondo, 0.4, 0, y + F.altoFondo / 2, F.fondoZ + 0.2, D.fondoFinal);
@@ -233,14 +204,13 @@ export function posicionReset(alturaFinal) {
 
 // ---------- Todo junto ----------
 
-// Entrepaños de los tramos 1 y 2 (profundidad fija) y piso de arriba, fusionados en pocas mallas
+// Pisos de los tres escalones (el último es el piso grande de arriba), fusionados en pocas mallas
 export function crearPlataformas(datos) {
   const raiz = new THREE.Group();
-  const { ancho, profundidad } = E.plataforma;
-  datos.checkpoints.forEach((c, i) => {
-    if (i < datos.checkpoints.length - 1) entrepano(raiz, c.y, profundidad, ancho);
+  datos.tramos.forEach((t) => {
+    const ultimo = t.indice === datos.tramos.length - 1;
+    if (ultimo) pisoFinal(raiz, t.y1, t.frente);
+    else pisoDeBaldosas(raiz, t.y1, t.frente, datos.tramos[t.indice + 1].frente);
   });
-  pisoFinal(raiz, datos.alturaFinal);
   return fusionar(raiz);
 }
-

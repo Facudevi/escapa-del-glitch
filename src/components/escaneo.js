@@ -5,7 +5,8 @@
 // del control, con la tecla E en modo escritorio, o con el evento 'escaneo-pedido'.
 //
 // Emite 'escaneo' { tramo, marcado } sobre la escena. La pulsera lee fraccionEspera() para su barra.
-import { COLORES, ESCANEO, ESCENARIO } from '../config.js';
+import { COLORES, ESCANEO } from '../config.js';
+import { frenteTramo } from '../utilidades.js';
 import { ondaEscaneo } from '../sonidos.js';
 
 AFRAME.registerComponent('escaneo', {
@@ -65,7 +66,7 @@ AFRAME.registerComponent('escaneo', {
     // La onda sale de donde está el jugador, sobre la pared
     const camara = document.querySelector('#camara');
     camara.object3D.getWorldPosition(this.posCamara);
-    this.onda.position.set(this.posCamara.x, this.posCamara.y, ESCENARIO.z + ESCENARIO.profundidadPared / 2 + 0.08);
+    this.onda.position.set(this.posCamara.x, this.posCamara.y, frenteTramo(tramo) + 0.08);
     this.ondaDesde = ahora;
     ondaEscaneo();
     this.el.emit('escaneo', { tramo, marcado }, false);

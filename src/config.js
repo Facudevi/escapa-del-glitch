@@ -56,6 +56,8 @@ export const COLORES = {
   montanas: ['#8c7fb3', '#a392c7', '#7c88b8', '#9a8fc0'],
   sol: '#f7c982',
   nieblaExterior: '#f3d3b5',
+  luzSolExterior: '#fff1da', // luz cálida del amanecer sobre los objetos del exterior
+  fraseCielo: '#fffaf0', // letras de la frase del final, en el cielo
   luzRotura: '#ffe9c7', // luz cálida que sale de la grieta del RESET
   grieta: '#efe6ff',
   resetListo: '#9b82e6', // botón RESET encendido
@@ -69,7 +71,7 @@ export const AMBIENTE = {
   nieblaDensidad: 0.02,
   intensidadAmbiente: 1.5,
   intensidadPunto: 1.2,
-  alturasLuz: [4, 11, 18, 24], // luces puntuales cálidas repartidas en altura
+  luces: [{ y: 4, z: 7 }, { y: 10, z: 5 }, { y: 17, z: 3 }, { y: 23, z: 0 }], // luces puntuales cálidas: altura y z (delante de cada tramo)
 };
 
 // Medidas de la sala de pruebas de la etapa 1 (en metros).
@@ -82,6 +84,7 @@ export const SALA = {
 export const JUGADOR = {
   alturaOjos: 1.6, // altura de la cámara en modo escritorio
   radioGuante: 0.06,
+  mano: { largoPalma: 0.085, anchoPalma: 0.08, grosorPalma: 0.034, radioDedo: 0.0105, escala: 1.2 }, // medidas de la mano dibujada (m); escala la agranda (manos de dibujos animados, más gordas)
   radioAgarre: 0.18, // distancia máxima (m) entre la mano y el agarre para poder agarrarlo
 };
 
@@ -91,41 +94,46 @@ export const VIBRACION = {
   duracion: 40, // ms
 };
 
-// Escenario: el setup gamer gigante que se escala (en metros). Las proporciones respetan las de los
-// objetos reales a escala 1 cm = 18 cm: una tecla mide 34 cm, el teclado 7,7 m de ancho, la torre de PC
-// 4 m de ancho y 8 m de alto y el monitor 11 m de ancho y 6,5 m de alto.
+// Escenario: el setup gamer gigante que se escala (en metros). Cada tramo es un ESCALÓN: una pared de un
+// objeto (teclado, torre de PC, monitor) con un piso arriba donde el jugador descansa (el checkpoint). Desde
+// ese piso se ve de frente la pared del tramo siguiente, que está `profundidadPiso` metros más atrás.
+// Las proporciones de la torre y el monitor respetan las de los objetos reales a escala 1 cm = 18 cm; el
+// teclado se agranda (unidad de tecla de 50 cm) para que ocupe todo el ancho de la pared.
 // Cada tramo es una pared amplia sin camino marcado; el generador (src/tramos.js) arma una ruta
 // garantizada y agarres de más, con dificultad creciente.
 export const ESCENARIO = {
-  semilla: 20261121, // cambia la distribución de los agarres (la misma semilla da siempre la misma pared)
+  semilla: 20261122, // cambia la distribución de los agarres (la misma semilla da siempre la misma pared)
   escala: 18, // cuántas veces más grande que el objeto real es todo el setup
   anchoPared: 12.5, // la pared va de -ancho/2 a +ancho/2 en x
-  z: -1.8, // centro de la pared; el frente de la pared queda en z + profundidadPared/2 = -1.7
-  profundidadPared: 0.2,
+  zFrente: 3.6, // z del frente del primer escalón (el teclado); el de cada tramo siguiente queda más atrás
+  profundidadPiso: 2.7, // lo que mide hacia atrás el piso de cada escalón (m)
+  distanciaAlJugador: 1.9, // a cuántos m del frente de una pared se para el jugador al escalarla (y al llegar a su piso)
   salienteAgarres: 1.15, // cuánto salen los agarres del frente de la pared: más que todo el decorado (que sale hasta 0,7)
-  tecla: { ancho: 0.4, alto: 0.14, profundidad: 0.65 }, // medida de la tecla firme y la que se hunde (larga: llega hasta el decorado)
-  primerAgarre: 1.2, // altura del primer agarre sobre cada plataforma
+  tecla: { ancho: 0.46, alto: 0.3, profundidad: 0.65 }, // medida de la tecla firme y la que se hunde (larga: llega hasta el decorado)
+  primerAgarre: 1.2, // altura del primer agarre sobre el piso de cada tramo
   separacionMinima: 0.5, // distancia mínima (m) entre agarres
+  alcancePoda: 1.3, // al podar agarres sin salida, cuánto más que distanciaMax se considera alcanzable un agarre vecino
   zonaFragmento: 1.3, // radio (m) alrededor de un fragmento donde los agarres son más difíciles
   panel: { separacionAgarres: 0.3, centro: 0.82 }, // los agarres de un panel quedan a ±separacion del centro; centro = cuánto sale su cuerpo de la pared
-  // Plataformas de descanso de los tramos 1 y 2: un entrepaño con profundidad donde se puede caminar
-  plataforma: { ancho: 12, profundidad: 2.4, grosor: 0.2, spawnZ: -0.15 },
-  // Plataforma de arriba (sobre el monitor): un piso grande por donde se camina hasta el botón RESET
+  // Teclado del primer tramo: unidad de tecla, y y (sobre el piso) de la fila de arriba de las teclas
+  teclado: { unidad: 0.5, arriba: 5.2 },
+  // Reborde de arriba de cada pared: una barra larga que el jugador agarra para subir al piso
+  borde: { alto: 0.16, grosor: 0.18, bajoElTope: 0.15 },
+  // Piso de arriba (sobre el monitor): se camina hasta el botón RESET, al fondo de la sala
   final: {
-    ancho: 12,
+    ancho: 12.5,
     fondoZ: -7.4, // hasta dónde llega el piso hacia el fondo de la sala
-    bordeZ: 0.3, // el borde que sobresale hacia el jugador
-    spawnZ: -2.2, // dónde reaparece el jugador
+    spawnZ: -3.0, // dónde queda el jugador al llegar o reaparecer
     altoFondo: 6, // alto del panel del fondo, donde está el botón RESET grande
   },
 
-  // Tramos de abajo hacia arriba. `alto` es lo que sube cada uno (la parte de arriba del checkpoint).
+  // Tramos de abajo hacia arriba. `alto` es lo que sube cada uno (hasta su piso).
   //   paso: separación vertical (m) entre agarres al principio y al final del tramo (sube con la dificultad)
   //   distanciaMax: distancia máxima (m) entre agarres consecutivos de la ruta garantizada
+  //   separacion: distancia entre agarres al rellenar la pared (más chica = más agarres)
   //   amplitud: cuánto se aparta del centro del zigzag la ruta (m); xMax: hasta dónde llegan los agarres
   //   reglas: tipos especiales, desde qué fracción del tramo aparecen y con qué probabilidad
   //   paneles: fracciones del tramo donde la ruta pasa por un panel que gira
-  //   extras: agarres de más por cada agarre de la ruta (la pared es amplia y hay donde elegir)
   //   fragmento: fracción de altura del fragmento; enRuta = está justo en el camino (tutorial)
   //   tiposDificiles: tipos con los que se endurece la zona del fragmento
   tramos: [
@@ -134,11 +142,11 @@ export const ESCENARIO = {
       alto: 5.6,
       paso: [0.45, 0.6],
       distanciaMax: 0.8,
+      separacion: 0.7,
       amplitud: [0.45, 1.2],
       xMax: 5.6,
-      reglas: [{ tipo: 'hunde', desde: 0.7, prob: 0.5 }],
+      reglas: [{ tipo: 'hunde', desde: 0.7, prob: 0.4 }],
       paneles: [],
-      extras: 2.4,
       fragmento: { fraccion: 0.4, enRuta: true },
       tiposDificiles: [],
     },
@@ -147,14 +155,14 @@ export const ESCENARIO = {
       alto: 8,
       paso: [0.5, 0.68],
       distanciaMax: 0.85,
+      separacion: 0.8,
       amplitud: [0.5, 1.5],
       xMax: 5.6,
       reglas: [
-        { tipo: 'lata', desde: 0.25, prob: 0.5 },
-        { tipo: 'hunde', desde: 0.15, prob: 0.3 },
+        { tipo: 'lata', desde: 0.25, prob: 0.4 },
+        { tipo: 'hunde', desde: 0.15, prob: 0.25 },
       ],
       paneles: [0.25, 0.55],
-      extras: 2.4,
       fragmento: { fraccion: 0.65, enRuta: false },
       tiposDificiles: ['lata', 'hunde'],
     },
@@ -163,15 +171,15 @@ export const ESCENARIO = {
       alto: 7,
       paso: [0.5, 0.75],
       distanciaMax: 1.05,
+      separacion: 0.95,
       amplitud: [0.6, 1.9],
       xMax: 5.6,
       reglas: [
-        { tipo: 'intermitente', desde: 0, prob: 0.75 },
-        { tipo: 'lata', desde: 0.4, prob: 0.15 },
-        { tipo: 'hunde', desde: 0.2, prob: 0.1 },
+        { tipo: 'intermitente', desde: 0, prob: 0.6 },
+        { tipo: 'lata', desde: 0.4, prob: 0.12 },
+        { tipo: 'hunde', desde: 0.2, prob: 0.08 },
       ],
       paneles: [0.25, 0.5, 0.75],
-      extras: 2.0,
       fragmento: { fraccion: 0.7, enRuta: false },
       tiposDificiles: ['intermitente', 'lata'],
     },
@@ -180,10 +188,10 @@ export const ESCENARIO = {
 
 // Límites para el jugador: no puede salir del espacio de juego (ni caminar por el "limbo" de afuera).
 export const LIMITES = {
-  margen: 0.3, // m que se deja de borde respecto de las paredes y los bordes de las plataformas
+  margen: 0.3, // m que se deja de borde respecto de las paredes y los bordes de los pisos
   sala: 8, // medio lado de la sala (m)
-  aire: { zAtras: -0.6, zAdelante: 0.6 }, // mientras escala, cuánto puede separarse de la pared (m)
-  piso: { zAtras: -0.4 }, // en el piso de la sala no puede entrar en la pared
+  aire: { zAtras: -0.6, zAdelante: 0.6 }, // mientras escala, cuánto puede separarse de su lugar frente a la pared (m)
+  piso: { cercaDeLaPared: 0.9 }, // en el piso de la sala, a cuánto del frente de la pared puede acercarse (m)
   pisoTolerancia: 0.05, // altura (m) hasta la que se considera que está en el piso de la sala
 };
 
@@ -234,7 +242,8 @@ export const PANEL = {
 
 // Resaltado de un agarre cuando la mano (o el mouse) está al alcance.
 export const RESALTADO = {
-  intensidad: 0.35, // brillo propio del agarre, de 0 a 1
+  intensidad: 0.5, // brillo propio del agarre cuando una mano lo tiene al alcance, de 0 a 1
+  base: 0.22, // brillo propio de todos los agarres, para que se distingan del decorado
 };
 
 // Sonidos sintetizados (no hay archivos de audio).
@@ -401,6 +410,13 @@ export const TIROLESA = {
   enchufe: { ancho: 0.16, alto: 0.09, profundidad: 0.26, saliente: 1.05 }, // chico y gris, casi como parte de la torre
 };
 
+// Ascenso automático al piso de cada escalón, al agarrarse del reborde de arriba de la pared.
+export const ASCENSO = {
+  velocidad: 1.6, // m/s, constante (sin aceleraciones, para no marear)
+  alturaPorEncima: 0.35, // m que sube el camino por encima del piso antes de avanzar sobre él
+  margenProteccion: 700, // ms extra sin caer después de llegar al piso
+};
+
 // Final: el botón RESET, la rotura de la pantalla, el exterior al amanecer y la medalla.
 export const FINAL = {
   umbralGolpe: 1.0, // m/s hacia el botón para que cuente como golpe con la mano (solo con casco)
@@ -411,6 +427,7 @@ export const FINAL = {
   enfriamientoGolpe: 1.2, // s hasta que el mismo botón vuelve a aceptar un golpe
   medallas: { oro: 120, plata: 180 }, // s: menos de 2 min oro, menos de 3 min plata, el resto bronce
   frase: 'Subiste de nivel, adentro y afuera de la pantalla',
+  cielo: { y: 14, distancia: 30, ancho: 30, alto: 8 }, // dónde flota la frase, en el cielo, frente al jugador
   teclaReiniciar: 'KeyR', // en modo escritorio, para volver a jugar
   duracionGrietas: 0.9, // s que tardan las grietas en abrirse
   pausaAntesDeLuz: 1.2, // s entre el golpe y el comienzo del fundido (tiempo para leer la frase del Glitch)
@@ -421,6 +438,7 @@ export const FINAL = {
     x: 300, // el exterior está lejos de la sala, en x
     radioLimite: 9, // m: hasta dónde se puede caminar
     densidadNiebla: 0.004,
+    intensidadSol: 1.1, // luz que ilumina los objetos del exterior
   },
 };
 
@@ -442,33 +460,36 @@ export const DECORADO = {
   taza: '#5b8a86',
   cafe: '#2b2118',
   // Teclado
-  tecladoCarcasa: '#2c2738',
-  tecladoBase: '#1f1b29',
-  apoyamunecas: '#3a3447',
-  teclas: ['#3b3449', '#443c54'],
-  teclaEspecial: '#30293e',
+  tecladoCarcasa: '#3d3753',
+  tecladoBase: '#2a2540',
+  apoyamunecas: '#4d4566',
+  teclas: ['#5b5273', '#645a7d'],
+  teclaEspecial: '#463e5c',
   leyenda: '#cfc6e4',
   raton: '#3d3650',
   // Torre de PC
-  torreCarcasa: '#2b2840',
+  torreCarcasa: '#3a3756',
   placaBase: '#2e4a45',
   placaBaseDetalle: '#3f6a60',
   metal: '#8f8aa8',
-  metalOscuro: '#4a4666',
-  ventilador: '#3d3a58',
+  metalOscuro: '#5a5678',
+  ventilador: '#4a4768',
   ventiladorAspa: '#6a6690',
   gpu: '#262335',
   gpuAcento: '#7a62b8',
   ram: '#8a84a6',
   ramLuz: '#9d86e6',
   cables: ['#9b82e6', '#6fae8f', '#d9a15b'],
-  parlante: '#2e2a3c',
-  parlanteCono: '#524c6c',
+  parlante: '#3a3650',
+  parlanteCono: '#625c80',
   // Monitor
-  monitorMarco: '#232030',
+  monitorMarco: '#2d2a40',
   monitorPantalla: '#27304f',
-  // Plataformas
-  rejilla: '#3c3650', // entrepaño de rejilla metálica
+  // Escalones y pisos
+  bloque: '#2b2640', // bloque macizo de cada escalón
+  torreFondo: '#352f50', // fondo de la pared de la torre y del monitor
+  torreFondoTira: '#40395f',
+  poste: '#4a4666', // poste que une cada agarre con la pared
   soporte: '#2f2b42',
   luzCheckpoint: '#6fae8f', // franja de luz suave que marca el checkpoint
   pisoFinal: '#6a5a88',

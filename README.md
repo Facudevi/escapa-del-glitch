@@ -25,7 +25,8 @@ La partida dura unos 2 minutos y medio. Si te caés, no pasa nada: volvés al ú
 
 ### El juego
 - Cinco tipos de agarre, cada uno con su color y su forma: **tecla firme** (lavanda), **tecla que se hunde**, **lata que se rompe** (cruje y cae a los 3 s), **bloque intermitente** (mirá su anillo) y **panel que gira**. Los agarres al alcance se resaltan.
-- Un cable **USB** en lo alto de la torre te lleva solo hasta el segundo checkpoint.
+- Cada tramo es un **escalón** (teclado, torre de PC y monitor) con un piso arriba donde descansar: llegás agarrándote del **reborde verde** de arriba de la pared, y desde el piso ves de frente el tramo siguiente.
+- Un cable **USB** en lo alto de la torre, difícil de ver y de agarrar, te lleva solo hasta el piso de arriba de la torre.
 - Una **niebla de píxeles** sube despacio desde abajo. Si te alcanza, volvés al último checkpoint; si alcanza un fragmento sin juntar, el **Glitch** se lo come y lo manda más arriba: reaparece en un agarre del tramo siguiente o, si ya completaste el tercero, escondido entre los objetos de videojuegos del piso de arriba.
 - Al final, una medalla según el tiempo: **oro** menos de 2 min, **plata** menos de 3, **bronce** el resto.
 
@@ -60,7 +61,9 @@ Abrir `http://localhost:5173`. Otros comandos: `npm run build` (genera `dist/`) 
 │   ├── config.js      tiempos, velocidades, medidas y colores
 │   ├── tramos.js      generador de la pared (agarres, paneles, fragmentos)
 │   ├── decorado.js    escritorio, teclado, torre de PC y monitor con volumen
-│   ├── plataformas.js entrepaños de descanso y piso de arriba con el RESET
+│   ├── plataformas.js pisos de arriba de cada escalón y piso final con el RESET
+│   ├── teclado.js     distribución de las teclas del teclado gigante
+│   ├── objetosFinal.js podio con medalla, pedestal del botón y cartel del exterior
 │   ├── fusion.js      junta mallas para bajar las llamadas de dibujo
 │   ├── dificultad.js  modo normal y modo fácil
 │   ├── sonidos.js     efectos, música y audio espacial
