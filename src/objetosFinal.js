@@ -78,7 +78,7 @@ function estrella(radioExterior, radioInterior, profundidad) {
 }
 
 // Podio de dos escalones con una columna y, arriba, una medalla con cinta colgando de un soporte.
-// Devuelve { grupo, pintar(tipo, textoTiempo), mecer(tiempo) }.
+// Devuelve { grupo, pintar(tipo, textoTiempo, textoExtra), mecer(tiempo) }.
 export function crearPodioConMedalla() {
   const grupo = new THREE.Group();
   const piedra = estandar('#d8cfe6');
@@ -127,12 +127,12 @@ export function crearPodioConMedalla() {
 
   return {
     grupo,
-    pintar(tipo, textoTiempo) {
+    pintar(tipo, textoTiempo, textoExtra = null) {
       const m = MEDALLAS[tipo] || MEDALLAS.bronce;
       materialDisco.color.set(m.disco);
       materialBorde.color.set(m.borde);
       materialEstrella.color.set(m.estrella);
-      placa.userData.dibujar([`Medalla de ${tipo}`, textoTiempo]);
+      placa.userData.dibujar(textoExtra ? [`Medalla de ${tipo}`, textoTiempo, textoExtra] : [`Medalla de ${tipo}`, textoTiempo]);
     },
     mecer(tiempo) {
       medalla.rotation.y = Math.sin(tiempo * 0.9) * 0.4;

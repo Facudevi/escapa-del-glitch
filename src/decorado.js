@@ -85,7 +85,7 @@ function plano(g, ancho, alto, textura, x, y, atras) {
 
 // Teclado completo que ocupa toda la pared: carcasa, hilera de teclas lisas y apoyamuñecas abajo
 function crearTeclado(g, t) {
-  const apoyo = 1.55; // alto del apoyamuñecas
+  const apoyo = E.teclado.arriba - 3.25 - 0.4; // alto del apoyamuñecas: llega hasta abajo de las teclas
   const altoCarcasa = t.y1 - apoyo;
   caja(g, W, altoCarcasa, 0.3, 0, apoyo + altoCarcasa / 2, 0, D.tecladoCarcasa);
   // Marco: borde de arriba y de los costados, apenas más alto que las teclas
@@ -255,7 +255,7 @@ function crearPostes(paredes, datos) {
   datos.paneles.forEach((p) => apoyar(paredes[p.tramo], p.x, p.y, E.panel.centro - PANEL.grosor / 2));
   datos.bordes.forEach((b) => {
     const g = paredes[b.tramo];
-    for (let x = -W / 2 + 0.7; x < W / 2; x += 2.2) caja(g, 0.2, 0.2, E.salienteAgarres - 0.05, x, b.y, 0.05, D.poste);
+    b.xs.forEach((x) => caja(g, 0.2, 0.2, E.salienteAgarres - 0.05, x, b.y, 0.05, D.poste));
   });
 }
 

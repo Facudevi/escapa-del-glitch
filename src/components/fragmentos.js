@@ -15,7 +15,7 @@
 //
 // Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-recogido' { tramo, total } y
 // 'fragmentos-revelados'. Escucha 'niebla-termino' para esconder arriba los fragmentos comidos.
-// Para otros componentes: recogidos, lista, marcar(tramo, ms), comer(tramo, reubicar) y revelar().
+// Para otros componentes: recogidos, perdidos (los que se comió el Glitch), lista, marcar(tramo, ms), comer(tramo, reubicar) y revelar().
 import { COLORES, FRAGMENTO } from '../config.js';
 import { frenteTramo } from '../utilidades.js';
 import { actualizarOyente, crearZumbido, fragmentoRecogido } from '../sonidos.js';
@@ -37,6 +37,7 @@ AFRAME.registerComponent('fragmentos', {
   init() {
     this.lista = []; // { tramo, estado, x, y, z, grupo, halo, zumbido, marcaHasta }
     this.recogidos = 0;
+    this.perdidos = new Set(); // fragmentos (por número) que el Glitch se comió alguna vez: bajan la medalla
     this.construido = false;
     this.manos = [];
     this.tiempo = 0;
@@ -144,6 +145,7 @@ AFRAME.registerComponent('fragmentos', {
   comer(tramo, reubicar = false) {
     const f = this.lista.find((x) => x.tramo === tramo && x.estado === 'pared');
     if (!f) return;
+    this.perdidos.add(tramo); // aunque después se junte de nuevo, ya se perdió: baja la medalla
     const refugio = reubicar ? this.buscarRefugio(f) : null;
     if (refugio) {
       f.reubicaciones += 1;
@@ -200,6 +202,7 @@ AFRAME.registerComponent('fragmentos', {
       if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
     });
     this.recogidos = 0;
+    this.perdidos.clear();
     Array.from({ length: FRAGMENTO.total }, (_, i) => i).forEach((i) => {
       ['#reset-hueco-', '#reset-hueco-fondo-'].forEach((prefijo) => {
         const hueco = document.querySelector(`${prefijo}${i}`);
@@ -239,7 +242,7 @@ AFRAME.registerComponent('fragmentos', {
       // ¿La toca alguna mano?
       let toca = this.manos.some((mano) => {
         mano.object3D.getWorldPosition(this.posMano);
-        return this.posMano.distanceTo(f.grupo.position) <= FRAGMENTO.radioRecoger;
+        return this.posMano.distanceTo(f.grupo.position) <= (f.tramoActual >= 1 ? FRAGMENTO.radioRecogerDificil : FRAGMENTO.radioRecoger);
       });
       // Arriba, los escondidos también se juntan al pasar cerca
       if (!toca && f.estado === 'escondido') {

@@ -107,20 +107,22 @@ AFRAME.registerComponent('escenario-glitch', {
     });
   },
 
-  // Reborde de arriba de una pared: una barra larga, verde como la franja del piso. Agarrarse de él
-  // lleva solo hasta el piso (ver ascenso.js).
+  // Rebordes de arriba de una pared: tramos cortos de barra, verdes como la franja del piso. Agarrarse de
+  // uno lleva solo hasta el piso (ver ascenso.js).
   crearBorde(b) {
     const B = ESCENARIO.borde;
     const z = frenteTramo(b.tramo) + ESCENARIO.salienteAgarres - B.grosor / 2;
-    crear(this.el, 'a-box', {
-      agarre: 'tipo: borde',
-      ascenso: `tipo: borde; orden: ${b.tramo + 1}`,
-      position: `0 ${b.y.toFixed(3)} ${z.toFixed(3)}`,
-      width: ESCENARIO.anchoPared - 0.4,
-      height: B.alto,
-      depth: B.grosor,
-      color: COLORES.verde,
-      material: 'roughness: 0.7; metalness: 0',
+    b.xs.forEach((x) => {
+      crear(this.el, 'a-box', {
+        agarre: 'tipo: borde',
+        ascenso: `tipo: borde; orden: ${b.tramo + 1}`,
+        position: `${x} ${b.y.toFixed(3)} ${z.toFixed(3)}`,
+        width: B.ancho,
+        height: B.alto,
+        depth: B.grosor,
+        color: COLORES.verde,
+        material: 'roughness: 0.7; metalness: 0',
+      });
     });
   },
 
@@ -139,8 +141,8 @@ AFRAME.registerComponent('escenario-glitch', {
       width: E.ancho,
       height: E.alto,
       depth: E.profundidad,
-      color: DECORADO.metal,
-      material: 'roughness: 0.6; metalness: 0',
+      color: DECORADO.enchufeOculto,
+      material: 'roughness: 0.9; metalness: 0',
     });
     // Lengüeta del conector
     crear(enchufe, 'a-box', {

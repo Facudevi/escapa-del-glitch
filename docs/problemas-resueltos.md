@@ -147,3 +147,10 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** el componente de límites seguía activo y devolvía al jugador a la sala, a 300 m del exterior.
 - **Solución:** los límites no actúan al terminar el juego, y el exterior se acomoda delante de la posición real de la cámara y de adonde mira, no del centro del rig.
 - **Aprendizaje:** un sistema nuevo (los límites) puede romper lo que ya andaba: hay que revisar los otros estados del juego cuando se agrega.
+
+## 21. Las rutas de agarres se veían como caminos marcados
+
+- **Qué pasó:** los agarres de la ruta garantizada formaban una fila o dos carriles evidentes, con el resto de la pared casi vacía.
+- **Por qué:** el generador armaba primero un camino y después agregaba agarres alrededor.
+- **Solución:** se eliminó la ruta. Ahora hay una trama escalonada con un poco de desorden, se sacan agarres al azar sin dejar a ninguno sin salida (un camino hacia arriba y otro hacia abajo) y los tipos difíciles se reparten lo más lejos posible entre sí.
+- **Aprendizaje:** la garantía de que se puede subir puede ser una propiedad del conjunto (todo agarre tiene salida) y no un camino dibujado.

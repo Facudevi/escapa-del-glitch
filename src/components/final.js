@@ -145,17 +145,22 @@ AFRAME.registerComponent('final', {
     this.grupo.object3D.add(cartelMadera);
   },
 
-  // Medalla según el tiempo: oro menos de 2 min, plata menos de 3 min, bronce el resto
-  tipoDeMedalla(segundos) {
-    if (segundos < FINAL.medallas.oro) return 'oro';
-    if (segundos < FINAL.medallas.plata) return 'plata';
-    return 'bronce';
+  // Medalla: primero cuentan los fragmentos perdidos (los que se comió el Glitch). Con uno perdido, la medalla
+  // más alta posible es la de plata; con dos o más, la de bronce, sin importar el tiempo. Después manda el
+  // tiempo: oro menos de 2 min, plata menos de 3 min, bronce el resto. Gana la peor de las dos.
+  tipoDeMedalla(segundos, perdidos = 0) {
+    const orden = ['oro', 'plata', 'bronce'];
+    const porTiempo = segundos < FINAL.medallas.oro ? 0 : segundos < FINAL.medallas.plata ? 1 : 2;
+    const porFragmentos = Math.min(perdidos, orden.length - 1);
+    return orden[Math.max(porTiempo, porFragmentos)];
   },
 
   mostrarResultado(segundos) {
-    const tipo = this.tipoDeMedalla(segundos);
-    this.podio.pintar(tipo, `Tiempo: ${formatoTiempo(segundos)}`);
-    this.ultimoResultado = { tipo, segundos };
+    const fragmentos = this.escena.components.fragmentos;
+    const perdidos = fragmentos ? fragmentos.perdidos.size : 0;
+    const tipo = this.tipoDeMedalla(segundos, perdidos);
+    this.podio.pintar(tipo, `Tiempo: ${formatoTiempo(segundos)}`, perdidos ? `Fragmentos perdidos: ${perdidos}` : null);
+    this.ultimoResultado = { tipo, segundos, perdidos };
   },
 
   // ---------- Rotura de la pantalla ----------

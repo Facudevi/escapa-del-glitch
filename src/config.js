@@ -71,13 +71,13 @@ export const AMBIENTE = {
   nieblaDensidad: 0.02,
   intensidadAmbiente: 1.5,
   intensidadPunto: 1.2,
-  luces: [{ y: 4, z: 7 }, { y: 10, z: 5 }, { y: 17, z: 3 }, { y: 23, z: 0 }], // luces puntuales cálidas: altura y z (delante de cada tramo)
+  luces: [{ y: 5, z: 7 }, { y: 12, z: 5 }, { y: 19, z: 3 }, { y: 25, z: 0 }], // luces puntuales cálidas: altura y z (delante de cada tramo)
 };
 
 // Medidas de la sala de pruebas de la etapa 1 (en metros).
 export const SALA = {
   lado: 16, // la sala es un cuadrado de lado x lado
-  altoParedes: 26, // paredes que marcan los límites (tienen que llegar a lo más alto de la escalada)
+  altoParedes: 30, // paredes que marcan los límites (tienen que llegar a lo más alto de la escalada)
 };
 
 // Jugador y manos.
@@ -99,10 +99,11 @@ export const VIBRACION = {
 // ese piso se ve de frente la pared del tramo siguiente, que está `profundidadPiso` metros más atrás.
 // Las proporciones de la torre y el monitor respetan las de los objetos reales a escala 1 cm = 18 cm; el
 // teclado se agranda (unidad de tecla de 50 cm) para que ocupe todo el ancho de la pared.
-// Cada tramo es una pared amplia sin camino marcado; el generador (src/tramos.js) arma una ruta
-// garantizada y agarres de más, con dificultad creciente.
+// Cada tramo es una pared amplia sin camino marcado: el generador (src/tramos.js) reparte los agarres por
+// toda la pared, parejos pero sin orden evidente, de modo que haya muchos caminos posibles para subir.
+// Los tipos de agarre más difíciles aparecen más en los tramos de arriba.
 export const ESCENARIO = {
-  semilla: 20261122, // cambia la distribución de los agarres (la misma semilla da siempre la misma pared)
+  semilla: 20261339, // cambia la distribución de los agarres (la misma semilla da siempre la misma pared)
   escala: 18, // cuántas veces más grande que el objeto real es todo el setup
   anchoPared: 12.5, // la pared va de -ancho/2 a +ancho/2 en x
   zFrente: 3.6, // z del frente del primer escalón (el teclado); el de cada tramo siguiente queda más atrás
@@ -111,14 +112,11 @@ export const ESCENARIO = {
   salienteAgarres: 1.15, // cuánto salen los agarres del frente de la pared: más que todo el decorado (que sale hasta 0,7)
   tecla: { ancho: 0.46, alto: 0.3, profundidad: 0.65 }, // medida de la tecla firme y la que se hunde (larga: llega hasta el decorado)
   primerAgarre: 1.2, // altura del primer agarre sobre el piso de cada tramo
-  separacionMinima: 0.5, // distancia mínima (m) entre agarres
-  alcancePoda: 1.5, // al podar agarres sin salida, cuánto más que distanciaMax se considera alcanzable un agarre vecino
-  zonaFragmento: 1.3, // radio (m) alrededor de un fragmento donde los agarres son más difíciles
   panel: { separacionAgarres: 0.3, centro: 0.82 }, // los agarres de un panel quedan a ±separacion del centro; centro = cuánto sale su cuerpo de la pared
   // Teclado del primer tramo: unidad de tecla, y y (sobre el piso) de la fila de arriba de las teclas
-  teclado: { unidad: 0.5, arriba: 5.2 },
-  // Reborde de arriba de cada pared: una barra larga que el jugador agarra para subir al piso
-  borde: { alto: 0.16, grosor: 0.18, bajoElTope: 0.15 },
+  teclado: { unidad: 0.5, arriba: 6.8 },
+  // Reborde de arriba de cada pared: tramos cortos de barra que el jugador agarra para subir al piso
+  borde: { alto: 0.16, grosor: 0.18, bajoElTope: 0.15, ancho: 2.2, posiciones: [-3.2, 0, 3.2] }, // ancho de cada tramo de reborde y dónde están (x)
   // Piso de arriba (sobre el monitor): se camina hasta el botón RESET, al fondo de la sala
   final: {
     ancho: 12.5,
@@ -128,60 +126,57 @@ export const ESCENARIO = {
   },
 
   // Tramos de abajo hacia arriba. `alto` es lo que sube cada uno (hasta su piso).
-  //   paso: separación vertical (m) entre agarres al principio y al final del tramo (sube con la dificultad)
-  //   distanciaMax: distancia máxima (m) entre agarres consecutivos de la ruta garantizada
-  //   separacion: distancia entre agarres al rellenar la pared (más chica = más agarres)
-  //   amplitud: cuánto se aparta del centro del zigzag la ruta (m); xMax: hasta dónde llegan los agarres
-  //   reglas: tipos especiales, desde qué fracción del tramo aparecen y con qué probabilidad
-  //   paneles: fracciones del tramo donde la ruta pasa por un panel que gira
-  //   fragmento: fracción de altura del fragmento; enRuta = está justo en el camino (tutorial)
-  //   tiposDificiles: tipos con los que se endurece la zona del fragmento
+  //   xMax: hasta dónde llegan los agarres a cada lado del centro (m)
+  //   rejilla: separación horizontal y vertical (m) de la trama de la que salen los agarres; se corren un poco
+  //     al azar, así no se nota el orden. Más separación = menos agarres y saltos más largos (más difícil)
+  //   alcance: distancia máxima (m) entre dos agarres vecinos, que garantiza que se pueda pasar de uno a otro
+  //   quitar: fracción de agarres que se sacan al azar (siempre quedan caminos de subida) para que haya huecos
+  //   mezcla: qué fracción de los agarres es de cada tipo especial y desde qué fracción de altura del tramo
+  //     (más difícil cuanto más arriba); se reparten lo más lejos posible entre sí
+  //   paneles: fracciones del tramo donde hay un panel que gira
+  //   fragmento: fracción de altura donde está el fragmento; en los tramos de arriba, `dificiles` son los tipos con los
+  //     que se endurece la zona de `zona` metros alrededor del fragmento (y el agarre más cercano también);
+  //     con `panelDebajo`, el fragmento queda en `zonaX` (x) sobre una lata, y el único camino hasta ella pasa por un panel
   tramos: [
     {
       nombre: 'Teclado',
-      alto: 5.6,
-      paso: [0.45, 0.6],
-      distanciaMax: 0.8,
-      separacion: 0.85,
-      amplitud: [0.45, 1.2],
-      xMax: 5.0,
-      reglas: [{ tipo: 'hunde', desde: 0.7, prob: 0.4 }],
+      alto: 7.2, // más alto que el objeto real a propósito, para que el primer tramo no se supere tan rápido
+      xMax: 4.4,
+      rejilla: { columnas: 1.7, filas: 0.85 },
+      alcance: 1.35,
+      quitar: 0.1,
+      mezcla: [{ tipo: 'hunde', fraccion: 0.1, desde: 0.6 }], // fácil: casi todo firme, y apenas teclas que se hunden arriba
       paneles: [],
-      fragmento: { fraccion: 0.4, enRuta: true },
-      tiposDificiles: [],
+      fragmento: { fraccion: 0.45 },
     },
     {
       nombre: 'Torre de PC',
       alto: 8,
-      paso: [0.5, 0.68],
-      distanciaMax: 0.85,
-      separacion: 0.9,
-      amplitud: [0.5, 1.5],
-      xMax: 5.0,
-      reglas: [
-        { tipo: 'lata', desde: 0.25, prob: 0.4 },
-        { tipo: 'hunde', desde: 0.15, prob: 0.25 },
-      ],
-      paneles: [0.25, 0.55],
-      fragmento: { fraccion: 0.65, enRuta: false },
-      tiposDificiles: ['lata', 'hunde'],
+      xMax: 4.4,
+      rejilla: { columnas: 1.8, filas: 0.9 },
+      alcance: 1.4,
+      quitar: 0.15,
+      mezcla: [
+        { tipo: 'hunde', fraccion: 0.1, desde: 0.15 },
+        { tipo: 'lata', fraccion: 0.15, desde: 0.3 },
+      ], // media: latas que se rompen y teclas que se hunden, repartidas
+      paneles: [0.25], // más el panel que está justo debajo del fragmento
+      fragmento: { fraccion: 0.65, dificiles: ['lata', 'hunde'], zona: 1.2, panelDebajo: true, zonaX: [-4.0, -2.0] }, // el fragmento está en la zona izquierda, sobre una lata a la que se llega por un panel que gira
     },
     {
       nombre: 'Monitor',
       alto: 7,
-      paso: [0.5, 0.75],
-      distanciaMax: 1.05,
-      separacion: 1.0,
-      amplitud: [0.6, 1.9],
-      xMax: 5.0,
-      reglas: [
-        { tipo: 'intermitente', desde: 0, prob: 0.6 },
-        { tipo: 'lata', desde: 0.4, prob: 0.12 },
-        { tipo: 'hunde', desde: 0.2, prob: 0.08 },
-      ],
+      xMax: 4.4,
+      rejilla: { columnas: 1.85, filas: 0.95 },
+      alcance: 1.55,
+      quitar: 0.2,
+      mezcla: [
+        { tipo: 'intermitente', fraccion: 0.25, desde: 0 },
+        { tipo: 'lata', fraccion: 0.1, desde: 0.4 },
+        { tipo: 'hunde', fraccion: 0.05, desde: 0.2 },
+      ], // difícil: bloques que aparecen y desaparecen, con algunas latas
       paneles: [0.25, 0.5, 0.75],
-      fragmento: { fraccion: 0.7, enRuta: false },
-      tiposDificiles: ['intermitente', 'lata'],
+      fragmento: { fraccion: 0.7, dificiles: ['intermitente', 'lata'], zona: 1.3 }, // el fragmento queda en una zona de bloques que aparecen y desaparecen
     },
   ],
 };
@@ -212,8 +207,8 @@ export const LATA = {
   duracionCaida: 1, // s que se ve caer antes de desaparecer
   reaparece: 6, // s hasta que vuelve a estar en su lugar
   duracionAparicion: 0.4, // s que tarda en reaparecer creciendo
-  radio: 0.13,
-  alto: 0.26,
+  radio: 0.2,
+  alto: 0.4,
 };
 
 // Bloque intermitente: aparece y desaparece con un fundido suave (sin parpadeos).
@@ -315,6 +310,7 @@ export const FRAGMENTO = {
   alturaMinimaSobreJugador: 1.0, // un fragmento reubicado queda al menos esto (m) por encima del jugador
   separacionMinima: 1.5, // distancia (m) mínima entre dos fragmentos en la pared
   radioRecoger: 0.45, // distancia (m) de la mano a la que se recoge
+  radioRecogerDificil: 0.36, // en la torre y el monitor hay que acercar más la mano (m)
   radioRecogerCuerpo: 0.6, // en la plataforma de arriba también se recogen al pasar cerca (m)
   velocidadPulso: 0.5, // Hz: el brillo respira muy despacio, sin parpadeo
   // Escondites sobre el piso de arriba (x y z del mundo), pegados a los objetos de videojuegos que lo decoran:
@@ -389,10 +385,15 @@ export const GLITCH = {
 
 // Música de fondo: acordes suaves que cambian despacio.
 export const MUSICA = {
-  volumen: 1.1, // relativo al volumen general de SONIDO
-  segundosPorAcorde: 8,
-  ataque: 2.5, // s que tarda cada acorde en subir
-  cola: 3, // s extra que tarda en apagarse
+  volumen: 1.0, // relativo al volumen general de SONIDO
+  volumenAcordes: 0.45, // el colchón de acordes suena bien bajito, de fondo
+  volumenNotas: 0.9, // las campanitas
+  filtro: 650, // Hz: corta los agudos de los acordes para que suenen redondos
+  segundosPorAcorde: 12,
+  ataque: 4, // s que tarda cada acorde en subir
+  cola: 2, // s extra que tarda en apagarse
+  notasCada: [2.5, 5.5], // s entre campanita y campanita (al azar entre los dos valores)
+  duracionNota: 3.2, // s que tarda en apagarse cada campanita
   teclaSilencio: 'KeyM', // en modo escritorio; con casco, botón B o Y
 };
 
@@ -402,12 +403,13 @@ export const TIROLESA = {
   altoBajoCheckpoint: 2.1, // m por debajo del checkpoint donde está el enchufe
   xMin: 3.6, // m: el enchufe está lejos del centro, entre xMin y xMax (se busca un lugar libre)
   xMax: 5.3,
-  tolerancia: 0.3, // multiplicador del radio de agarre: hay que tocar casi justo el enchufe
+  tolerancia: 0.1, // multiplicador del radio de agarre: hay que tocar el enchufe casi con la mano (2 cm)
   radioCable: 0.03,
   alturaArco: 0.4, // m que se levanta el camino a mitad de recorrido
   curvaZ: 0.35, // m que sale el cable hacia el jugador a mitad de recorrido
   margenProteccion: 800, // ms extra sin caer después de llegar al checkpoint
-  enchufe: { ancho: 0.16, alto: 0.09, profundidad: 0.26, saliente: 1.05 }, // chico y gris, casi como parte de la torre
+  enchufe: { ancho: 0.08, alto: 0.05, profundidad: 0.2, saliente: 1.05 }, // chiquito y del color de la torre, casi invisible
+  distanciaAgarres: { min: 1.0, max: 1.3 }, // distancia (m) al agarre más cercano: hay que estirarse para llegar
 };
 
 // Ascenso automático al piso de cada escalón, al agarrarse del reborde de arriba de la pared.
@@ -489,6 +491,7 @@ export const DECORADO = {
   bloque: '#2b2640', // bloque macizo de cada escalón
   torreFondo: '#352f50', // fondo de la pared de la torre y del monitor
   torreFondoTira: '#40395f',
+  enchufeOculto: '#4a4666', // enchufe USB de la tirolesa: casi del color de la torre
   poste: '#8a85a8', // poste que une cada agarre con la pared (más claro que el decorado, para que se vea)
   postePlaca: '#6a6590', // placa que lo apoya contra la pared
   soporte: '#2f2b42',

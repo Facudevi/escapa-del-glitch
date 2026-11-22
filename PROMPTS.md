@@ -153,6 +153,34 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se pasó de unos 210 a 133 agarres, repartidos parejo con el método del «mejor candidato» y siempre al alcance de otros; todos los agarres (también latas, bloques y paneles) quedaron apoyados en la pared con una placa y un poste visibles. Detalle en la entrada "Menos agarres, mejor repartidos" más abajo.
 
+### Prompt 23 — 2026-11-22
+
+> No sacaste los agarres que ocupan toda la pared, tienen que haber menos cantidad pero distribuidos en el sentido del tipo de agarre, teniendo en cuenta la dificultad de los tramos. Que hayan menos cantidad de agarres por favor.
+> Quiero que el tramo 1 sea un poco más largo verticalmente, así no es tan rápido de superar
+
+**Respuesta:** el reborde que ocupaba todo el ancho pasó a ser dos tramos cortos de barra (uno sobre cada carril de la ruta); la ruta pasó a dos carriles, uno en cada mitad de la pared, con 76 agarres en total; los tipos especiales se reparten según la dificultad del tramo; el tramo del teclado subió de 5,6 a 7,2 m. Detalle en la entrada "Menos agarres por dificultad y teclado más alto" más abajo.
+
+### Prompt 24 — 2026-11-22
+
+> No me parece correcto que tenga rutas marcadas, deben ser agarres distribuidos por el tramo, sin ocupar todos los espacios, pero distribuidos de cierta forma que hayan diferentes caminos posibles que se pueden recorrer sin ser tan marcados
+
+**Respuesta:** se sacaron las rutas (los dos carriles) y el generador reparte los agarres por toda la pared con una trama escalonada con un poco de desorden, sin huecos grandes y con muchos caminos posibles; quedan 83 agarres (más los paneles). Detalle en la entrada "Agarres sin rutas marcadas" más abajo.
+
+### Prompt 25 — 2026-11-22
+
+> Quiero que los fragmentos del tramo 2 y 3 sean díficiles de agarrar o requieran ir por un lugar más dificil, sin cambiar la distribución actual de los agarres, aunque se puede hacer un poco más dificil. Además quiero que el USB sea dificilisimo de agarrar
+
+**Respuesta:** los fragmentos de la torre y el monitor quedaron sobre un agarre especial y rodeados de agarres especiales, y el enchufe USB es mucho más chico, del color de la torre y más lejos de los agarres. Detalle en la entrada "Fragmentos difíciles y USB dificilísimo" más abajo.
+
+### Prompt 26 — 2026-11-22
+
+> Quiero que el jugador en caso de saltearse una medalla, disminuya a plata su medalla,y en caso de que se saltee dos  que sea de bronce, sin importar el tiempo. Ahora, la variable de tiempo sigue siendo igual para determinar la medalla, pero primero se prioriza la perdida de los fragmentos.
+> Además, para obtener el fragmento del tramo 2, debe haber en esa ruta si o si un agarre de un panel que gira y una lata al menos. El fragmento debe estar por la zona izquierda del tramo.
+> Hacer la lata un poco más grande en tamaño, que no sea tan pequeña.
+> La música de fondo resulta muy irritante ya que se escucha una especie de ruido blanco que molesta a los jugadores. Modificarla para que no sea fastidiable
+
+**Respuesta:** la medalla ahora depende primero de los fragmentos perdidos (uno = plata como máximo, dos o más = bronce) y después del tiempo; el fragmento de la torre quedó a la izquierda, sobre una lata a la que solo se llega desde un panel que gira; la lata es un 50 % más grande; y la música pasó a ser un colchón de acordes bajito con campanitas sueltas, sin desafinaciones. Detalle en la entrada "Medallas por fragmentos, fragmento de la torre, lata y música" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -536,4 +564,88 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Pendiente (depende del equipo):**
 - Probar con casco que 133 agarres sean suficientes y que los saltos entre ellos se sientan cómodos; si hace falta más o menos, tocar `separacion` en `config.js`.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Menos agarres por dificultad y teclado más alto
+
+**Pedido:** menos agarres; los que ocupaban toda la pared (el reborde) fuera; tipos repartidos según la dificultad de cada tramo; tramo 1 más largo en vertical.
+
+**Resumen de lo hecho:**
+- **Reborde en tramos cortos:** antes era una barra de 12 m. Ahora son dos barras de 1,8 m, una sobre el último agarre de cada carril (`ESCENARIO.borde`: `ancho` y `separacion`), con sus soportes.
+- **Dos carriles** (`tramos.js`): la ruta garantizada sube por dos caminos serpenteantes, uno en cada mitad de la pared, así los agarres se reparten por todo el ancho y no se amontonan en el centro. Cada carril tiene sus pasos más separados (`paso` subió en los tres tramos).
+- **Cantidad:** 76 agarres (20 en el teclado, 27 en la torre y 29 en el monitor) más los 4 paneles, contra 133 antes. El relleno quedó apenas como complemento (`separacion` 1,2 / 1,3 / 1,4 m) y la semilla se eligió buscando un reparto parejo.
+- **Tipos según la dificultad** (`ESCENARIO.tramos[i].mezcla` y `reglas`): teclado casi todo firme con apenas teclas que se hunden arriba; torre con latas que se rompen y teclas que se hunden; monitor con bloques intermitentes y algunas latas. Los tipos especiales se colocan cada uno en el agarre más lejano de los otros especiales, para que se repartan.
+- **Tramo 1 más largo:** pasó de 5,6 a 7,2 m. El teclado se ajusta solo (apoyamuñecas más alto), la altura total es 22,2 m y se subieron las paredes de la sala y las luces.
+- Los refugios de los fragmentos ahora también salen de los agarres de la ruta.
+
+**Buenas prácticas aplicadas:**
+- Curva de dificultad: cada tramo introduce un tipo de agarre más exigente que el anterior.
+- Densidad justa, sin saturar la vista ni el casco.
+
+**Verificado en Chrome:** jugador automático con mouse escaló los tres tramos por los dos carriles, subiendo por los rebordes cortos, con 0 caídas y 0 errores en la consola (la niebla se pausó en la prueba). El jugador automático no pudo agarrar algunas latas por ir demasiado rápido, igual que antes.
+
+**Pendiente (depende del equipo):**
+- Probar con casco que los carriles se sientan cómodos y medir cuánto dura el tramo del teclado ahora que es más alto.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Agarres sin rutas marcadas
+
+**Pedido:** que no haya rutas marcadas: agarres distribuidos por todo el tramo, sin ocupar todos los espacios, con distintos caminos posibles que no se noten tanto.
+
+**Resumen de lo hecho:**
+- **Se eliminó el concepto de ruta** (`tramos.js` reescrito): ya no hay carriles ni caminos garantizados que se vean como una fila de agarres.
+- **Trama con desorden:** cada fila de agarres está corrida media columna de la anterior y cada agarre se corre un poco al azar, así que se reparten parejo por todo el ancho, sin un orden que se note.
+- **Huecos y caminos:** se sacan agarres al azar (10 % en el teclado, 15 % en la torre y 20 % en el monitor), pero solo los que se pueden sacar sin dejar a otros sin salida: cada agarre que queda tiene un vecino más abajo (o el piso) y uno más arriba (o el reborde) al alcance. Quedan muchos caminos distintos para subir.
+- **Dificultad por tramo** (`ESCENARIO.tramos[i]`): `rejilla` (más separación, saltos más largos y menos agarres en los tramos de arriba), `alcance`, `quitar` y `mezcla` de tipos (teclado casi todo firme; torre con latas y teclas que se hunden; monitor con bloques intermitentes y latas). Los tipos especiales se reparten lo más lejos posible entre sí y siempre queda un camino de agarres firmes hasta arriba.
+- **Cantidad:** 83 agarres (30 en el teclado, 31 en la torre y 22 en el monitor) más los 4 paneles. No se puede bajar mucho más sin dejar saltos imposibles: la pared mide unos 160 m² utilizables y los agarres tienen que estar a un alcance de brazo.
+- Los fragmentos van apenas arriba de un agarre firme (ya no hacen falta desvíos) y el enchufe USB queda hacia un costado, a una mano de un agarre. El reborde de arriba son tres barras cortas por pared.
+
+**Buenas prácticas aplicadas:**
+- Libertad de elección: muchos caminos posibles, sin una única ruta evidente.
+- Curva de dificultad por tramo, y siempre una salida (sin callejones).
+
+**Verificado en Chrome:** el jugador automático eligió caminos al azar por la pared (con latas, bloques intermitentes y paneles incluidos) y completó los tres tramos con 0 caídas y 0 errores (la niebla se pausó en la prueba).
+
+**Pendiente (depende del equipo):**
+- Probar con casco que los saltos (hasta 1,35 a 1,55 m entre vecinos) se sientan cómodos; si no, bajar `alcance` y `columnas` o sumar agarres en `config.js`.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Fragmentos difíciles y USB dificilísimo
+
+**Pedido:** fragmentos de los tramos 2 y 3 difíciles de agarrar (o que obliguen a ir por un lugar más difícil), sin cambiar la distribución de agarres (solo un poco más difícil), y el USB dificilísimo de agarrar.
+
+**Resumen de lo hecho:**
+- **Fragmentos de la torre y el monitor** (`tramos.js`, `ESCENARIO.tramos[i].fragmento`): el agarre sobre el que flota el fragmento deja de ser firme y pasa a ser una lata o una tecla que se hunde (torre) o un bloque intermitente (monitor). Los agarres de alrededor (1,2 m en la torre y 1,3 m en el monitor) también se endurecen, siempre que quede un camino de agarres firmes hasta arriba. La posición de los demás agarres no cambió; solo cambiaron algunos tipos (en la torre hay 6 latas en vez de 5 y en el monitor 7 bloques en vez de 6).
+- **Hay que acercar más la mano:** en esos tramos el fragmento se recoge a 0,36 m de la mano (antes 0,45), `FRAGMENTO.radioRecogerDificil`.
+- **USB** (`TIROLESA`): el enchufe mide 8 × 5 cm (antes 16 × 9), es del color de la torre, está a entre 1,0 y 1,3 m del agarre más cercano (hay que estirarse) y la tolerancia al agarrarlo bajó de 0,3 a 0,1: con casco hay que tocarlo a unos 2 cm.
+
+**Buenas prácticas aplicadas:**
+- Riesgo y recompensa: lo más escondido o difícil es un atajo opcional o un objetivo extra, no una barrera para avanzar.
+- La dificultad crece por tramo.
+
+**Verificado en Chrome:** con la mano en el agarre anfitrión (lata en la torre, bloque intermitente en el monitor) se recogen los fragmentos de los tramos 2 y 3. El USB sigue pudiéndose agarrar apuntando al centro del enchufe con el mouse.
+
+**Pendiente (depende del equipo):**
+- Probar con casco si el USB es demasiado difícil (`TIROLESA.tolerancia`) y si los fragmentos se sienten bien (`FRAGMENTO.radioRecogerDificil`).
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Medallas por fragmentos, fragmento de la torre, lata y música
+
+**Pedido:** que perder fragmentos baje la medalla sin importar el tiempo; fragmento de la torre a la izquierda con un panel y una lata sí o sí en el camino; lata más grande; música menos irritante.
+
+**Resumen de lo hecho:**
+- **Medalla** (`final.js`, `fragmentos.js`): se cuentan los fragmentos que el Glitch se comió (`fragmentos.perdidos`, aunque después se junten). Con uno perdido el tope es plata; con dos o más, bronce. El tiempo se aplica igual que antes y gana la peor de las dos. La placa del podio muestra «Fragmentos perdidos: n» y la pantalla de inicio avisa la regla.
+- **Fragmento de la torre** (`tramos.js`, `ESCENARIO.tramos[1].fragmento`): queda en la zona izquierda (x entre −4 y −2), sobre una lata. Los agarres que llegan a esa lata desde abajo se sacan, salvo un panel que gira que se coloca justo debajo; hasta ese panel se llega por agarres firmes. Comprobado en un grafo: sin el panel no se puede llegar al fragmento, y el agarre del fragmento es una lata. Se mantiene el resto de la distribución (se sacaron unos pocos agarres cerca de la lata).
+- **Lata** (`LATA`): de 26 × 13 cm a 40 × 20 cm de radio y alto, un 50 % más grande.
+- **Música** (`sonidos.js`, `MUSICA`): se sacó el colchón de seis notas desafinadas que sonaba como un zumbido parejo. Ahora son acordes de tres notas sin desafinar, más bajos y con un filtro más cerrado, y sobre ellos campanitas sueltas de una escala pentatónica, con un poco de eco y a intervalos al azar. Se puede silenciar con M o con B/Y como antes.
+
+**Buenas prácticas aplicadas:**
+- Consecuencias claras y avisadas: la regla de las medallas se explica en la pantalla de inicio y en la placa final.
+- Audio de fondo agradable y bajo, sin ruido constante (fatiga auditiva).
+
+**Verificado en Chrome:** tabla de medallas por tiempo y fragmentos perdidos; lata con radio 0,2 y alto 0,4; sin errores en la consola. El jugador automático no pudo repetir el camino exacto por el panel porque espera con una sola mano, igual que una persona que no descansa; el camino se comprobó con el grafo.
+
+**Pendiente (depende del equipo):**
+- Escuchar la música nueva en el casco y ajustar `MUSICA.volumen`, `volumenAcordes` y `volumenNotas`.
+- Probar con personas el fragmento de la torre y la dificultad del panel más la lata.
 - Intervención manual con commit antes y después.

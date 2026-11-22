@@ -1,16 +1,17 @@
 // Generador de la escalada. Arma, a partir de ESCENARIO en config.js, la distribución de agarres de
 // los tres tramos (teclado, torre de PC y monitor). No usa A-Frame: solo calcula posiciones.
 //
-// Cada tramo es una pared amplia sin camino marcado, pero siempre se puede subir:
-//   1. Se arma una RUTA GARANTIZADA en zigzag, que se va corriendo hacia los costados, con agarres a
-//      distancias alcanzables. Su separación vertical y los tipos especiales aumentan hacia arriba.
-//   2. Se agregan dos filas de SALIDA sobre el piso del tramo (así se puede empezar a escalar desde
-//      cualquier lado) y se RELLENA la pared con agarres parejos, sin dejar huecos grandes.
-//   3. Se ubican los fragmentos (el del tramo 1 en el camino, los demás a un costado, con un desvío).
-//   4. Se PODAN los agarres que no llevan a ningún lado: cada agarre de relleno tiene que poder alcanzarse
-//      desde abajo y tiene que tener un camino hacia arriba (hasta el reborde del tope).
-//   5. Se reservan los REFUGIOS (adonde el Glitch puede llevar un fragmento que se come) y se ubica el
-//      enchufe de la TIROLESA, lejos de la ruta, con una cadena de agarres que lleva hasta él.
+// Cada tramo es una pared amplia SIN camino marcado: los agarres se reparten por toda la pared, parejos
+// pero sin orden evidente, y siempre hay muchas formas de subir.
+//   1. Se arma una trama escalonada de puntos (cada fila corrida media columna respecto de la anterior) y
+//      cada punto se corre un poco al azar, para que no se note el orden.
+//   2. Se ubican los paneles que giran (reemplazan un agarre y despejan los vecinos).
+//   3. Se sacan agarres al azar, pero solo los que se pueden sacar sin dejar a otros sin camino: cada agarre
+//      que queda tiene que tener un agarre vecino más abajo (o el piso) y otro más arriba (o el reborde).
+//   4. Se reparten los tipos especiales (se hunde, lata, bloque intermitente) según la dificultad del tramo,
+//      lo más lejos posible entre sí y dejando siempre un camino de agarres firmes hasta arriba.
+//   5. Se ubican los fragmentos, los refugios (adonde el Glitch puede llevar un fragmento que se come) y el
+//      enchufe de la tirolesa, apartado de los agarres.
 // La misma semilla da siempre la misma pared, así todos prueban lo mismo.
 import { ESCENARIO, TIROLESA } from './config.js';
 import { frenteTramo, lugarFrenteAlTramo } from './utilidades.js';
@@ -26,7 +27,6 @@ function crearAzar(semilla) {
   };
 }
 
-const CON_TIEMPO = ['lata', 'intermitente']; // agarres que no se pueden sostener indefinidamente
 const entre = (a, b, t) => a + (b - a) * t;
 const limitar = (v, min, max) => Math.max(min, Math.min(max, v));
 const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -42,16 +42,16 @@ export function generarEscalada() {
   const tramos = E.tramos.map((t, indice) => {
     const y0 = base;
     base += t.alto;
-    const yBorde = base - E.borde.bajoElTope; // altura del reborde de arriba
     return {
       ...t,
       indice,
       y0,
       y1: base,
       frente: frenteTramo(indice),
-      yBorde,
-      desdeNodos: y0 + E.primerAgarre,
-      hastaNodos: yBorde - 0.45, // la ruta termina a una mano del reborde
+      yBorde: base - E.borde.bajoElTope, // altura del reborde de arriba
+      desdeNodos: y0 + E.primerAgarre, // altura de la fila de abajo
+      hastaNodos: base - E.borde.bajoElTope - 0.45, // altura de la fila de arriba (a una mano del reborde)
+      bordeX: E.borde.posiciones,
     };
   });
   const alturaFinal = base; // piso de arriba de todo (donde está el RESET)
@@ -71,272 +71,273 @@ export function generarEscalada() {
   });
 
   const progreso = (t, y) => limitar((y - t.desdeNodos) / (t.hastaNodos - t.desdeNodos), 0, 1);
-
-  // Tipo de agarre según las reglas del tramo y qué tan avanzado está
-  const elegirTipo = (t, p) => {
-    for (const regla of t.reglas) {
-      if (p >= regla.desde && azar() < regla.prob) return regla.tipo;
-    }
-    return 'firme';
-  };
-  const nuevoAgarre = (t, tipo, x, y, extra = {}) => ({
+  const nuevoAgarre = (t, tipo, x, y) => ({
     tipo,
     tramo: t.indice,
     x,
     y,
     fase: tipo === 'intermitente' ? +(azar() * 5).toFixed(2) : 0,
-    ...extra,
   });
+  // Distancia de un punto al reborde más cercano de su tramo (los rebordes son barras cortas)
+  const distanciaAlBorde = (t, n) =>
+    Math.min(...t.bordeX.map((bx) => Math.hypot(Math.max(0, Math.abs(n.x - bx) - E.borde.ancho / 2), t.yBorde - n.y)));
 
-  // 1. Ruta garantizada de cada tramo, en zigzag y de abajo hacia arriba. El centro del zigzag se va
-  // corriendo hacia los costados para aprovechar todo el ancho de la pared.
-  const rutas = tramos.map((t) => {
-    const nodos = [nuevoAgarre(t, 'firme', 0, t.desdeNodos, { ruta: true })];
-    let lado = 1;
-    let centro = 0;
-    let guardia = 0;
-    while (nodos[nodos.length - 1].y < t.hastaNodos - 0.05 && guardia++ < 200) {
-      const anterior = nodos[nodos.length - 1];
-      const p = progreso(t, anterior.y);
-      lado = -lado;
-
-      centro = limitar(centro + (azar() - 0.5) * 1.1, -(t.xMax - 1.6), t.xMax - 1.6);
-      let x = limitar(centro + lado * entre(t.amplitud[0], t.amplitud[1], azar()) + (azar() - 0.5) * 0.3, -t.xMax, t.xMax);
-      let dx = x - anterior.x;
-      const saltoMax = t.distanciaMax - 0.3;
-      if (Math.abs(dx) > saltoMax) {
-        x = anterior.x + Math.sign(dx) * saltoMax;
-        dx = x - anterior.x;
+  // 1. Trama escalonada con un poco de desorden
+  const grupos = tramos.map((t) => {
+    const nodos = [];
+    const { columnas, filas } = t.rejilla;
+    const cantidadFilas = Math.round((t.hastaNodos - t.desdeNodos) / filas);
+    const pasoFila = (t.hastaNodos - t.desdeNodos) / cantidadFilas;
+    for (let f = 0; f <= cantidadFilas; f++) {
+      const y = t.desdeNodos + f * pasoFila;
+      const corrimiento = (f % 2) * (columnas / 2);
+      for (let x = -t.xMax + corrimiento; x <= t.xMax + 1e-6; x += columnas) {
+        // El desorden es chico (los vecinos tienen que seguir al alcance) y las filas de abajo y de arriba casi no se corren
+        const borde = f === 0 || f === cantidadFilas;
+        nodos.push(
+          nuevoAgarre(
+            t,
+            'firme',
+            limitar(x + entre(-1, 1, azar()) * (borde ? 0.15 : 0.3), -t.xMax, t.xMax),
+            y + entre(-1, 1, azar()) * (borde ? 0 : 0.12)
+          )
+        );
       }
-      // Cuanto más se estira hacia el costado, menos sube, para no pasarse de la distancia máxima
-      const dyBase = entre(t.paso[0], t.paso[1], p) * entre(0.85, 1.15, azar());
-      const dyMax = Math.sqrt(Math.max(t.distanciaMax ** 2 - dx * dx, 0.09));
-      const y = Math.min(anterior.y + Math.max(Math.min(dyBase, dyMax), 0.3), t.hastaNodos);
-
-      const punto = { x, y };
-      // Después de un agarre con tiempo (lata o bloque) viene uno seguro, para poder apoyarse y esperar
-      let tipo = elegirTipo(t, progreso(t, punto.y));
-      if (CON_TIEMPO.includes(anterior.tipo) && CON_TIEMPO.includes(tipo)) tipo = 'firme';
-      nodos.push(nuevoAgarre(t, tipo, punto.x, punto.y, { ruta: true }));
     }
     return nodos;
   });
 
-  // Los paneles que giran reemplazan agarres de la ruta (el panel trae sus propios agarres)
+  // 2. Paneles que giran: reemplazan un agarre del medio de la pared, y se despejan los vecinos para que
+  // tenga lugar para girar. El panel trae sus propios agarres, a los costados de su centro.
   const paneles = [];
+  const enAreaDePanel = (tramo, x, y) => paneles.some((p) => p.tramo === tramo && Math.abs(x - p.x) < 1.0 && Math.abs(y - p.y) < 0.75);
   tramos.forEach((t) => {
-    const ruta = rutas[t.indice];
     t.paneles.forEach((fraccion) => {
       const objetivo = t.desdeNodos + fraccion * (t.hastaNodos - t.desdeNodos);
       let mejor = null;
-      ruta.forEach((n, i) => {
-        // Un panel necesita lugar para girar: no puede estar cerca del piso ni del reborde
-        if (i === 0 || i === ruta.length - 1 || n.tipo === 'panel') return;
-        if (n.y < t.y0 + 1.8 || n.y > t.y1 - 1.8) return;
-        // Dos paneles no pueden pisarse: miden 0,8 m de alto, así que se pide bastante separación
+      grupos[t.indice].forEach((n) => {
+        if (n.y < t.y0 + 2.2 || n.y > t.y1 - 2.2) return; // lejos del piso y del reborde
+        if (Math.abs(n.x) > t.xMax - 1.2) return; // no pegado al costado
         if (paneles.some((p) => p.tramo === t.indice && Math.abs(p.y - n.y) < 1.7)) return;
         if (!mejor || Math.abs(n.y - objetivo) < Math.abs(mejor.y - objetivo)) mejor = n;
       });
-      if (mejor) {
-        // Los agarres vecinos de un panel son seguros (el panel es lo que tiene tiempo)
-        const i = ruta.indexOf(mejor);
-        [ruta[i - 1], ruta[i + 1]].forEach((vecino) => {
-          if (vecino && CON_TIEMPO.includes(vecino.tipo)) vecino.tipo = 'firme';
+      if (mejor) paneles.push({ tramo: t.indice, x: mejor.x, y: mejor.y, fase: 0 });
+    });
+    // El fragmento de la torre está en la zona izquierda, y el camino hasta él pasa por un panel que gira y por
+    // una lata: se elige el agarre donde va el fragmento (el anclaje) y se pone un panel justo abajo
+    if (t.fragmento.panelDebajo) {
+      const objetivoY = t.desdeNodos + t.fragmento.fraccion * (t.hastaNodos - t.desdeNodos);
+      const [xDesde, xHasta] = t.fragmento.zonaX;
+      const izquierda = grupos[t.indice].filter((n) => n.x >= xDesde && n.x <= xHasta && n.y > t.desdeNodos + 2.5 && n.y < t.hastaNodos - 1.0);
+      const anclaje = izquierda.reduce((a, b) => (Math.abs(b.y - objetivoY) < Math.abs(a.y - objetivoY) ? b : a));
+      const bajo = grupos[t.indice]
+        .filter((n) => n !== anclaje && n.y <= anclaje.y - 0.7 && n.y >= anclaje.y - 1.5 && Math.abs(n.x - anclaje.x) <= 1.0)
+        .filter((n) => paneles.every((p) => p.tramo !== t.indice || Math.abs(p.y - n.y) >= 1.2 || Math.abs(p.x - n.x) >= 2.0))
+        .sort((a, b) => distancia(a, { x: anclaje.x, y: anclaje.y - 1.1 }) - distancia(b, { x: anclaje.x, y: anclaje.y - 1.1 }))[0];
+      if (bajo) {
+        paneles.push({ tramo: t.indice, x: bajo.x, y: bajo.y, fase: 0 });
+        t.anclaje = anclaje;
+        t.panelAnclaje = { x: bajo.x, y: bajo.y };
+      }
+    }
+    grupos[t.indice] = grupos[t.indice].filter((n) => !enAreaDePanel(t.indice, n.x, n.y));
+  });
+  const nodosDePanel = (tramo) =>
+    paneles
+      .filter((p) => p.tramo === tramo)
+      .flatMap((p) => [
+        { x: p.x - E.panel.separacionAgarres, y: p.y, tramo, panel: true },
+        { x: p.x + E.panel.separacionAgarres, y: p.y, tramo, panel: true },
+      ]);
+
+  // Para cada agarre: ¿tiene un camino hacia arriba y uno hacia abajo? Se calcula sobre `nodos`. Un agarre
+  // sube si está a una mano del reborde o tiene un vecino más alto que sube; baja si está en la fila de
+  // abajo o tiene un vecino más bajo que baja.
+  const validar = (t, nodos) => {
+    const vecinos = nodos.map(() => []);
+    for (let i = 0; i < nodos.length; i++) {
+      for (let j = i + 1; j < nodos.length; j++) {
+        if (distancia(nodos[i], nodos[j]) <= t.alcance) {
+          vecinos[i].push(j);
+          vecinos[j].push(i);
+        }
+      }
+    }
+    const orden = nodos.map((_, i) => i).sort((a, b) => nodos[a].y - nodos[b].y);
+    const sube = new Array(nodos.length).fill(false);
+    for (let k = orden.length - 1; k >= 0; k--) {
+      const i = orden[k];
+      sube[i] = distanciaAlBorde(t, nodos[i]) <= t.alcance || vecinos[i].some((j) => nodos[j].y >= nodos[i].y + 0.3 && sube[j]);
+    }
+    const baja = new Array(nodos.length).fill(false);
+    for (let k = 0; k < orden.length; k++) {
+      const i = orden[k];
+      baja[i] = nodos[i].y <= t.desdeNodos + 0.4 || vecinos[i].some((j) => nodos[j].y <= nodos[i].y - 0.3 && baja[j]);
+    }
+    return nodos.map((_, i) => sube[i] && baja[i]);
+  };
+
+  // 3. Se sacan agarres al azar, sin dejar a ninguno sin camino
+  tramos.forEach((t) => {
+    // Primero se sacan los que ya no tienen camino (por ejemplo, los que quedaron aislados junto a un panel)
+    const propios = [...grupos[t.indice], ...nodosDePanel(t.indice)];
+    const buenos = validar(t, propios);
+    grupos[t.indice] = grupos[t.indice].filter((n) => buenos[propios.indexOf(n)]);
+
+    const aSacar = Math.round(t.quitar * grupos[t.indice].length);
+    const candidatos = grupos[t.indice].filter((n) => n !== t.anclaje && n.y > t.desdeNodos + 0.2 && n.y < t.hastaNodos - 0.2); // no las filas de abajo y de arriba
+    for (let i = candidatos.length - 1; i > 0; i--) {
+      const j = Math.floor(azar() * (i + 1));
+      [candidatos[i], candidatos[j]] = [candidatos[j], candidatos[i]];
+    }
+    let sacados = 0;
+    for (const n of candidatos) {
+      if (sacados >= aSacar) break;
+      const sin = grupos[t.indice].filter((m) => m !== n);
+      if (validar(t, [...sin, ...nodosDePanel(t.indice)]).every(Boolean)) {
+        grupos[t.indice] = sin;
+        sacados++;
+      }
+    }
+  });
+
+  // 4. Tipos especiales según la dificultad, lo más lejos posible entre sí. Siempre queda un camino de
+  // agarres firmes de abajo hasta arriba (los especiales no se pueden sostener indefinidamente).
+  const hayCaminoFirme = (t, nodos) => {
+    const firmes = nodos.filter((n) => n.tipo === 'firme' || n.tipo === undefined);
+    return validar(t, firmes).some((ok, i) => ok && firmes[i].y <= t.desdeNodos + 0.4);
+  };
+  tramos.forEach((t) => {
+    const nodos = grupos[t.indice];
+    const editables = nodos.filter((n) => n.y > t.desdeNodos + 0.2); // la fila de abajo siempre es firme
+    t.mezcla.forEach(({ tipo, fraccion, desde }) => {
+      const cantidad = Math.round(fraccion * nodos.length);
+      for (let i = 0; i < cantidad; i++) {
+        const especiales = nodos.filter((n) => n.tipo !== 'firme');
+        const candidatos = editables
+          .filter((n) => n.tipo === 'firme' && progreso(t, n.y) >= desde)
+          .map((n) => ({ n, d: especiales.length ? Math.min(...especiales.map((o) => distancia(o, n))) : 99 }))
+          .sort((a, b) => b.d - a.d);
+        const elegido = candidatos.find(({ n }) => {
+          n.tipo = tipo;
+          const ok = hayCaminoFirme(t, nodos);
+          n.tipo = 'firme';
+          return ok;
         });
-        mejor.tipo = 'panel';
-        // Todos los paneles giran a la par: se puede pasar de uno al siguiente sin esperar
-        paneles.push({ tramo: t.indice, x: mejor.x, y: mejor.y, fase: 0 });
+        if (!elegido) break;
+        elegido.n.tipo = tipo;
+        elegido.n.fase = tipo === 'intermitente' ? +(azar() * 5).toFixed(2) : 0;
       }
     });
   });
 
-  const agarres = rutas.flat().filter((n) => n.tipo !== 'panel');
-  const nodosDePanel = () =>
-    paneles.flatMap((p) => [
-      { x: p.x - E.panel.separacionAgarres, y: p.y, tramo: p.tramo },
-      { x: p.x + E.panel.separacionAgarres, y: p.y, tramo: p.tramo },
-    ]);
-  const ocupadas = (tramo) => [...agarres.filter((a) => a.tramo === tramo), ...nodosDePanel().filter((n) => n.tramo === tramo)];
-  const enAreaDePanel = (tramo, x, y) => paneles.some((p) => p.tramo === tramo && Math.abs(x - p.x) < 1 && Math.abs(y - p.y) < 0.75);
 
-  // 2. Agarres de salida y relleno parejo de la pared
-  tramos.forEach((t) => {
-    // Unos pocos agarres bajos, bien separados, para empezar a escalar sin caminar mucho por el piso
-    for (let x = -t.xMax + 0.6; x <= t.xMax - 0.5; x += 2.2) {
-      if (ocupadas(t.indice).some((o) => distancia(o, { x, y: t.desdeNodos }) < 1.0)) continue;
-      agarres.push(nuevoAgarre(t, 'firme', x, t.desdeNodos, { salida: true }));
-    }
-    // Relleno por "mejor candidato": cada agarre nuevo va al lugar más alejado de todos los demás entre varios
-    // puntos al azar, pero siempre al alcance de al menos dos agarres que ya existen (así nunca queda un
-    // agarre aislado). Quedan repartidos parejo, sin amontonarse ni dejar huecos, y se frena cuando no hay
-    // lugar con la separación del tramo: son los justos, no se llena toda la pared.
-    const alcance = t.distanciaMax * E.alcancePoda;
-    for (let vuelta = 0; vuelta < 400; vuelta++) {
-      const vecinos = ocupadas(t.indice);
-      let mejor = null;
-      let mejorDistancia = -1;
-      for (let k = 0; k < 150; k++) {
-        const punto = { x: entre(-t.xMax, t.xMax, azar()), y: entre(t.desdeNodos, t.hastaNodos + 0.2, azar()) };
-        if (enAreaDePanel(t.indice, punto.x, punto.y)) continue;
-        const distancias = vecinos.map((o) => distancia(o, punto));
-        const d = Math.min(...distancias);
-        if (d < t.separacion || distancias.filter((x) => x <= alcance).length < 2) continue;
-        if (d > mejorDistancia) {
-          mejorDistancia = d;
-          mejor = punto;
-        }
-      }
-      if (!mejor) break;
-      agarres.push(nuevoAgarre(t, elegirTipo(t, progreso(t, mejor.y)), mejor.x, mejor.y, { relleno: true }));
-    }
-  });
-
-  // Cadena de agarres firmes que lleva de un punto a otro (para los fragmentos y la tirolesa)
-  const cadena = (t, desde, hasta) => {
-    const pasos = Math.max(1, Math.ceil(distancia(desde, hasta) / 0.7));
-    for (let k = 1; k <= pasos; k++) {
-      const f = k / pasos;
-      const punto = { x: entre(desde.x, hasta.x, f), y: entre(desde.y, hasta.y, f) };
-      // Si ya hay un agarre de relleno muy cerca, se lo reemplaza por el de la cadena
-      for (let j = agarres.length - 1; j >= 0; j--) {
-        const a = agarres[j];
-        if (a.tramo === t.indice && !a.ruta && !a.desvio && !a.salida && distancia(a, punto) < E.separacionMinima) agarres.splice(j, 1);
-      }
-      agarres.push(nuevoAgarre(t, 'firme', punto.x, punto.y, { desvio: true }));
-    }
-  };
-
-  // 3. Fragmentos: uno por tramo. El del tramo 1 está en el camino; los demás, a un costado con un desvío
-  const fragmentos = [];
-  tramos.forEach((t) => {
-    const ruta = rutas[t.indice].filter((n) => n.tipo !== 'panel');
+  const agarres = [];
+  // 5a. Fragmentos: uno por tramo, apenas arriba de un agarre de la altura que le toca. En la torre y el monitor
+  // ese agarre pasa a ser especial (lata, tecla que se hunde o bloque intermitente) y los de alrededor también,
+  // siempre que quede un camino de agarres firmes: así el fragmento se alcanza desde agarres que no se pueden
+  // sostener mucho tiempo, y hay que ir por un lugar más difícil.
+  const fragmentos = tramos.map((t) => {
     const objetivo = t.desdeNodos + t.fragmento.fraccion * (t.hastaNodos - t.desdeNodos);
-    const cercano = ruta.reduce((a, b) => (Math.abs(b.y - objetivo) < Math.abs(a.y - objetivo) ? b : a));
-
-    let fragmento;
-    if (t.fragmento.enRuta) {
-      // Entre dos agarres consecutivos de la ruta: imposible de pasar de largo
-      const i = ruta.indexOf(cercano);
-      const siguiente = ruta[Math.min(i + 1, ruta.length - 1)];
-      fragmento = { x: (cercano.x + siguiente.x) / 2, y: (cercano.y + siguiente.y) / 2 };
-    } else {
-      // Al otro costado de la ruta, con una cadena de agarres firmes que lleva hasta él
-      const sentido = cercano.x >= 0 ? -1 : 1;
-      const fx = limitar(cercano.x + sentido * (1.8 + azar() * 0.8), -(t.xMax - 0.3), t.xMax - 0.3);
-      fragmento = { x: fx, y: objetivo };
-      cadena(t, cercano, { x: fx - Math.sign(fx - cercano.x || sentido) * 0.3, y: objetivo - 0.3 });
-    }
-    fragmentos.push({ tramo: t.indice, ...fragmento });
-
-    // Zona del fragmento: los agarres que no son de la ruta ni del desvío se endurecen
-    if (t.tiposDificiles.length) {
-      agarres.forEach((a) => {
-        if (a.tramo !== t.indice || a.ruta || a.desvio || a.salida || distancia(a, fragmento) > E.zonaFragmento) return;
-        a.tipo = t.tiposDificiles[Math.floor(azar() * t.tiposDificiles.length)];
-        a.fase = a.tipo === 'intermitente' ? +(azar() * 5).toFixed(2) : 0;
-      });
-    }
-  });
-
-  // 4. Poda: se sacan los agarres de relleno que no llevan a ningún lado. Cada uno tiene que poder
-  // alcanzarse desde las filas de salida y desde él se tiene que poder llegar al reborde del tope; y no
-  // quedan agarres "puntas" con un solo vecino (un callejón sin salida).
-  tramos.forEach((t) => {
-    const alcance = t.distanciaMax * E.alcancePoda; // se puede estirar más que en la ruta garantizada
-    const nodos = [...agarres.filter((a) => a.tramo === t.indice), ...nodosDePanel().filter((n) => n.tramo === t.indice)];
-    const vecinos = (n, conjunto) => conjunto.filter((m) => m !== n && distancia(m, n) <= alcance);
-    const componente = (semillas) => {
-      const visto = new Set(semillas);
-      const cola = [...semillas];
-      while (cola.length) {
-        const n = cola.pop();
-        vecinos(n, nodos).forEach((m) => {
-          if (!visto.has(m)) {
-            visto.add(m);
-            cola.push(m);
-          }
-        });
+    const nodos = grupos[t.indice];
+    const delTramo = nodos.filter((n) => n.y > t.desdeNodos + 0.8 && n.y < t.hastaNodos - 0.8);
+    const porCercania = [...delTramo].sort((a, b) => Math.abs(a.y - objetivo) - Math.abs(b.y - objetivo));
+    let anfitrion = porCercania.find((n) => n.tipo === 'firme') || porCercania[0];
+    const nuevoTipo = (i) => t.fragmento.dificiles[i % t.fragmento.dificiles.length];
+    const endurecer = (n, tipo) => {
+      const antes = n.tipo;
+      n.tipo = tipo;
+      if (hayCaminoFirme(t, nodos)) {
+        n.fase = tipo === 'intermitente' ? +(azar() * 5).toFixed(2) : 0;
+        return true;
       }
-      return visto;
+      n.tipo = antes;
+      return false;
     };
-    const desdeAbajo = componente(nodos.filter((n) => n.y <= t.desdeNodos + 0.05));
-    const haciaArriba = componente(nodos.filter((n) => t.yBorde - n.y <= alcance));
-    const intocable = (a) => a.ruta || a.desvio || a.salida || a.tipo === undefined;
-      for (let i = agarres.length - 1; i >= 0; i--) {
-      const a = agarres[i];
-      if (a.tramo !== t.indice || intocable(a)) continue;
-      if (!desdeAbajo.has(a) || !haciaArriba.has(a)) agarres.splice(i, 1);
-    }
-    // Puntas: un agarre de relleno con un solo vecino (o ninguno) no lleva a ningún lado
-    let cambio = true;
-    while (cambio) {
-      cambio = false;
-      const vivos = [...agarres.filter((a) => a.tramo === t.indice), ...nodosDePanel().filter((n) => n.tramo === t.indice)];
-      for (let i = agarres.length - 1; i >= 0; i--) {
-        const a = agarres[i];
-        if (a.tramo !== t.indice || intocable(a)) continue;
-        const arriba = t.yBorde - a.y <= alcance;
-        if (vecinos(a, vivos).length < (arriba ? 1 : 2)) {
-          agarres.splice(i, 1);
-          cambio = true;
-        }
+    if (t.anclaje && nodos.includes(t.anclaje)) {
+      // Fragmento de la torre: sobre una lata, a la que solo se llega desde el panel que gira que está debajo
+      anfitrion = t.anclaje;
+      const paneles_ = paneles.filter((p) => p.tramo === t.indice);
+      const alcance = t.alcance;
+      for (let i = nodos.length - 1; i >= 0; i--) {
+        const n = nodos[i];
+        if (n !== anfitrion && n.y <= anfitrion.y - 0.3 && distancia(n, anfitrion) <= alcance) nodos.splice(i, 1);
       }
+      // Los agarres que quedaron sin camino por haber sacado los de abajo también se sacan
+      for (let vuelta = 0; vuelta < 6; vuelta++) {
+        const todos = [...nodos, ...nodosDePanel(t.indice)];
+        const ok = validar(t, todos);
+        let saco = false;
+        for (let i = nodos.length - 1; i >= 0; i--) {
+          if (nodos[i] !== anfitrion && !ok[todos.indexOf(nodos[i])]) {
+            nodos.splice(i, 1);
+            saco = true;
+          }
+        }
+        if (!saco) break;
+      }
+      anfitrion.tipo = 'lata';
+      anfitrion.fase = 0;
+      // Hasta el panel se llega por agarres firmes: lo difícil es el panel y la lata, no una cadena de agarres con tiempo
+      const pan = t.panelAnclaje;
+      nodos.forEach((n) => {
+        if (n !== anfitrion && n.y <= pan.y - 0.3 && distancia(n, pan) <= alcance) {
+          n.tipo = 'firme';
+          n.fase = 0;
+        }
+      });
+      void paneles_;
+    } else if (t.fragmento.dificiles) {
+      // El anfitrión es el primero que se pueda endurecer entre los más cercanos a la altura del fragmento
+      const elegido = porCercania.filter((n) => n.tipo === 'firme').slice(0, 8).find((n) => endurecer(n, nuevoTipo(0)));
+      if (elegido) anfitrion = elegido;
     }
+    if (t.fragmento.dificiles) {
+      let i = 1;
+      nodos
+        .filter((n) => n !== anfitrion && n.tipo === 'firme' && n.y > t.desdeNodos + 0.2 && distancia(n, anfitrion) <= t.fragmento.zona)
+        .forEach((n) => endurecer(n, nuevoTipo(i++)));
+    }
+    return { tramo: t.indice, x: anfitrion.x, y: anfitrion.y + 0.28 };
   });
 
-  // 5a. Refugios: lugares de cada tramo adonde el Glitch puede llevar un fragmento que se come. Son agarres
-  // de relleno en la mitad de arriba del tramo, con la posición del fragmento apenas más arriba para poder
-  // juntarlo desde ese agarre. Los más bajos primero.
+  grupos.forEach((g) => agarres.push(...g));
+
+  // 5b. Refugios: lugares de cada tramo adonde el Glitch puede llevar un fragmento que se come: arriba de un
+  // agarre firme de la mitad de arriba del tramo. Los más bajos primero.
   const refugios = tramos.map((t) => {
     const desde = t.y0 + t.alto * 0.35;
     const hasta = t.y0 + t.alto * 0.85;
-    return agarres
-      .filter((a) => a.tramo === t.indice && a.relleno && a.y >= desde && a.y <= hasta)
+    return grupos[t.indice]
+      .filter((a) => a.tipo === 'firme' && a.y >= desde && a.y <= hasta)
       .sort((a, b) => a.y - b.y)
       .map((a) => ({ x: a.x, y: a.y + 0.28 }));
   });
 
-  // 5b. Tirolesa: el enchufe del cable USB, en la torre, bien lejos de la ruta y con una cadena de agarres
-  // que lleva hasta él. Es difícil de encontrar y de agarrar.
+  // 5c. Tirolesa: el enchufe del cable USB, en la torre, hacia un costado, a una distancia de los agarres que
+  // obliga a estirarse para llegar hasta él. Es dificilísimo de ver y de agarrar.
   let tirolesa = null;
   const torre = tramos[1];
   if (torre) {
-    const ruta = rutas[1];
     const yBase = torre.y1 - TIROLESA.altoBajoCheckpoint;
-    const delTramo = agarres.filter((a) => a.tramo === 1);
-    const lejosDeLaRuta = (x, y) => ruta.every((n) => distancia(n, { x, y }) > 2.2);
-    const libreParaEnchufe = (x, y) =>
-      lejosDeLaRuta(x, y) &&
-      !delTramo.some((a) => !a.desvio && !a.relleno && distancia(a, { x, y }) < 1.0) &&
-      !paneles.some((p) => p.tramo === 1 && Math.abs(p.x - x) < 1.4 && Math.abs(p.y - y) < 1.0) &&
-      !fragmentos.some((f) => f.tramo === 1 && distancia(f, { x, y }) < 1.6);
+    const nodos = [...grupos[1], ...nodosDePanel(1)];
     busqueda: for (const dy of [0, 0.4, -0.4, 0.8, -0.8, 1.2, -1.2]) {
       for (const lado of [1, -1]) {
-        for (let ax = TIROLESA.xMax; ax >= TIROLESA.xMin; ax -= 0.3) {
-          const x = lado * ax;
-          const y = yBase + dy;
-          if (libreParaEnchufe(x, y)) {
-            tirolesa = { x, y, lado };
+        for (let ax = TIROLESA.xMax; ax >= TIROLESA.xMin; ax -= 0.2) {
+          const punto = { x: lado * ax, y: yBase + dy };
+          const cercano = Math.min(...nodos.map((n) => distancia(n, punto)));
+          const lejosDeFragmento = fragmentos.every((f) => f.tramo !== 1 || distancia(f, punto) > 1.6);
+          if (cercano >= TIROLESA.distanciaAgarres.min && cercano <= TIROLESA.distanciaAgarres.max && lejosDeFragmento) {
+            tirolesa = { ...punto, lado };
             break busqueda;
           }
         }
       }
     }
-    if (tirolesa) {
-      // Se despeja el relleno que quedó pegado al enchufe: tiene que ser difícil de agarrar, no de ver
-      for (let i = agarres.length - 1; i >= 0; i--) {
-        const a = agarres[i];
-        if (a.tramo === 1 && a.relleno && distancia(a, tirolesa) < 1.0) agarres.splice(i, 1);
-      }
-      // Cadena desde el agarre de la ruta más cercano hasta un punto a una mano del enchufe
-      const aproximacion = { x: tirolesa.x - tirolesa.lado * 0.75, y: tirolesa.y - 0.15 };
-      const origen = ruta.reduce((a, b) => (distancia(b, aproximacion) < distancia(a, aproximacion) ? b : a));
-      cadena(torre, origen, aproximacion);
-    }
   }
 
-  // Los rebordes de arriba de cada pared: una barra larga que lleva al piso
-  const bordes = tramos.map((t) => ({ tramo: t.indice, y: t.yBorde }));
+  // Los rebordes de arriba de cada pared: tramos cortos de barra que llevan al piso
+  const bordes = tramos.map((t) => ({ tramo: t.indice, y: t.yBorde, xs: t.bordeX }));
 
   agarres.sort((a, b) => a.y - b.y);
   return { agarres, paneles, fragmentos, refugios, checkpoints, tramos, bordes, tirolesa, frentes, alturaFinal, tramoEn };

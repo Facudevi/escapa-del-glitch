@@ -243,15 +243,53 @@ export function deslizar() {
   ruido(1.4, 600, 0.5);
 }
 
-// Música tranquila de fondo: acordes suaves que cambian despacio (la y fa mayor séptima, do y sol con sexta)
+// Música tranquila de fondo: un colchón de acordes suaves y, encima, notas sueltas de una escala pentatónica
+// que suenan como campanitas. No lleva ruido ni notas desafinadas (eso es lo que molestaba: un zumbido
+// parejo y constante). Los acordes cambian despacio y las notas caen en lugares al azar, sin ritmo fijo.
 const ACORDES = [
-  [220.0, 261.63, 329.63, 392.0],
-  [174.61, 220.0, 261.63, 329.63],
-  [261.63, 329.63, 392.0, 493.88],
-  [196.0, 246.94, 293.66, 392.0],
+  [220.0, 261.63, 329.63], // la menor
+  [174.61, 220.0, 261.63], // fa mayor
+  [261.63, 329.63, 392.0], // do mayor
+  [196.0, 246.94, 293.66], // sol mayor
 ];
+// Notas de las campanitas: pentatónica de do mayor, una octava más arriba de los acordes
+const ESCALA = [523.25, 587.33, 659.25, 783.99, 880.0];
 let musicaActiva = false;
 let acordeActual = 0;
+let ultimaNota = -1;
+
+// Una campanita: ataque suave, caída larga y un poco de eco
+function campanita() {
+  const ctx = audio();
+  if (!ctx || ctx.state !== 'running') return;
+  let i = Math.floor(Math.random() * ESCALA.length);
+  if (i === ultimaNota) i = (i + 2) % ESCALA.length; // nunca la misma nota dos veces seguidas
+  ultimaNota = i;
+  const ahora = ctx.currentTime;
+  const oscilador = ctx.createOscillator();
+  const ganancia = ctx.createGain();
+  oscilador.type = 'sine';
+  oscilador.frequency.value = ESCALA[i];
+  const pico = SONIDO.volumen * MUSICA.volumen * MUSICA.volumenNotas;
+  ganancia.gain.setValueAtTime(0.0001, ahora);
+  ganancia.gain.linearRampToValueAtTime(pico, ahora + 0.08);
+  ganancia.gain.exponentialRampToValueAtTime(0.0001, ahora + MUSICA.duracionNota);
+  oscilador.connect(ganancia).connect(salida(ctx));
+  // Eco: la misma nota, más baja y más tarde
+  const eco = ctx.createDelay(1);
+  const gananciaEco = ctx.createGain();
+  eco.delayTime.value = 0.45;
+  gananciaEco.gain.value = 0.3;
+  ganancia.connect(eco).connect(gananciaEco).connect(salida(ctx));
+  oscilador.start(ahora);
+  oscilador.stop(ahora + MUSICA.duracionNota + 0.1);
+}
+
+function programarNota() {
+  campanita();
+  const espera = MUSICA.notasCada[0] + Math.random() * (MUSICA.notasCada[1] - MUSICA.notasCada[0]);
+  setTimeout(programarNota, espera * 1000);
+}
 
 function tocarAcorde() {
   const ctx = audio();
@@ -263,15 +301,14 @@ function tocarAcorde() {
 
   const filtro = ctx.createBiquadFilter();
   filtro.type = 'lowpass';
-  filtro.frequency.value = 900;
+  filtro.frequency.value = MUSICA.filtro;
   filtro.connect(salida(ctx));
-  acorde.forEach((frecuencia, i) => {
+  acorde.forEach((frecuencia) => {
     const oscilador = ctx.createOscillator();
     const ganancia = ctx.createGain();
-    oscilador.type = 'sine';
+    oscilador.type = 'sine'; // sin desafinar: así no hay pulsaciones que suenen a zumbido
     oscilador.frequency.value = frecuencia;
-    oscilador.detune.value = (i - 1.5) * 4; // un poco desafinadas entre sí, para que suene más cálido
-    const pico = (SONIDO.volumen * MUSICA.volumen) / acorde.length;
+    const pico = (SONIDO.volumen * MUSICA.volumen * MUSICA.volumenAcordes) / acorde.length;
     ganancia.gain.setValueAtTime(0.0001, ahora);
     ganancia.gain.linearRampToValueAtTime(pico, ahora + MUSICA.ataque);
     ganancia.gain.linearRampToValueAtTime(0.0001, ahora + duracion);
@@ -290,6 +327,7 @@ export function iniciarMusica() {
   if (ctx.state === 'running') tocarAcorde();
   else ctx.resume().then(tocarAcorde).catch(() => {}); // arranca en cuanto el navegador lo permite
   setInterval(tocarAcorde, MUSICA.segundosPorAcorde * 1000);
+  setTimeout(programarNota, MUSICA.notasCada[0] * 1000);
 }
 
 // Estado del audio, para diagnóstico: { contexto: 'running' | 'suspended' | null, musica, silenciado }
