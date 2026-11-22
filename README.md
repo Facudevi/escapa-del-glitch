@@ -26,7 +26,7 @@ La partida dura unos 2 minutos y medio. Si te caés, no pasa nada: volvés al ú
 ### El juego
 - Cinco tipos de agarre, cada uno con su color y su forma: **tecla firme** (lavanda), **tecla que se hunde**, **lata que se rompe** (cruje y cae a los 3 s), **bloque intermitente** (mirá su anillo) y **panel que gira**. Los agarres al alcance se resaltan.
 - Un cable **USB** en lo alto de la torre te lleva solo hasta el segundo checkpoint.
-- Una **niebla de píxeles** sube despacio desde abajo. Si te alcanza, volvés al último checkpoint; si alcanza un fragmento sin juntar, el **Glitch** se lo come y lo esconde en la plataforma de arriba.
+- Una **niebla de píxeles** sube despacio desde abajo. Si te alcanza, volvés al último checkpoint; si alcanza un fragmento sin juntar, el **Glitch** se lo come y lo manda más arriba: reaparece en un agarre del tramo siguiente o, si ya completaste el tercero, escondido entre los objetos de videojuegos del piso de arriba.
 - Al final, una medalla según el tiempo: **oro** menos de 2 min, **plata** menos de 3, **bronce** el resto.
 
 ## Cómo correrlo
@@ -59,7 +59,9 @@ Abrir `http://localhost:5173`. Otros comandos: `npm run build` (genera `dist/`) 
 │   ├── main.js        registra los componentes
 │   ├── config.js      tiempos, velocidades, medidas y colores
 │   ├── tramos.js      generador de la pared (agarres, paneles, fragmentos)
-│   ├── decorado.js    teclado, torre y monitor
+│   ├── decorado.js    escritorio, teclado, torre de PC y monitor con volumen
+│   ├── plataformas.js entrepaños de descanso y piso de arriba con el RESET
+│   ├── fusion.js      junta mallas para bajar las llamadas de dibujo
 │   ├── dificultad.js  modo normal y modo fácil
 │   ├── sonidos.js     efectos, música y audio espacial
 │   ├── utilidades.js

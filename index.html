@@ -73,7 +73,7 @@
         </div>
         <div class="seguridad">
           <b>Seguridad:</b> con casco, despejá unos 2 metros a tu alrededor y movete con cuidado: es fácil subestimar las
-          distancias. Jugá de pie, hacé pausas y, si te cansás o te mareás, soltate y descansá en una plataforma verde.
+          distancias. Jugá de pie, hacé pausas y, si te cansás o te mareás, soltate y descansá en un entrepaño o en el piso.
           La experiencia no recoge ni envía datos personales.
         </div>
         <div class="botones">
@@ -109,7 +109,7 @@
       loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
     >
       <!-- Jugador: el rig se mueve, la cámara y las manos van adentro -->
-      <a-entity id="rig" position="0 0 0" climb energia caida>
+      <a-entity id="rig" position="0 0 0" climb energia caida limites>
         <a-entity id="camara" camera look-controls="pointerLockEnabled: false" fundido position="0 1.6 0"></a-entity>
         <a-entity id="mano-izq" meta-touch-controls="hand: left" mano-guante="mano: izquierda" anillo-energia="mano: izquierda" pulsera></a-entity>
         <a-entity id="mano-der" meta-touch-controls="hand: right" mano-guante="mano: derecha" anillo-energia="mano: derecha"></a-entity>

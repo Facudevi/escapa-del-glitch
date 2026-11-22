@@ -4,14 +4,18 @@
 // cuanto más cerca está el jugador. Se juntan tocándolos con la mano. Cada uno que se junta enciende un
 // hueco del RESET.
 //
-// Si la niebla alcanza uno sin juntar, el Glitch se lo come: desaparece de la pared y, cuando el jugador
-// llega a la plataforma de arriba, reaparece medio escondido ahí, para buscarlo.
+// Si la niebla alcanza uno sin juntar, el Glitch se lo come y lo manda más arriba: reaparece en otro
+// agarre del tramo siguiente (siempre por encima del jugador). Si ya no queda un tramo más arriba, o el
+// jugador ya completó el tercer tramo, el fragmento se esconde entre los objetos de videojuegos del piso
+// de arriba y hay que buscarlo ahí.
 //
-// Estados de cada fragmento: 'pared' → 'recogido', o 'pared' → 'comido' → 'escondido' → 'recogido'.
+// Estados de cada fragmento: 'pared' → 'recogido'; o 'pared' → 'pared' (reubicado en el tramo siguiente);
+// o 'pared' → 'comido' → 'escondido' → 'recogido'.
+// Cada fragmento tiene su número (tramo) de origen y el tramo donde está ahora (tramoActual).
 //
-// Eventos sobre la escena: 'fragmento-recogido' { tramo, total }, 'fragmento-comido' { tramo } y
+// Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-recogido' { tramo, total } y
 // 'fragmentos-revelados'. Escucha 'niebla-termino' para esconder arriba los fragmentos comidos.
-// Para otros componentes: recogidos, lista, marcar(tramo, ms), comer(tramo) y revelar().
+// Para otros componentes: recogidos, lista, marcar(tramo, ms), comer(tramo, reubicar) y revelar().
 import { COLORES, ESCENARIO, FRAGMENTO } from '../config.js';
 import { actualizarOyente, crearZumbido, fragmentoRecogido } from '../sonidos.js';
 
@@ -78,7 +82,7 @@ AFRAME.registerComponent('fragmentos', {
 
       const zumbido = crearZumbido(FRAGMENTO.sonido.frecuencias, FRAGMENTO.sonido.volumen, FRAGMENTO.sonido.distanciaMax);
       if (zumbido) zumbido.mover(f.x, f.y, z);
-      this.lista.push({ tramo: f.tramo, estado: 'pared', x: f.x, y: f.y, z, grupo, halo, zumbido, marcaHasta: 0 });
+      this.lista.push({ tramo: f.tramo, tramoActual: f.tramo, reubicaciones: 0, estado: 'pared', x: f.x, y: f.y, z, grupo, halo, zumbido, marcaHasta: 0 });
     });
 
     this.manos = Array.from(this.el.querySelectorAll('[mano-guante]'));
@@ -87,7 +91,10 @@ AFRAME.registerComponent('fragmentos', {
 
   // Marca el fragmento de ese tramo por `ms` milisegundos (lo usa el escaneo). Devuelve si había uno.
   marcar(tramo, ms) {
-    const f = this.lista.find((x) => x.tramo === tramo && (x.estado === 'pared' || x.estado === 'escondido'));
+    // El del tramo donde está el jugador; si ahí no hay, el más cercano que quede más arriba
+    const activos = this.lista.filter((x) => x.estado === 'pared' || x.estado === 'escondido');
+    const f = activos.find((x) => x.tramoActual === tramo)
+      || activos.filter((x) => x.estado === 'escondido' || x.tramoActual > tramo).sort((a, b) => a.y - b.y)[0];
     if (!f) return false;
     f.marcaHasta = performance.now() + ms;
     return true;
@@ -105,22 +112,54 @@ AFRAME.registerComponent('fragmentos', {
 
   // Cada fragmento juntado enciende un hueco del RESET, en orden
   encenderHueco(indice) {
-    const hueco = document.querySelector(`#reset-hueco-${indice}`);
-    if (!hueco) return;
-    hueco.setAttribute(
-      'material',
-      `color: ${COLORES.huecoEncendido}; emissive: ${COLORES.huecoEncendido}; emissiveIntensity: 0.7; roughness: 1; metalness: 0`
-    );
+    ['#reset-hueco-', '#reset-hueco-fondo-'].forEach((prefijo) => {
+      const hueco = document.querySelector(`${prefijo}${indice}`);
+      if (!hueco) return;
+      hueco.setAttribute(
+        'material',
+        `color: ${COLORES.huecoEncendido}; emissive: ${COLORES.huecoEncendido}; emissiveIntensity: 0.7; roughness: 1; metalness: 0`
+      );
+    });
   },
 
-  // El Glitch se come un fragmento que no se juntó
-  comer(tramo) {
+  // Agarre libre (refugio) de un tramo más alto que el actual y por encima del jugador, o null
+  buscarRefugio(f) {
+    const datos = this.el.escalada;
+    const rigY = document.querySelector('#rig').object3D.position.y;
+    const cantidad = datos.refugios.length;
+    for (let tramo = f.tramoActual + 1; tramo < cantidad; tramo++) {
+      // Por encima del jugador y sin pisar el sitio de otro fragmento que sigue en la pared
+      const libres = datos.refugios[tramo].filter(
+        (r) => r.y > rigY + FRAGMENTO.alturaMinimaSobreJugador
+          && !this.lista.some((o) => o !== f && o.estado === 'pared' && Math.hypot(o.x - r.x, o.y - r.y) < FRAGMENTO.separacionMinima)
+      );
+      if (!libres.length) continue;
+      // Rota entre los refugios disponibles para que cada fragmento caiga en uno distinto
+      return { tramo, sitio: libres[(f.tramo + f.reubicaciones) % libres.length] };
+    }
+    return null;
+  },
+
+  // El Glitch se come un fragmento que no se juntó. Con reubicar, intenta mandarlo a un agarre del tramo
+  // siguiente; si no hay (o ya se completó el tercer tramo), queda 'comido' hasta que se esconde arriba.
+  comer(tramo, reubicar = false) {
     const f = this.lista.find((x) => x.tramo === tramo && x.estado === 'pared');
     if (!f) return;
+    const refugio = reubicar ? this.buscarRefugio(f) : null;
+    if (refugio) {
+      f.reubicaciones += 1;
+      f.tramoActual = refugio.tramo;
+      f.x = refugio.sitio.x;
+      f.y = refugio.sitio.y;
+      f.grupo.position.set(f.x, f.y, f.z);
+      if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
+      this.el.emit('fragmento-comido', { tramo, destino: 'tramo' }, false);
+      return;
+    }
     f.estado = 'comido';
     f.grupo.visible = false;
     if (f.zumbido) f.zumbido.silenciar(true);
-    this.el.emit('fragmento-comido', { tramo }, false);
+    this.el.emit('fragmento-comido', { tramo, destino: 'arriba' }, false);
   },
 
   // Los fragmentos comidos reaparecen medio escondidos en la plataforma de arriba
@@ -131,7 +170,7 @@ AFRAME.registerComponent('fragmentos', {
       f.estado = 'escondido';
       f.x = sitio.x;
       f.y = this.alturaFinal + FRAGMENTO.hundimiento;
-      f.z = this.zFrente + sitio.z;
+      f.z = sitio.z;
       f.grupo.position.set(f.x, f.y, f.z);
       f.grupo.visible = true;
       if (f.zumbido) {
@@ -148,6 +187,8 @@ AFRAME.registerComponent('fragmentos', {
     this.lista.forEach((f, i) => {
       const origen = datos.fragmentos[i];
       f.estado = 'pared';
+      f.tramoActual = f.tramo;
+      f.reubicaciones = 0;
       f.x = origen.x;
       f.y = origen.y;
       f.z = this.zFrente + FRAGMENTO.distanciaAlFrente;
@@ -160,10 +201,12 @@ AFRAME.registerComponent('fragmentos', {
     });
     this.recogidos = 0;
     Array.from({ length: FRAGMENTO.total }, (_, i) => i).forEach((i) => {
-      const hueco = document.querySelector(`#reset-hueco-${i}`);
-      if (hueco) {
-        hueco.setAttribute('material', `color: ${COLORES.hueco}; emissive: ${COLORES.hueco}; emissiveIntensity: 0; roughness: 1; metalness: 0`);
-      }
+      ['#reset-hueco-', '#reset-hueco-fondo-'].forEach((prefijo) => {
+        const hueco = document.querySelector(`${prefijo}${i}`);
+        if (hueco) {
+          hueco.setAttribute('material', `color: ${COLORES.hueco}; emissive: ${COLORES.hueco}; emissiveIntensity: 0; roughness: 1; metalness: 0`);
+        }
+      });
     });
   },
 

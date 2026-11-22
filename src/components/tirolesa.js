@@ -25,9 +25,9 @@ AFRAME.registerComponent('tirolesa', {
 
     const rig = document.querySelector('#rig');
     const checkpoint = datos.checkpoints[1];
-    const zCheckpoint = ESCENARIO.z + ESCENARIO.profundidadPared / 2 + ESCENARIO.checkpoint.profundidad / 2;
     const inicio = rig.object3D.position.clone();
-    const fin = new THREE.Vector3(0, checkpoint.y, zCheckpoint);
+    // Termina parada en el entrepaño, a la altura de su piso, en el punto de reaparición del checkpoint
+    const fin = new THREE.Vector3(0, checkpoint.y, ESCENARIO.plataforma.spawnZ);
     const control = inicio.clone().lerp(fin, 0.5).add(new THREE.Vector3(0, TIROLESA.alturaArco, 0));
     this.ruta = new THREE.QuadraticBezierCurve3(inicio, control, fin);
     this.largo = this.ruta.getLength();
@@ -43,6 +43,7 @@ AFRAME.registerComponent('tirolesa', {
 
     deslizar();
     this.deslizando = true;
+    escena.tirolesaActiva = true;
     escena.emit('tirolesa-inicio', {}, false);
   },
 
@@ -53,6 +54,7 @@ AFRAME.registerComponent('tirolesa', {
     document.querySelector('#rig').object3D.position.copy(this.ruta.getPointAt(avance)); // por longitud de arco: velocidad constante
     if (avance >= 1) {
       this.deslizando = false;
+      this.el.sceneEl.tirolesaActiva = false;
       this.el.sceneEl.emit('tirolesa-fin', {}, false);
     }
   },

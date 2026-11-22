@@ -105,3 +105,24 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** al buscar un lugar libre para el cartel no se consideraba el enchufe, y además la pared tiene tantos agarres que casi no queda espacio.
 - **Solución:** el generador, que ya elige el lugar del enchufe, reserva un hueco para el cartel hacia el centro de la pared y despeja ahí los agarres que sobran (nunca los de la ruta).
 - **Aprendizaje:** el espacio para los carteles hay que reservarlo al diseñar la pared, no buscarlo después.
+
+## 15. El decorado con profundidad enterraba los agarres
+
+- **Qué pasó:** al darle volumen al teclado, la torre y el monitor, los agarres quedaban escondidos dentro de las piezas.
+- **Por qué:** los agarres salían 0,3 m de la pared y el decorado nuevo sobresale hasta 0,7 m.
+- **Solución:** la pared se corrió hacia atrás, los agarres salen 1,15 m del frente y el decorado se limitó a 0,7 m. Así quedan siempre por delante, sin importar la pieza que tengan detrás.
+- **Aprendizaje:** al sumar detalle visual hay que revisar el plano en el que se interactúa, no solo cómo se ve.
+
+## 16. El jugador podía caminar por el vacío
+
+- **Qué pasó:** se podía salir de la sala o recorrer la nada alrededor del juego.
+- **Por qué:** nada limitaba la posición del jugador.
+- **Solución:** el componente `limites` corrige el rig si el cuerpo se sale de la zona permitida (la sala, el pasillo delante de la pared o la superficie del entrepaño en el que está parado). Se probó con teleports muy lejanos.
+- **Aprendizaje:** los límites tienen que depender de dónde está parado el jugador, no ser un solo rectángulo para todo.
+
+## 17. Dos fragmentos reubicados caían en el mismo agarre
+
+- **Qué pasó:** al comerse dos fragmentos seguidos, los dos aparecían en el mismo lugar.
+- **Por qué:** el refugio se elegía por una fórmula que podía repetirse.
+- **Solución:** se descartan los refugios que están a menos de 1,5 m de otro fragmento que sigue en la pared.
+- **Aprendizaje:** un sorteo repartido por fórmula hay que comprobarlo con varios casos seguidos.

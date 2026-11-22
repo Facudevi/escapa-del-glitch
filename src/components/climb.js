@@ -29,13 +29,16 @@ AFRAME.registerComponent('climb', {
   // Agarre más cercano a la mano (dentro del radio de agarre) o null
   agarreCercano(posicionMano) {
     let mejor = null;
-    let mejorDistancia = JUGADOR.radioAgarre;
+    let mejorDistancia = Infinity;
     this.el.sceneEl.querySelectorAll('.agarre').forEach((agarre) => {
       // Se mide contra la malla del agarre (sin carteles ni anillos que pueda tener alrededor)
       const malla = agarre.getObject3D('mesh') || agarre.object3D;
       this.caja.setFromObject(malla);
       const distancia = this.caja.distanceToPoint(posicionMano);
-      if (distancia <= mejorDistancia) {
+      // Algunos agarres (como el enchufe de la tirolesa) piden tocarlos más justo
+      const info = agarre.components.agarre;
+      const radio = info ? JUGADOR.radioAgarre * info.data.tolerancia : JUGADOR.radioAgarre;
+      if (distancia <= radio && distancia <= mejorDistancia) {
         mejor = agarre;
         mejorDistancia = distancia;
       }

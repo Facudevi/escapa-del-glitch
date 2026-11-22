@@ -163,11 +163,10 @@ AFRAME.registerComponent('final', {
 
   // ---------- Rotura de la pantalla ----------
 
-  // Grietas finas que salen del botón RESET sobre la pantalla del monitor
+  // Grietas finas que salen del botón RESET sobre el panel del fondo del piso de arriba
   construirRotura() {
     const datos = this.escena.escalada;
-    const zFrente = ESCENARIO.z + ESCENARIO.profundidadPared / 2;
-    const centro = new THREE.Vector3(0, datos.alturaFinal + 1.1, zFrente + 0.045);
+    const centro = new THREE.Vector3(datos.reset.x, datos.alturaFinal + FINAL.alturaGrietas, ESCENARIO.final.fondoZ + 0.43);
     const piezas = [];
     for (let k = 0; k < FINAL.grietas; k++) {
       let angulo = (k / FINAL.grietas) * Math.PI * 2 + (k % 2) * 0.2;

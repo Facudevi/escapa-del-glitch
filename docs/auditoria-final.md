@@ -76,7 +76,7 @@ Es un juego muy liviano para el casco. El jugador automático no duda ni busca, 
 ### Etapa 5 — Agarres especiales
 | Práctica | Estado | Evidencia |
 |---|---|---|
-| Color y forma fijos por tipo, más un cartel la primera vez | ✅ | Cinco tipos y la tirolesa, cada uno con su cartel |
+| Color y forma fijos por tipo | ✅ | Cinco tipos y la tirolesa, cada uno con su color y forma (se sacaron los carteles de la pared: quedaban tapados por el decorado) |
 | Movimientos que arrastran al jugador: lentos y constantes | ✅ | Tecla 0,12 m/s; panel gira en 0,8 s |
 | Lata: crujido visual solo por rotación, con sonido y vibración | ✅ ⏳ | Rotación de 6° como máximo; vibración sin probar con control |
 | Bloque intermitente con fundido suave | ✅ | 0,4 s de fundido |
@@ -87,7 +87,7 @@ Es un juego muy liviano para el casco. El jugador automático no duda ni busca, 
 | Práctica | Estado | Evidencia |
 |---|---|---|
 | Dificultad creciente sin camino marcado | ✅ | Separación media sube de 0,51 a 0,61 m por tramo |
-| Puntos de referencia para orientarse | ✅ | El RESET apagado y su cartel, visibles desde el principio |
+| Puntos de referencia para orientarse | ✅ | El decorado (teclado, torre y monitor) y el mensaje del pie de la pared, visibles desde el principio |
 | No exigir brazos en alto mucho tiempo seguido | 🟡 | Hay un checkpoint cada 6 a 8 m y la energía obliga a alternar, pero no se midió la fatiga con personas |
 | Contenido importante en la zona cómoda de visión | 🟡 | Los carteles y agarres están a la altura de los ojos; el RESET arriba obliga a mirar hacia arriba, por diseño |
 | Distancias de agarre alcanzables por distintas alturas | ✅ ⏳ | Máximo 1,05 m entre agarres; configurable; modo fácil. Falta probar con personas de distintas alturas |
@@ -98,7 +98,7 @@ Es un juego muy liviano para el casco. El jugador automático no duda ni busca, 
 | Sonido espacial de los fragmentos | ✅ ⏳ | Volumen en línea recta hasta 8 m; no se pudo escuchar |
 | Pulsera diegética con contador y barra de espera | ✅ | Sin HUD pegado a la pantalla |
 | El escaneo tiene alternativa para escritorio | ✅ | Tecla E |
-| Niebla lenta y constante, color suave, sin parpadeos | ✅ | 0,1 m/s constante, lila suave |
+| Niebla lenta y constante, color suave, sin parpadeos | ✅ | 0,15 m/s constante, lila suave |
 | Lo que pasó con un fragmento comido se explica | ✅ | Frase del Glitch |
 
 ### Etapa 8 — Final
@@ -122,7 +122,7 @@ Es un juego muy liviano para el casco. El jugador automático no duda ni busca, 
 | Pantalla de inicio con instrucciones por dispositivo y aviso de seguridad | ✅ | En la página y, para quien juega con casco, también escrito en el mundo |
 | Prueba en el Quest: estable y cómoda | ⏳ | Pendiente: nadie del equipo tiene casco por ahora |
 | Evaluar rotación por pasos | ➖ | No hay locomoción libre: el jugador mira a la pared |
-| Evaluar jugar sentado | ➖ | La escalada es de pie por diseño y la pared mide 22 m; queda escrito como limitación |
+| Evaluar jugar sentado | ➖ | La escalada es de pie por diseño y la pared mide unos 21 m; queda escrito como limitación |
 | Evaluar ajuste de altura | 🟡 | Se resuelve con el modo fácil y con `distanciaMax`; no hay un ajuste de altura propio |
 | Prueba con al menos tres personas | ⏳ | Pendiente: ver `docs/guia-de-pruebas.md` |
 | Auditoría final | ✅ | Este documento |
@@ -136,7 +136,7 @@ Es un juego muy liviano para el casco. El jugador automático no duda ni busca, 
 | 3 | Control y libertad | ✅ | Sin game over, volver a jugar, silencio, pantalla de inicio salteable, modo fácil |
 | 4 | Consistencia y estándares | ✅ | Grip para agarrar; un color y una forma por tipo; mismo clic y golpe en escritorio |
 | 5 | Prevención de errores | ✅ | Golpe deliberado, energía mínima para agarrar, protección tras un viaje, aviso de seguridad |
-| 6 | Reconocer en vez de recordar | 🟡 | Hay carteles al primer encuentro, pero con casco los controles solo se explican en la pantalla de la página (que no se ve dentro del casco) y en carteles de la pared |
+| 6 | Reconocer en vez de recordar | 🟡 | Con casco los controles solo se explican en la pantalla de la página (que no se ve dentro del casco) y en el mensaje del pie de la pared |
 | 7 | Flexibilidad y eficiencia | ✅ | Casco o compu, tirolesa como atajo, modo fácil |
 | 8 | Diseño estético y minimalista | ✅ | Sin HUD; la información está en el guante y la pulsera |
 | 9 | Ayudar a recuperarse de errores | ✅ | El Glitch explica lo que pasó; el aviso cuando faltan fragmentos |

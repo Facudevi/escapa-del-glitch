@@ -10,7 +10,10 @@
 import { RESALTADO } from '../config.js';
 
 AFRAME.registerComponent('agarre', {
-  schema: { tipo: { type: 'string', default: 'firme' } },
+  schema: {
+    tipo: { type: 'string', default: 'firme' },
+    tolerancia: { type: 'number', default: 1 }, // multiplica el radio de agarre: menos de 1 = hay que tocarlo más justo
+  },
 
   init() {
     this.manos = {}; // manos que lo sostienen ahora

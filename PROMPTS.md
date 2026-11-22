@@ -128,6 +128,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se implementó la Etapa 10 (pulido): pantalla de inicio con aviso de seguridad, modo fácil, auditoría final contra el libro y la consigna, guías para las pruebas y la intervención manual, y README final. Detalle en la entrada "Etapa 10" más abajo.
 
+### Prompt 20 — 2026-11-21
+
+> Voy a pedirte que el estilo y el diseño de los objetos sean más reales y detallados, que se entienda bien el entorno. Actualmente no parece que estas escalando un teclado, una pc y un monitor. Le falta profundidad a los objetos que componen las paredes de los 3 tramos. El jugador puede salir de el espacio del juego y puede caminar en el "limbo" donde no hay nada. Quiero que pongas limites al jugador para que no pueda avanzar por fuera del juego. Además, la base de los checkpoints no deja visualizar los botones que están por delante. Y quiero que por cada tramo tenga un espacio de profundidad, donde el jugador pueda pararse. en lugar de estar sobre un piso verde que levita. También quiero que la pared (es decir, el teclado, pc y monitor) sean más anchos y hayan más agarres, siempre y cuando se respete el tamaño real de los diferentes componentes que forman la pared. Elimina los comentarios que se encuentran en la pared, ya que no se pueden leer xq están por detrás de los elementos que la diseñan. Agrega un mensaje abajo del todo que diga que a lo largo de la escalada debe juntar los fragmentos para escapar. Cuando el glitch come un fragmento, desaparece en lugar de recolocarse en otro agarre del siguiente tramo. Arregla el problema. Hacé que el glitch vaya un poco más rápido y que el cable usb sea dificil de agarrar. Además, cuando llegues arriba del todo quiero que haya una base de piso donde puedas caminar libremente y esté el boton RESET más grande al fondo. Agregar objetos relacionados a los videojuegos en el piso/base de ahí, donde se puedan esconder aquellos fragmentos que come el glitch y manda para arriba si es que ya completaste el tercer tramo.
+
+**Respuesta:** rediseño visual y de juego en una sola tanda: decorado detallado con profundidad (escritorio, teclado TKL, torre con ventiladores y parlantes, monitor), pared más ancha con más agarres, entrepaños con profundidad para pararse, límites invisibles para el jugador, piso de arriba con RESET grande y objetos de videojuegos, mensaje al pie, fragmentos que se reubican en el tramo siguiente, niebla más rápida y enchufe USB más difícil. Detalle en la entrada "Rediseño visual y de juego" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -422,3 +428,39 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 - Probar en un casco y con al menos tres personas, y ajustar `config.js` con lo que encuentren.
 - Escuchar el sonido y ajustar volúmenes.
 - Informe visual 16:9 (Figma y PDF) y exposición de 5 minutos.
+
+### 2026-11-21 — Rediseño visual y de juego (profundidad, límites, piso final)
+
+**Pedido:** objetos más reales y con profundidad; límites del jugador; entrepaños donde pararse en vez de un piso que levita; pared más ancha con más agarres (respetando tamaños reales); sin carteles en la pared; mensaje al pie; el fragmento comido se reubica en el tramo siguiente; Glitch más rápido; cable USB difícil de agarrar; piso final caminable con RESET grande y objetos de videojuegos donde se esconden los fragmentos.
+
+**Resumen de lo hecho:**
+- **Decorado nuevo** (`src/decorado.js`, `src/fusion.js`): escritorio con veta, alfombrilla, mouse con cable, taza, cuaderno y lápiz; teclado TKL con teclas en dos niveles y leyendas; torre de PC con rejilla perforada, tres ventiladores con aro de color, entradas y tornillos; dos parlantes; monitor con marco, mentón, pantalla hundida con un escritorio dibujado, logo y LEDs. Todo con primitivas y sobresale del plano de la pared hasta 0,7 m. `fusion.js` junta las mallas para no subir las llamadas de dibujo (32 en total).
+- **Proporciones reales** (escala 1 cm = 18 cm): pared de 12,5 m de ancho y 125 agarres (antes ~80); el teclado pasó a TKL para que entre con el mouse y la alfombrilla sin pisarse.
+- **Generador** (`src/tramos.js`) reescrito: ruta en zigzag con centro que deriva, agarres de más, desvíos con cadena de agarres firmes para llegar a los fragmentos y «refugios» (lugares donde puede reaparecer un fragmento).
+- **Entrepaños** (`src/plataformas.js`): cada checkpoint es una plataforma de rejilla de 2,4 m de profundidad con vigas, riel de luz y cinco diagonales que la sostienen. Los agarres salen por delante del decorado y de los entrepaños, así que nada tapa a los botones.
+- **Límites** (`src/components/limites.js`): el cuerpo del jugador no sale de la sala, de la pared ni de los bordes de cada plataforma. Se prueba con teleports a 30–40 m: siempre vuelve a la zona.
+- **Piso de arriba**: piso con baldosas y barandas, panel de fondo, consola con el botón RESET grande (1 m de radio, golpeable desde 1,3 m) y tres huecos de fragmentos, joystick, control, cartuchos, auriculares, lata, dado de 20, monedas, hongo y corazón de píxeles.
+- **Sin carteles en la pared.** Solo queda el mensaje del pie: «A lo largo de la escalada tenés que juntar los fragmentos para escapar».
+- **Fragmentos comidos** (`fragmentos.js`): el Glitch lo manda a un agarre libre del tramo siguiente, siempre por encima del jugador y sin pisar a otro fragmento. Si ya no hay tramo siguiente o el jugador completó el tercero, se esconde entre los objetos del piso de arriba.
+- **Niebla** 0,15 m/s (antes 0,1). **Enchufe USB**: más chico, hundido respecto de los agarres y con tolerancia ×0,3 (hay que tocar casi justo).
+- Todo lo nuevo salió a `config.js` (`ESCENARIO`, `LIMITES`, `DECORADO`, `FRAGMENTO`, `TIROLESA`, `FINAL`). Se subió un poco la luz ambiente para que el entorno se lea mejor.
+
+**Buenas prácticas aplicadas:**
+- Límites físicos con corrección suave del rig, sin cortes bruscos.
+- Profundidad y pistas visuales en el entorno (volumen, tamaños reales) para orientarse.
+- Interfaz dentro del mundo sin tapar elementos interactivos (se sacaron los carteles de la pared).
+- Rendimiento: mallas fusionadas, 32 llamadas de dibujo, ~35.000 triángulos.
+- Modo escritorio: todo se puede probar con el mouse (el enchufe se agarra desde 0,6 m).
+
+**Verificado en Chrome (modo escritorio):**
+- Vistas del teclado, la torre, el monitor, los entrepaños y el piso final; 0 errores en la consola.
+- Límites en el piso, en el aire, en los entrepaños y en el piso de arriba.
+- Reubicación: el fragmento del tramo 1 pasó al tramo 2 y luego al 3; el del tramo 3 se esconde arriba.
+- Tirolesa: 4,3 s hasta el segundo entrepaño, sin caídas y con checkpoint alcanzado.
+- Final: los tres fragmentos escondidos se juntan, el RESET se enciende, la rotura y la luz salen del panel del fondo y volver a jugar deja todo como al principio.
+- No se repitió el recorrido completo con el jugador automático: el generador garantiza una ruta con agarres a menos de 1,05 m.
+
+**Pendiente (depende del equipo):**
+- Probar con casco: alcance real a los agarres, comodidad del enchufe USB y rendimiento en Quest.
+- Medir la duración de la partida con personas; si se alargó por los desvíos, ajustar `config.js`.
+- Intervención manual con commit antes y después.

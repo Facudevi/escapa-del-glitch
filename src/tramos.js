@@ -2,11 +2,15 @@
 // los tres tramos (teclado, torre de PC y monitor). No usa A-Frame: solo calcula posiciones.
 //
 // La pared es amplia y no tiene un camino marcado, pero siempre se puede subir:
-//   1. Se arma una RUTA GARANTIZADA en zigzag, con agarres a distancias alcanzables. Su separación
-//      vertical y los tipos especiales aumentan a medida que se acerca al checkpoint del tramo.
+//   1. Se arma una RUTA GARANTIZADA en zigzag, que se va corriendo hacia los costados, con agarres a
+//      distancias alcanzables. Su separación vertical y los tipos especiales aumentan a medida que se
+//      acerca al checkpoint del tramo.
 //   2. Se agregan agarres EXTRA al azar para que el jugador pueda elegir por dónde subir.
 //   3. Se ubican los fragmentos (el del tramo 1 en el camino, los demás a un costado, con un desvío)
 //      y se endurece la zona que los rodea.
+//   4. Se reservan los REFUGIOS: lugares de cada tramo adonde el Glitch puede llevar un fragmento
+//      que se come, para que reaparezca más arriba en vez de desaparecer.
+//   5. Se ubica el enchufe de la TIROLESA, lejos de la ruta, con una cadena de agarres que lleva hasta él.
 // La misma semilla da siempre la misma pared, así todos prueban lo mismo.
 import { ESCENARIO, TIROLESA } from './config.js';
 
@@ -26,7 +30,7 @@ const entre = (a, b, t) => a + (b - a) * t;
 const limitar = (v, min, max) => Math.max(min, Math.min(max, v));
 const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
-// Devuelve { agarres, paneles, fragmentos, checkpoints, alturaFinal, alturaTotal }
+// Devuelve { agarres, paneles, fragmentos, refugios, checkpoints, tirolesa, tramos, alturaFinal, alturaTotal }
 export function generarEscalada() {
   const E = ESCENARIO;
   const azar = crearAzar(E.semilla);
@@ -64,17 +68,20 @@ export function generarEscalada() {
     ...extra,
   });
 
-  // 1. Ruta garantizada, en zigzag, de abajo hacia arriba
+  // 1. Ruta garantizada, en zigzag, de abajo hacia arriba. El centro del zigzag se va corriendo hacia los
+  // costados para aprovechar todo el ancho de la pared.
   const ruta = [nuevoAgarre('firme', 0, E.primerAgarre, { ruta: true })];
   const tope = alturaFinal + E.primerAgarre;
   let lado = 1;
+  let centro = 0;
   while (ruta[ruta.length - 1].y < tope - 0.05) {
     const anterior = ruta[ruta.length - 1];
     const t = tramoDe(anterior.y + 0.01);
     const p = progreso(t, anterior.y);
     lado = -lado;
 
-    let x = limitar(lado * entre(t.amplitud[0], t.amplitud[1], azar()) + (azar() - 0.5) * 0.3, -t.xMax, t.xMax);
+    centro = limitar(centro + (azar() - 0.5) * 1.1, -(t.xMax - 1.6), t.xMax - 1.6);
+    let x = limitar(centro + lado * entre(t.amplitud[0], t.amplitud[1], azar()) + (azar() - 0.5) * 0.3, -t.xMax, t.xMax);
     let dx = x - anterior.x;
     const saltoMax = t.distanciaMax - 0.3;
     if (Math.abs(dx) > saltoMax) {
@@ -139,7 +146,7 @@ export function generarEscalada() {
   ];
   const enAreaDePanel = (x, y) => paneles.some((p) => Math.abs(x - p.x) < 1 && Math.abs(y - p.y) < 0.75);
 
-  // 2. Agarres de más, al azar, para que la pared sea amplia
+  // 2. Agarres de más, al azar, para que la pared sea amplia (hay muchos más cuanto más ancha es)
   tramos.forEach((t) => {
     const cantidad = Math.round(t.extras * ruta.filter((n) => tramoDe(n.y) === t).length);
     for (let intento = 0, agregados = 0; agregados < cantidad && intento < cantidad * 40; intento++) {
@@ -151,6 +158,20 @@ export function generarEscalada() {
       agregados++;
     }
   });
+
+  // Cadena de agarres firmes que lleva de un punto a otro (para los fragmentos y la tirolesa)
+  const cadena = (desde, hasta) => {
+    const pasos = Math.max(1, Math.ceil(distancia(desde, hasta) / 0.7));
+    for (let k = 1; k <= pasos; k++) {
+      const f = k / pasos;
+      const punto = { x: entre(desde.x, hasta.x, f), y: entre(desde.y, hasta.y, f) };
+      // Si ya hay un agarre de más muy cerca, se lo reemplaza por el de la cadena
+      for (let j = agarres.length - 1; j >= 0; j--) {
+        if (!agarres[j].ruta && !agarres[j].desvio && distancia(agarres[j], punto) < E.separacionMinima) agarres.splice(j, 1);
+      }
+      agarres.push(nuevoAgarre('firme', punto.x, punto.y, { desvio: true }));
+    }
+  };
 
   // 3. Fragmentos: uno por tramo. El del tramo 1 está en el camino; los demás, a un costado con un desvío
   const fragmentos = [];
@@ -168,19 +189,9 @@ export function generarEscalada() {
     } else {
       // Al otro costado de la ruta, con una cadena de agarres firmes que lleva hasta él
       const sentido = cercano.x >= 0 ? -1 : 1;
-      const fx = sentido * Math.min(1.5 + azar() * 0.6, t.xMax - 0.3);
+      const fx = limitar(cercano.x + sentido * (1.8 + azar() * 0.8), -(t.xMax - 0.3), t.xMax - 0.3);
       fragmento = { x: fx, y: objetivo };
-      const meta = { x: fx - sentido * 0.3, y: objetivo - 0.3 };
-      const pasos = Math.ceil(distancia(cercano, meta) / 0.7);
-      for (let k = 1; k <= pasos; k++) {
-        const f = k / pasos;
-        const punto = { x: entre(cercano.x, meta.x, f), y: entre(cercano.y, meta.y, f) };
-        // Si ya hay un agarre muy cerca, se lo reemplaza por el del desvío
-        for (let j = agarres.length - 1; j >= 0; j--) {
-          if (!agarres[j].ruta && distancia(agarres[j], punto) < E.separacionMinima) agarres.splice(j, 1);
-        }
-        agarres.push(nuevoAgarre('firme', punto.x, punto.y, { desvio: true }));
-      }
+      cadena(cercano, { x: fx - Math.sign(fx - cercano.x || sentido) * 0.3, y: objetivo - 0.3 });
     }
     fragmentos.push({ tramo: t.indice, ...fragmento });
 
@@ -194,43 +205,51 @@ export function generarEscalada() {
     }
   });
 
-  // 4. Tirolesa: el enchufe del cable USB, en lo alto de la torre, en un lugar libre a un costado
+  // 4. Refugios: lugares de cada tramo adonde el Glitch puede llevar un fragmento que se come. Son agarres
+  // de más (no de la ruta) en la mitad de arriba del tramo, con la posición del fragmento apenas más arriba
+  // para poder juntarlo desde ese agarre. Los más bajos primero.
+  const refugios = tramos.map((t) => {
+    const desde = t.y0 + t.alto * 0.35;
+    const hasta = t.y0 + t.alto * 0.85;
+    return agarres
+      .filter((a) => !a.ruta && !a.desvio && a.y >= desde && a.y <= hasta && !dentroDeLaPlataforma(a.y))
+      .sort((a, b) => a.y - b.y)
+      .map((a) => ({ x: a.x, y: a.y + 0.28 }));
+  });
+
+  // 5. Tirolesa: el enchufe del cable USB, en la torre, bien lejos de la ruta y con una cadena de agarres
+  // que lleva hasta él. Es difícil de encontrar y de agarrar.
   let tirolesa = null;
   const torre = tramos[1];
   if (torre) {
+    const yBase = torre.y1 - TIROLESA.altoBajoCheckpoint;
+    const lejosDeLaRuta = (x, y) => ruta.every((n) => distancia(n, { x, y }) > 2.2);
     const libreParaEnchufe = (x, y) =>
-      !agarres.some((a) => distancia(a, { x, y }) < 0.9) &&
-      !paneles.some((p) => Math.abs(p.x - x) < 1.1 && Math.abs(p.y - y) < 0.85) &&
-      !fragmentos.some((f) => distancia(f, { x, y }) < 1.1);
-    busqueda: for (const dy of [0, 0.3, -0.3, 0.6, -0.6, 0.9, -0.9]) {
+      lejosDeLaRuta(x, y) &&
+      !agarres.some((a) => !a.desvio && distancia(a, { x, y }) < 1.0) &&
+      !paneles.some((p) => Math.abs(p.x - x) < 1.4 && Math.abs(p.y - y) < 1.0) &&
+      !fragmentos.some((f) => distancia(f, { x, y }) < 1.6);
+    busqueda: for (const dy of [0, 0.4, -0.4, 0.8, -0.8, 1.2, -1.2]) {
       for (const lado of [1, -1]) {
-        const x = lado * TIROLESA.x;
-        const y = torre.y1 - TIROLESA.altoBajoCheckpoint + dy;
-        if (libreParaEnchufe(x, y)) {
-          tirolesa = { x, y, lado };
-          break busqueda;
+        for (let ax = TIROLESA.xMax; ax >= TIROLESA.xMin; ax -= 0.3) {
+          const x = lado * ax;
+          const y = yBase + dy;
+          if (libreParaEnchufe(x, y)) {
+            tirolesa = { x, y, lado };
+            break busqueda;
+          }
         }
       }
     }
 
-    // Lugar para el cartel que explica la tirolesa, hacia el centro de la pared. Se despejan los agarres
-    // de más que estén ahí; si hay un agarre de la ruta o un panel, se prueba otra altura.
     if (tirolesa) {
-      const cartelX = tirolesa.x - tirolesa.lado * 1.5;
-      for (const dy of [0, -0.7, 0.7, -1.4, 1.4]) {
-        const y = tirolesa.y + dy;
-        const tapa = (a) => Math.abs(a.x - cartelX) < 0.85 && Math.abs(a.y - y) < 0.45;
-        const estorba = agarres.some((a) => (a.ruta || a.desvio) && tapa(a)) ||
-          paneles.some((p) => Math.abs(p.x - cartelX) < 1.4 && Math.abs(p.y - y) < 0.9) ||
-          checkpoints.some((c) => Math.abs(c.y - y) < 0.5);
-        if (estorba) continue;
-        for (let i = agarres.length - 1; i >= 0; i--) if (tapa(agarres[i])) agarres.splice(i, 1);
-        tirolesa.cartel = { x: cartelX, y };
-        break;
-      }
+      // Cadena desde el agarre de la ruta más cercano hasta un punto a una mano del enchufe
+      const aproximacion = { x: tirolesa.x - tirolesa.lado * 0.75, y: tirolesa.y - 0.15 };
+      const origen = ruta.reduce((a, b) => (distancia(b, aproximacion) < distancia(a, aproximacion) ? b : a));
+      cadena(origen, aproximacion);
     }
   }
 
   agarres.sort((a, b) => a.y - b.y);
-  return { agarres, paneles, fragmentos, checkpoints, tramos, tirolesa, alturaFinal, alturaTotal: tope };
+  return { agarres, paneles, fragmentos, refugios, checkpoints, tramos, tirolesa, alturaFinal, alturaTotal: tope };
 }

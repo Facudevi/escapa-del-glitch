@@ -17,6 +17,7 @@ import './components/anillo-energia.js';
 import './components/fundido.js';
 import './components/checkpoint.js';
 import './components/caida.js';
+import './components/limites.js';
 import './components/modo-escritorio.js';
 import './components/escalada-mouse.js';
 import './components/fragmentos.js';

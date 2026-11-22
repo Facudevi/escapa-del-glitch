@@ -3,7 +3,8 @@
 // - Empieza a subir unos segundos después de que el jugador se agarra por primera vez.
 // - Si alcanza al jugador, lo devuelve al último checkpoint (como una caída) y baja unos metros por
 //   debajo de ese checkpoint, para no devolverlo adentro de la niebla.
-// - Si alcanza un fragmento que no se juntó, el Glitch se lo come (ver fragmentos).
+// - Si alcanza un fragmento que no se juntó, el Glitch se lo come y lo manda a un agarre del tramo
+//   siguiente (ver fragmentos); una vez completado el tercer tramo, lo manda arriba, al piso final.
 // - Cuando el jugador llega a la plataforma de arriba, la niebla sube rápido hasta comerse lo que quedó
 //   sin juntar y se detiene debajo de la plataforma, sin alcanzar al jugador. Así la partida nunca se
 //   traba: los fragmentos comidos aparecen arriba para buscarlos.
@@ -107,7 +108,7 @@ AFRAME.registerComponent('niebla', {
     // El Glitch se come los fragmentos que la niebla alcanza
     if (fragmentos) {
       fragmentos.lista.forEach((f) => {
-        if (f.estado === 'pared' && this.y >= f.y - 0.1) fragmentos.comer(f.tramo);
+        if (f.estado === 'pared' && this.y >= f.y - 0.1) fragmentos.comer(f.tramo, !this.modoFinal);
       });
     }
 
