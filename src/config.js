@@ -107,12 +107,12 @@ export const ESCENARIO = {
   anchoPared: 12.5, // la pared va de -ancho/2 a +ancho/2 en x
   zFrente: 3.6, // z del frente del primer escalón (el teclado); el de cada tramo siguiente queda más atrás
   profundidadPiso: 2.7, // lo que mide hacia atrás el piso de cada escalón (m)
-  distanciaAlJugador: 1.9, // a cuántos m del frente de una pared se para el jugador al escalarla (y al llegar a su piso)
+  distanciaAlJugador: 1.65, // a cuántos m del frente de una pared se para el jugador al escalarla (y al llegar a su piso)
   salienteAgarres: 1.15, // cuánto salen los agarres del frente de la pared: más que todo el decorado (que sale hasta 0,7)
   tecla: { ancho: 0.46, alto: 0.3, profundidad: 0.65 }, // medida de la tecla firme y la que se hunde (larga: llega hasta el decorado)
   primerAgarre: 1.2, // altura del primer agarre sobre el piso de cada tramo
   separacionMinima: 0.5, // distancia mínima (m) entre agarres
-  alcancePoda: 1.3, // al podar agarres sin salida, cuánto más que distanciaMax se considera alcanzable un agarre vecino
+  alcancePoda: 1.5, // al podar agarres sin salida, cuánto más que distanciaMax se considera alcanzable un agarre vecino
   zonaFragmento: 1.3, // radio (m) alrededor de un fragmento donde los agarres son más difíciles
   panel: { separacionAgarres: 0.3, centro: 0.82 }, // los agarres de un panel quedan a ±separacion del centro; centro = cuánto sale su cuerpo de la pared
   // Teclado del primer tramo: unidad de tecla, y y (sobre el piso) de la fila de arriba de las teclas
@@ -142,9 +142,9 @@ export const ESCENARIO = {
       alto: 5.6,
       paso: [0.45, 0.6],
       distanciaMax: 0.8,
-      separacion: 0.7,
+      separacion: 0.85,
       amplitud: [0.45, 1.2],
-      xMax: 5.6,
+      xMax: 5.0,
       reglas: [{ tipo: 'hunde', desde: 0.7, prob: 0.4 }],
       paneles: [],
       fragmento: { fraccion: 0.4, enRuta: true },
@@ -155,9 +155,9 @@ export const ESCENARIO = {
       alto: 8,
       paso: [0.5, 0.68],
       distanciaMax: 0.85,
-      separacion: 0.8,
+      separacion: 0.9,
       amplitud: [0.5, 1.5],
-      xMax: 5.6,
+      xMax: 5.0,
       reglas: [
         { tipo: 'lata', desde: 0.25, prob: 0.4 },
         { tipo: 'hunde', desde: 0.15, prob: 0.25 },
@@ -171,9 +171,9 @@ export const ESCENARIO = {
       alto: 7,
       paso: [0.5, 0.75],
       distanciaMax: 1.05,
-      separacion: 0.95,
+      separacion: 1.0,
       amplitud: [0.6, 1.9],
-      xMax: 5.6,
+      xMax: 5.0,
       reglas: [
         { tipo: 'intermitente', desde: 0, prob: 0.6 },
         { tipo: 'lata', desde: 0.4, prob: 0.12 },
@@ -489,7 +489,8 @@ export const DECORADO = {
   bloque: '#2b2640', // bloque macizo de cada escalón
   torreFondo: '#352f50', // fondo de la pared de la torre y del monitor
   torreFondoTira: '#40395f',
-  poste: '#4a4666', // poste que une cada agarre con la pared
+  poste: '#8a85a8', // poste que une cada agarre con la pared (más claro que el decorado, para que se vea)
+  postePlaca: '#6a6590', // placa que lo apoya contra la pared
   soporte: '#2f2b42',
   luzCheckpoint: '#6fae8f', // franja de luz suave que marca el checkpoint
   pisoFinal: '#6a5a88',

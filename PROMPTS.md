@@ -147,6 +147,12 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se reestructuró el escenario en tres escalones con piso arriba de cada uno (el siguiente tramo se ve de frente), decorado simple y reconocible, tramo 1 solo teclado, agarres con poste y mejor repartidos, reborde para subir al piso, exterior del final rehecho (frase en el cielo, podio con medalla, pedestal con botón, cartel de madera) y manos y reloj nuevos. Detalle en la entrada "Escalones, agarres y final" más abajo.
 
+### Prompt 22 — 2026-11-22
+
+> hiciste demasiados agarres, está sobreexplotado, deben ser suficientes, pero no demasiados. Sigen habiendo agarres que parecen que estan levitando. Debes distribuir los agarres de manera correcta y de manera distribuida, sin que haya demasiada concentración de un mismo agarre en un espacio
+
+**Respuesta:** se pasó de unos 210 a 133 agarres, repartidos parejo con el método del «mejor candidato» y siempre al alcance de otros; todos los agarres (también latas, bloques y paneles) quedaron apoyados en la pared con una placa y un poste visibles. Detalle en la entrada "Menos agarres, mejor repartidos" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -510,4 +516,24 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Probar con casco: alcance a los agarres y al reborde (a 0,75 m del jugador), tamaño de las manos y comodidad del ascenso.
 - Con unos 210 agarres, vigilar el rendimiento en Quest; si hace falta, subir `separacion` en `ESCENARIO.tramos`.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Menos agarres, mejor repartidos
+
+**Pedido:** demasiados agarres, algunos todavía parecen flotar y se amontonan en algunos lugares.
+
+**Resumen de lo hecho:**
+- **Cantidad:** 133 agarres (41 en el teclado, 59 en la torre y 33 en el monitor) más los 4 paneles, contra unos 210 antes.
+- **Reparto** (`tramos.js`): se sacó el relleno al azar y las dos filas de salida. Ahora cada agarre de relleno se coloca en el lugar más alejado de los demás entre 150 puntos al azar, siempre al alcance de al menos dos agarres que ya existen (nunca queda uno aislado), y se frena cuando no queda lugar con la separación del tramo (`ESCENARIO.tramos[i].separacion`: 0,85, 0,9 y 1,0 m). Abajo de cada tramo quedan solo cinco agarres de salida bien separados.
+- **Sin levitar** (`decorado.js`): todos los agarres, incluidos las latas, los bloques intermitentes y los paneles que giran, tienen una placa contra la pared y un poste más claro que el decorado; los paneles tienen un eje en el medio.
+- Se ajustó la distancia a la que empieza el jugador frente a cada pared (1,65 m) para que el alcance del mouse en modo escritorio siga alcanzando.
+
+**Buenas prácticas aplicadas:**
+- Densidad justa: opciones suficientes para elegir camino, sin saturar la vista (carga visual) ni el casco.
+- Affordance: cada agarre se ve unido a la pared.
+
+**Verificado en Chrome:** jugador automático con mouse escaló los tres tramos hasta el piso final, 0 caídas (la niebla se pausó en la prueba para que el robot lento no fuera alcanzado) y 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probar con casco que 133 agarres sean suficientes y que los saltos entre ellos se sientan cómodos; si hace falta más o menos, tocar `separacion` en `config.js`.
 - Intervención manual con commit antes y después.

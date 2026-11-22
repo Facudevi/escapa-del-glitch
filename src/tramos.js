@@ -159,25 +159,35 @@ export function generarEscalada() {
   const ocupadas = (tramo) => [...agarres.filter((a) => a.tramo === tramo), ...nodosDePanel().filter((n) => n.tramo === tramo)];
   const enAreaDePanel = (tramo, x, y) => paneles.some((p) => p.tramo === tramo && Math.abs(x - p.x) < 1 && Math.abs(y - p.y) < 0.75);
 
-  // 2. Filas de salida sobre el piso de cada tramo y relleno parejo de la pared
+  // 2. Agarres de salida y relleno parejo de la pared
   tramos.forEach((t) => {
-    // Dos filas bajas, repartidas a lo ancho, para empezar a escalar desde cualquier lado
-    [0, 1].forEach((fila) => {
-      const y = t.desdeNodos + fila * 0.6;
-      for (let x = -t.xMax + (fila ? 0.7 : 0); x <= t.xMax + 1e-6; x += 1.4) {
-        if (enAreaDePanel(t.indice, x, y)) continue;
-        if (ocupadas(t.indice).some((o) => distancia(o, { x, y }) < E.separacionMinima + 0.1)) continue;
-        agarres.push(nuevoAgarre(t, 'firme', x, y, { salida: true }));
+    // Unos pocos agarres bajos, bien separados, para empezar a escalar sin caminar mucho por el piso
+    for (let x = -t.xMax + 0.6; x <= t.xMax - 0.5; x += 2.2) {
+      if (ocupadas(t.indice).some((o) => distancia(o, { x, y: t.desdeNodos }) < 1.0)) continue;
+      agarres.push(nuevoAgarre(t, 'firme', x, t.desdeNodos, { salida: true }));
+    }
+    // Relleno por "mejor candidato": cada agarre nuevo va al lugar más alejado de todos los demás entre varios
+    // puntos al azar, pero siempre al alcance de al menos dos agarres que ya existen (así nunca queda un
+    // agarre aislado). Quedan repartidos parejo, sin amontonarse ni dejar huecos, y se frena cuando no hay
+    // lugar con la separación del tramo: son los justos, no se llena toda la pared.
+    const alcance = t.distanciaMax * E.alcancePoda;
+    for (let vuelta = 0; vuelta < 400; vuelta++) {
+      const vecinos = ocupadas(t.indice);
+      let mejor = null;
+      let mejorDistancia = -1;
+      for (let k = 0; k < 150; k++) {
+        const punto = { x: entre(-t.xMax, t.xMax, azar()), y: entre(t.desdeNodos, t.hastaNodos + 0.2, azar()) };
+        if (enAreaDePanel(t.indice, punto.x, punto.y)) continue;
+        const distancias = vecinos.map((o) => distancia(o, punto));
+        const d = Math.min(...distancias);
+        if (d < t.separacion || distancias.filter((x) => x <= alcance).length < 2) continue;
+        if (d > mejorDistancia) {
+          mejorDistancia = d;
+          mejor = punto;
+        }
       }
-    });
-    // Relleno: puntos al azar que respetan la separación del tramo (un reparto parejo, sin huecos grandes)
-    for (let intento = 0; intento < 6000; intento++) {
-      const x = entre(-t.xMax, t.xMax, azar());
-      const y = entre(t.desdeNodos, t.hastaNodos + 0.2, azar());
-      const punto = { x, y };
-      if (enAreaDePanel(t.indice, punto.x, punto.y)) continue;
-      if (ocupadas(t.indice).some((o) => distancia(o, punto) < t.separacion)) continue;
-      agarres.push(nuevoAgarre(t, elegirTipo(t, progreso(t, punto.y)), punto.x, punto.y, { relleno: true }));
+      if (!mejor) break;
+      agarres.push(nuevoAgarre(t, elegirTipo(t, progreso(t, mejor.y)), mejor.x, mejor.y, { relleno: true }));
     }
   });
 
@@ -252,7 +262,7 @@ export function generarEscalada() {
     const desdeAbajo = componente(nodos.filter((n) => n.y <= t.desdeNodos + 0.05));
     const haciaArriba = componente(nodos.filter((n) => t.yBorde - n.y <= alcance));
     const intocable = (a) => a.ruta || a.desvio || a.salida || a.tipo === undefined;
-    for (let i = agarres.length - 1; i >= 0; i--) {
+      for (let i = agarres.length - 1; i >= 0; i--) {
       const a = agarres[i];
       if (a.tramo !== t.indice || intocable(a)) continue;
       if (!desdeAbajo.has(a) || !haciaArriba.has(a)) agarres.splice(i, 1);

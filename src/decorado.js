@@ -7,7 +7,7 @@
 // lleva un poste que lo une con la pared, así no parece flotar. Al final se fusionan las piezas en unas
 // pocas mallas para que el casco dibuje poco (ver fusion.js). Los pisos de arriba de cada escalón están
 // en plataformas.js.
-import { DECORADO as D, ESCENARIO as E } from './config.js';
+import { DECORADO as D, ESCENARIO as E, INTERMITENTE, LATA, PANEL } from './config.js';
 import { fusionar } from './fusion.js';
 import { teclasDelTeclado, ANCHO_TECLADO } from './teclado.js';
 
@@ -240,16 +240,22 @@ function crearMonitor(g, t) {
 
 // ---------- Postes de los agarres y soportes del reborde ----------
 
-// Cada agarre firme o de tecla tiene un poste que lo une con la pared; el reborde de arriba, soportes largos
-function crearPostes(raizPared, datos) {
+// Cada agarre se apoya en la pared con una placa y un poste (más claros que el decorado, para que se vean):
+// así ninguno parece flotar. Los paneles que giran tienen un eje en el medio. El reborde de arriba de cada
+// pared tiene soportes largos.
+function crearPostes(paredes, datos) {
+  const profundidad = { firme: E.tecla.profundidad, hunde: E.tecla.profundidad, lata: LATA.radio * 2 + 0.1, intermitente: INTERMITENTE.profundidad };
+  const apoyar = (g, x, y, largo) => {
+    caja(g, 0.5, 0.5, 0.06, x, y, 0, D.postePlaca);
+    caja(g, 0.2, 0.2, largo, x, y, 0.05, D.poste);
+  };
   datos.agarres.forEach((a) => {
-    if (a.tipo !== 'firme' && a.tipo !== 'hunde') return;
-    const g = raizPared[a.tramo];
-    caja(g, 0.16, 0.16, E.salienteAgarres - E.tecla.profundidad + 0.1, a.x, a.y, 0.1, D.poste);
+    apoyar(paredes[a.tramo], a.x, a.y, E.salienteAgarres - (profundidad[a.tipo] || E.tecla.profundidad));
   });
+  datos.paneles.forEach((p) => apoyar(paredes[p.tramo], p.x, p.y, E.panel.centro - PANEL.grosor / 2));
   datos.bordes.forEach((b) => {
-    const g = raizPared[b.tramo];
-    for (let x = -W / 2 + 0.7; x < W / 2; x += 2.2) caja(g, 0.16, 0.16, E.salienteAgarres - 0.05, x, b.y, 0.05, D.poste);
+    const g = paredes[b.tramo];
+    for (let x = -W / 2 + 0.7; x < W / 2; x += 2.2) caja(g, 0.2, 0.2, E.salienteAgarres - 0.05, x, b.y, 0.05, D.poste);
   });
 }
 
