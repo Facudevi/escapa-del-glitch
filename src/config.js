@@ -324,7 +324,9 @@ export const FRAGMENTO = {
   hundimiento: 0.02, // altura del centro respecto del piso de la plataforma: medio escondidos
   sonido: {
     distanciaMax: 8, // m: más lejos que esto no se oye
-    frecuencias: [523.25, 783.99], // do y sol, un sonido tranquilo
+    frecuencias: [523.25, 783.99], // do y sol, un aviso tranquilo
+    cada: 2.6, // s entre un aviso y el siguiente (no es un sonido continuo)
+    duracion: 1.2, // s que tarda en apagarse cada aviso
     volumen: 0.9,
   },
 };
@@ -385,15 +387,20 @@ export const GLITCH = {
 
 // Música de fondo: acordes suaves que cambian despacio.
 export const MUSICA = {
-  volumen: 1.0, // relativo al volumen general de SONIDO
-  volumenAcordes: 0.45, // el colchón de acordes suena bien bajito, de fondo
-  volumenNotas: 0.9, // las campanitas
-  filtro: 650, // Hz: corta los agudos de los acordes para que suenen redondos
-  segundosPorAcorde: 12,
-  ataque: 4, // s que tarda cada acorde en subir
-  cola: 2, // s extra que tarda en apagarse
-  notasCada: [2.5, 5.5], // s entre campanita y campanita (al azar entre los dos valores)
-  duracionNota: 3.2, // s que tarda en apagarse cada campanita
+  volumen: 0.35, // relativo al volumen general de SONIDO: bien bajito, de fondo
+  pulsosPorMinuto: 66, // lento y tranquilo
+  filtro: 1800, // Hz: corta los agudos para que suene redondo y suave
+  ataque: 0.12, // s que tarda cada nota en subir
+  liberacion: 0.7, // s que tarda cada nota en apagarse (se pisa un poquito con la siguiente)
+  eco: { tiempo: 0.6, nivel: 0.22 }, // eco leve: segundos de demora y volumen
+  anticipacion: 1.5, // s de melodía que se programan por adelantado
+  // Melodía en do mayor pentatónica: [frecuencia en Hz (0 = silencio), duración en pulsos]. Dos frases de 8 pulsos y
+  // un silencio de 4 pulsos, y vuelve a empezar.
+  frases: [
+    [[659.25, 1], [783.99, 1], [880.0, 1.5], [783.99, 0.5], [659.25, 1], [587.33, 1], [523.25, 2]],
+    [[587.33, 1], [659.25, 1], [783.99, 2], [659.25, 1], [587.33, 1], [523.25, 1], [440.0, 1]],
+    [[0, 4]],
+  ],
   teclaSilencio: 'KeyM', // en modo escritorio; con casco, botón B o Y
 };
 

@@ -181,6 +181,18 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** la medalla ahora depende primero de los fragmentos perdidos (uno = plata como máximo, dos o más = bronce) y después del tiempo; el fragmento de la torre quedó a la izquierda, sobre una lata a la que solo se llega desde un panel que gira; la lata es un 50 % más grande; y la música pasó a ser un colchón de acordes bajito con campanitas sueltas, sin desafinaciones. Detalle en la entrada "Medallas por fragmentos, fragmento de la torre, lata y música" más abajo.
 
+### Prompt 27 — 2026-11-22
+
+> Sigue habiendo una especie de ruido blanco en la musica. Es una nota continua que no para en ningun momento, quiero que la elimines de la musica del fondo
+
+**Respuesta:** se eliminó el colchón de acordes sostenidos (la nota continua) y la música quedó solo con campanitas sueltas separadas por silencios; además el sonido de los fragmentos, que también era un tono continuo mientras estaba cerca, pasó a ser un aviso suave que se repite cada 2,6 s. Detalle en la entrada "Música sin nota continua" más abajo.
+
+### Prompt 28 — 2026-11-22
+
+> pero no quiero que sean notas que suenan y se apaguen, busco que sea una melodía tranquila sin un sonido que suene tan fuerte y continuo como el anterior que hacía que exploten los tímpanos
+
+**Respuesta:** la música pasó a ser una melodía lenta y fluida, a volumen bajo, tocada con un sonido redondo y notas que se enlazan, con silencios entre repeticiones; no hay ningún sonido sostenido. Detalle en la entrada "Melodía tranquila" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -648,4 +660,41 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Escuchar la música nueva en el casco y ajustar `MUSICA.volumen`, `volumenAcordes` y `volumenNotas`.
 - Probar con personas el fragmento de la torre y la dificultad del panel más la lata.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Música sin nota continua
+
+**Pedido:** eliminar la nota continua de la música de fondo.
+
+**Resumen de lo hecho:**
+- **Música** (`sonidos.js`, `MUSICA`): se sacó el colchón de acordes. Los acordes duraban más que el intervalo entre uno y otro y se superponían, así que siempre había una nota sonando. Ahora solo hay campanitas sueltas de una escala pentatónica con un poco de eco, cada 3 a 7 s al azar, y entre una y otra no suena nada.
+- **Fragmentos** (`crearZumbido`, `FRAGMENTO.sonido`): también tenían un tono continuo que se oía desde menos de 8 m (desde el principio del juego). Ahora es un aviso corto (do y sol, 1,2 s) cada 2,6 s, con el mismo volumen según la distancia, así sigue sirviendo para encontrarlos sin ser un sonido constante.
+
+**Buenas prácticas aplicadas:**
+- Sin sonidos sostenidos en el fondo (fatiga auditiva); la información espacial del audio se mantiene, pero en pulsos.
+
+**Verificado en Chrome:** en 16 s se crearon 30 osciladores y todos tenían hora de fin (de 1,3 s); ninguno quedó sonando sin parar. 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Escuchar en el casco y ajustar `MUSICA.notasCada`, `MUSICA.volumenNotas` y `FRAGMENTO.sonido.cada`.
+- Intervención manual con commit antes y después.
+
+### 2026-11-22 — Melodía tranquila
+
+**Pedido:** que la música sea una melodía tranquila (no notas sueltas que suenan y se apagan), sin un sonido fuerte ni continuo.
+
+**Resumen de lo hecho:**
+- **Melodía** (`sonidos.js`, `MUSICA.frases`): dos frases de 8 pulsos en do mayor pentatónica (mi–sol–la–sol–mi–re–do y re–mi–sol–mi–re–do–la) y 4 pulsos de silencio, que se repiten. A 66 pulsos por minuto, una vuelta dura unos 18 s.
+- **Sonido:** cada nota es un seno con un poco de triángulo, sube en 0,12 s y se apaga en 0,7 s, así se pisa un poquito con la siguiente y la melodía fluye sin cortes. Pasa por un filtro que recorta los agudos (1800 Hz) y un eco leve.
+- **Volumen:** 0,35 del volumen general (antes 1,0 y con un colchón de varias notas a la vez). Nunca suena más de una nota principal (a veces dos por el solapamiento).
+- La música se programa por adelantado con el reloj del audio, así no se corta ni se atrasa si el juego se pone lento.
+- Todo se ajusta en `MUSICA` (`config.js`): ritmo, volumen, filtro, eco y las propias notas.
+
+**Buenas prácticas aplicadas:**
+- Audio de fondo suave y bajo, sin sonidos sostenidos (fatiga auditiva), y se puede silenciar con M o con B/Y.
+
+**Verificado en Chrome:** la secuencia sale como está escrita (mi, sol, la, sol, mi, re, do, silencio, y repite) y ningún oscilador queda sin parar; 0 errores en la consola. No se pudo escuchar.
+
+**Pendiente (depende del equipo):**
+- Escuchar con casco y ajustar `MUSICA.volumen`, `pulsosPorMinuto` y la melodía a gusto.
 - Intervención manual con commit antes y después.

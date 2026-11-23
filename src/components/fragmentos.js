@@ -80,7 +80,7 @@ AFRAME.registerComponent('fragmentos', {
       grupo.position.set(f.x, f.y, z);
       this.el.object3D.add(grupo);
 
-      const zumbido = crearZumbido(FRAGMENTO.sonido.frecuencias, FRAGMENTO.sonido.volumen, FRAGMENTO.sonido.distanciaMax);
+      const zumbido = crearZumbido(FRAGMENTO.sonido.frecuencias, FRAGMENTO.sonido.volumen, FRAGMENTO.sonido.distanciaMax, FRAGMENTO.sonido.cada, FRAGMENTO.sonido.duracion);
       if (zumbido) zumbido.mover(f.x, f.y, z);
       this.lista.push({ tramo: f.tramo, tramoActual: f.tramo, reubicaciones: 0, estado: 'pared', x: f.x, y: f.y, z, grupo, halo, zumbido, marcaHasta: 0 });
     });
@@ -198,7 +198,7 @@ AFRAME.registerComponent('fragmentos', {
       f.grupo.visible = true;
       f.marcaHasta = 0;
       if (f.zumbido) f.zumbido.detener();
-      f.zumbido = crearZumbido(FRAGMENTO.sonido.frecuencias, FRAGMENTO.sonido.volumen, FRAGMENTO.sonido.distanciaMax);
+      f.zumbido = crearZumbido(FRAGMENTO.sonido.frecuencias, FRAGMENTO.sonido.volumen, FRAGMENTO.sonido.distanciaMax, FRAGMENTO.sonido.cada, FRAGMENTO.sonido.duracion);
       if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
     });
     this.recogidos = 0;
