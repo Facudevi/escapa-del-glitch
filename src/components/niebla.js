@@ -18,6 +18,7 @@ AFRAME.registerComponent('niebla', {
     this.iniciaEn = Infinity; // marca de performance.now() en que empieza a subir
     this.modoFinal = false;
     this.terminada = false;
+    this.objetivo = -Infinity; // altura mínima a la que tiene que llegar (sube rápido hasta ahí)
     this.rig = null;
 
     // Losa translucente lila y píxeles flotando en el borde de arriba
@@ -67,7 +68,14 @@ AFRAME.registerComponent('niebla', {
     escena.addEventListener('mano-agarra', this.alAgarrar);
     escena.addEventListener('checkpoint-alcanzado', (e) => {
       const datos = this.el.escalada;
-      if (datos && e.detail.orden === datos.checkpoints.length) this.modoFinal = true;
+      if (!datos) return;
+      if (e.detail.orden === datos.checkpoints.length) this.modoFinal = true;
+      // Tramo completado: la niebla sube hasta 3/4 de ese tramo
+      const tramo = datos.tramos[e.detail.orden - 1];
+      if (tramo && !this.modoFinal) {
+        this.objetivo = Math.max(this.objetivo, tramo.y0 + tramo.alto * NIEBLA.alcanceTramo);
+        if (this.iniciaEn === Infinity) this.iniciaEn = performance.now();
+      }
     });
     escena.addEventListener('reaparecer', () => this.bajarTrasReaparecer());
   },
@@ -77,12 +85,14 @@ AFRAME.registerComponent('niebla', {
     const caida = document.querySelector('#rig').components.caida;
     const alturaCheckpoint = caida.ultimo ? caida.ultimo.el.object3D.getWorldPosition(new THREE.Vector3()).y : 0;
     this.y = Math.min(this.y, alturaCheckpoint - NIEBLA.retroceso);
+    this.objetivo = Math.min(this.objetivo, this.y);
   },
 
   // Vuelve a empezar: abajo del todo y quieta hasta que el jugador se agarre
   reiniciar() {
     this.y = NIEBLA.alturaInicial;
     this.iniciaEn = Infinity;
+    this.objetivo = -Infinity;
     this.modoFinal = false;
     this.terminada = false;
     this.grupo.position.y = this.y;
@@ -98,9 +108,13 @@ AFRAME.registerComponent('niebla', {
     const enMarcha = ahora >= this.iniciaEn;
     const caida = this.rig.components.caida;
 
+    // También empieza si el jugador ya se despegó del piso (por si nunca se emitió un agarre)
+    if (this.iniciaEn === Infinity && this.rig.object3D.position.y > 0.3) this.iniciaEn = ahora + NIEBLA.retardoInicio * 1000;
+
     if (enMarcha && caida.estado === 'normal') {
       const datos = this.el.escalada;
       this.y += (this.modoFinal ? NIEBLA.velocidadFinal : NIEBLA.velocidad) * segundos;
+      if (this.y < this.objetivo) this.y = Math.min(this.objetivo, this.y + NIEBLA.velocidadAlcance * segundos);
       if (this.modoFinal && datos) this.y = Math.min(this.y, datos.alturaFinal - NIEBLA.distanciaAPlataforma);
     }
     this.grupo.position.y = this.y;
@@ -126,7 +140,10 @@ AFRAME.registerComponent('niebla', {
     }
 
     // ¿Alcanzó al jugador?
-    if (enMarcha && caida.estado === 'normal' && this.rig.object3D.position.y <= this.y + NIEBLA.fraccionCatch) {
+    // En el piso de la sala no lo alcanza: ahí empieza y no hay a dónde devolverlo (antes lo devolvía al mismo
+    // lugar una y otra vez, y la niebla bajaba cada vez, así que parecía que nunca subía)
+    const posY = this.rig.object3D.position.y;
+    if (enMarcha && caida.estado === 'normal' && posY > 0.05 && posY <= this.y + NIEBLA.fraccionCatch) {
       this.el.emit('niebla-alcanza', {}, false);
       caida.caer();
     }

@@ -8,7 +8,7 @@
 //
 // Deja los datos de la escalada en escena.escalada (agarres, paneles, fragmentos, refugios, checkpoints,
 // reset) para los demás componentes.
-import { COLORES, DECORADO, ESCENARIO, FINAL, INTERMITENTE, LATA, PANEL, TIROLESA } from '../config.js';
+import { COLORES, DECORADO, ESCENARIO, ESTANTE, FINAL, INTERMITENTE, LATA, PANEL, TIROLESA } from '../config.js';
 import { crearDecorado } from '../decorado.js';
 import { crearPlataformas, posicionReset } from '../plataformas.js';
 import { generarEscalada } from '../tramos.js';
@@ -36,6 +36,13 @@ AFRAME.registerComponent('escenario-glitch', {
     this.crearTirolesa(datos);
 
     this.crearCheckpoints(datos);
+    // Estantes: pequeñas bases donde pararse en medio de los tramos (el dibujo está en decorado.js)
+    datos.estantes.forEach((e) => {
+      crear(this.el, 'a-entity', {
+        estante: `ancho: ${ESTANTE.ancho}; profundidad: ${ESTANTE.profundidad}`,
+        position: `${e.x} ${e.y.toFixed(3)} ${(frenteTramo(e.tramo) + ESTANTE.profundidad / 2).toFixed(3)}`,
+      });
+    });
     this.crearReset(datos);
     this.crearMensajeDelPie();
   },
@@ -53,29 +60,30 @@ AFRAME.registerComponent('escenario-glitch', {
     const caja = { width: T.ancho, height: T.alto, depth: T.profundidad };
     if (a.tipo === 'hunde') {
       return crear(this.el, 'a-box', {
-        agarre: 'tipo: hunde', 'tecla-hunde': '', position: this.posicionAgarre(a, T.profundidad), ...caja, color: COLORES.lavandaHunde, material,
+        agarre: `tipo: hunde; brillo: ${COLORES.lavandaHunde}`, 'forma-agarre': 'tipo: hunde', 'tecla-hunde': '', position: this.posicionAgarre(a, T.profundidad), ...caja, color: '#ffffff', material,
       });
     }
     if (a.tipo === 'lata') {
       return crear(this.el, 'a-cylinder', {
-        agarre: 'tipo: lata', 'lata-rompe': '', position: this.posicionAgarre(a, LATA.radio * 2 + 0.1), radius: LATA.radio, height: LATA.alto,
-        color: COLORES.ambar, material,
+        agarre: `tipo: lata; brillo: ${COLORES.ambar}`, 'forma-agarre': 'tipo: lata', 'lata-rompe': '', position: this.posicionAgarre(a, LATA.radio * 2 + 0.1), radius: LATA.radio, height: LATA.alto,
+        color: '#ffffff', material,
       });
     }
     if (a.tipo === 'intermitente') {
       return crear(this.el, 'a-box', {
-        agarre: 'tipo: intermitente',
+        agarre: `tipo: intermitente; brillo: ${COLORES.celeste}`,
+        'forma-agarre': 'tipo: intermitente',
         'bloque-intermitente': `fase: ${a.fase}`,
         position: this.posicionAgarre(a, INTERMITENTE.profundidad),
         width: INTERMITENTE.ancho,
         height: INTERMITENTE.alto,
         depth: INTERMITENTE.profundidad,
-        color: COLORES.celeste,
+        color: '#ffffff',
         material,
       });
     }
     return crear(this.el, 'a-box', {
-      agarre: 'tipo: firme', position: this.posicionAgarre(a, T.profundidad), ...caja, color: COLORES.lavanda, material,
+      agarre: `tipo: firme; brillo: ${COLORES.lavanda}`, 'forma-agarre': 'tipo: firme', position: this.posicionAgarre(a, T.profundidad), ...caja, color: '#ffffff', material,
     });
   },
 
@@ -96,12 +104,13 @@ AFRAME.registerComponent('escenario-glitch', {
     const zLocal = ESCENARIO.salienteAgarres - ESCENARIO.panel.centro - T.profundidad / 2;
     [-separacion, separacion].forEach((dx) => {
       crear(panel, 'a-box', {
-        agarre: 'tipo: firme',
+        agarre: `tipo: firme; brillo: ${COLORES.lavanda}`,
+        'forma-agarre': 'tipo: firme',
         position: `${dx} 0 ${zLocal}`,
         width: T.ancho,
         height: T.alto,
         depth: T.profundidad,
-        color: COLORES.lavanda,
+        color: '#ffffff',
         material: 'roughness: 0.7; metalness: 0',
       });
     });
@@ -114,13 +123,14 @@ AFRAME.registerComponent('escenario-glitch', {
     const z = frenteTramo(b.tramo) + ESCENARIO.salienteAgarres - B.grosor / 2;
     b.xs.forEach((x) => {
       crear(this.el, 'a-box', {
-        agarre: 'tipo: borde',
+        agarre: `tipo: borde; brillo: ${COLORES.verde}`,
+        'forma-agarre': 'tipo: borde',
         ascenso: `tipo: borde; orden: ${b.tramo + 1}`,
         position: `${x} ${b.y.toFixed(3)} ${z.toFixed(3)}`,
         width: B.ancho,
         height: B.alto,
         depth: B.grosor,
-        color: COLORES.verde,
+        color: '#ffffff',
         material: 'roughness: 0.7; metalness: 0',
       });
     });
@@ -136,12 +146,13 @@ AFRAME.registerComponent('escenario-glitch', {
     const xDestino = t.x * 0.6;
     const enchufe = crear(this.el, 'a-box', {
       agarre: `tipo: tirolesa; tolerancia: ${TIROLESA.tolerancia}`,
+      'forma-agarre': 'tipo: tirolesa',
       ascenso: `tipo: tirolesa; orden: 2; xDestino: ${xDestino}`,
       position: `${t.x.toFixed(3)} ${t.y.toFixed(3)} ${zEnchufe.toFixed(3)}`,
       width: E.ancho,
       height: E.alto,
       depth: E.profundidad,
-      color: DECORADO.enchufeOculto,
+      color: '#ffffff',
       material: 'roughness: 0.9; metalness: 0',
     });
     // Lengüeta del conector

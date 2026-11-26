@@ -4,12 +4,13 @@
 //
 // La zona permitida depende de dónde está parado:
 //   - en el piso de la sala: toda la sala, menos el lugar que ocupa el primer escalón;
-//   - sobre el piso de un escalón: la superficie de ese piso (con un margen del borde);
+//   - sobre el piso de un escalón o un estante: su superficie (con un margen del borde);
 //   - en la pared (agarrado o en el aire): un pasillo angosto delante de la pared que está escalando.
 // No actúa mientras un ascenso automático lleva al jugador, ni en el exterior del final (ahí hay otro límite).
 import { ESCENARIO, LIMITES } from '../config.js';
 import { frenteTramo, lugarFrenteAlTramo } from '../utilidades.js';
 import { checkpoints } from './checkpoint.js';
+import { estantes } from './estante.js';
 
 const acotar = (valor, minimo, maximo) => Math.min(maximo, Math.max(minimo, valor));
 
@@ -35,6 +36,12 @@ AFRAME.registerComponent('limites', {
     if (apoyo) {
       const z = apoyo.zona();
       return { x0: z.x0 + m, x1: z.x1 - m, z0: z.z0 + m, z1: z.z1 - m };
+    }
+    // Parado sobre un estante: no se sale caminando (con un margen chico, el estante es angosto)
+    const estante = agarrando ? null : estantes.find((e) => e.sostiene(posRig, this.posCamara));
+    if (estante) {
+      const z = estante.zona();
+      return { x0: z.x0 + 0.1, x1: z.x1 - 0.1, z0: z.z0 + 1.0, z1: z.z1 - 0.1 }; // no se mete entre los agarres de la pared
     }
 
     // En el piso de la sala

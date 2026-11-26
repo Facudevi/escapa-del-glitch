@@ -7,7 +7,7 @@
 // lleva un poste que lo une con la pared, así no parece flotar. Al final se fusionan las piezas en unas
 // pocas mallas para que el casco dibuje poco (ver fusion.js). Los pisos de arriba de cada escalón están
 // en plataformas.js.
-import { DECORADO as D, ESCENARIO as E, INTERMITENTE, LATA, PANEL } from './config.js';
+import { DECORADO as D, ESCENARIO as E, ESTANTE, INTERMITENTE, LATA, PANEL } from './config.js';
 import { fusionar } from './fusion.js';
 import { teclasDelTeclado, ANCHO_TECLADO } from './teclado.js';
 
@@ -85,7 +85,7 @@ function plano(g, ancho, alto, textura, x, y, atras) {
 
 // Teclado completo que ocupa toda la pared: carcasa, hilera de teclas lisas y apoyamuñecas abajo
 function crearTeclado(g, t) {
-  const apoyo = E.teclado.arriba - 3.25 - 0.4; // alto del apoyamuñecas: llega hasta abajo de las teclas
+  const apoyo = 1.55; // alto del apoyamuñecas
   const altoCarcasa = t.y1 - apoyo;
   caja(g, W, altoCarcasa, 0.3, 0, apoyo + altoCarcasa / 2, 0, D.tecladoCarcasa);
   // Marco: borde de arriba y de los costados, apenas más alto que las teclas
@@ -107,6 +107,13 @@ function crearTeclado(g, t) {
     color: k.esp ? D.teclaEspecial : D.teclas[i % 2],
   }));
   instanciadas(g, teclas);
+  // Entre el apoyamuñecas y las teclas, el frente de la carcasa: una franja de luz suave y una placa con el logo
+  const abajoDeTeclas = E.teclado.arriba - 3.25 - 0.3;
+  if (abajoDeTeclas - apoyo > 1.0) {
+    caja(g, W - 1.2, 0.08, 0.06, 0, apoyo + 0.5, 0.3, D.cables[0], { basico: true });
+    caja(g, W - 1.2, 0.08, 0.06, 0, abajoDeTeclas - 0.3, 0.3, D.cables[1], { basico: true });
+    caja(g, 2.6, 0.7, 0.08, 0, (apoyo + abajoDeTeclas) / 2, 0.3, D.tecladoBase);
+  }
 }
 
 // ---------- Tramo 2: torre de PC con parlantes ----------
@@ -143,9 +150,9 @@ function crearTorre(g, t) {
   caja(g, ancho - 0.55, alto - 1.0, 0.06, 0, cy, 0.55, D.tecladoBase);
   // Tres ventiladores con aros de distinto color
   [
-    [t.y0 + 1.9, D.cables[2]],
-    [t.y0 + 4.0, D.cables[1]],
-    [t.y0 + 6.1, D.cables[0]],
+    [t.y0 + t.alto * 0.24, D.cables[2]],
+    [t.y0 + t.alto * 0.5, D.cables[1]],
+    [t.y0 + t.alto * 0.76, D.cables[0]],
   ].forEach(([y, luz]) => ventilador(g, 0, y, 0.55, luz));
   // Botón de encendido arriba
   cilindro(g, 0.17, 0.1, 0, t.y1 - 0.75, 0.6, D.ramLuz, { basico: true });
@@ -259,6 +266,28 @@ function crearPostes(paredes, datos) {
   });
 }
 
+// ---------- Estantes ----------
+
+// Pequeña base donde pararse: una tabla con borde de luz ámbar y dos ménsulas en diagonal que la sostienen
+function crearEstantes(paredes, datos) {
+  datos.estantes.forEach((e) => {
+    const g = paredes[e.tramo];
+    const { ancho, profundidad, grosor } = ESTANTE;
+    caja(g, ancho, grosor, profundidad, e.x, e.y - grosor / 2, 0, D.estante);
+    caja(g, ancho + 0.06, 0.07, 0.1, e.x, e.y + 0.02, profundidad - 0.1, D.luzEstante, { basico: true });
+    caja(g, ancho, 0.5, 0.12, e.x, e.y - 0.25, 0, D.estante); // placa contra la pared
+    [-1, 1].forEach((lado) => {
+      const alto = 1.0;
+      const largo = Math.hypot(alto, profundidad - 0.3);
+      const pivote = new THREE.Group();
+      pivote.position.set(e.x + lado * (ancho / 2 - 0.15), e.y - grosor - alto / 2, (profundidad - 0.3) / 2 + 0.05);
+      pivote.rotation.x = -Math.atan2(alto, profundidad - 0.3);
+      g.add(pivote);
+      poner(pivote, new THREE.BoxGeometry(0.12, 0.12, largo), D.poste, 0, 0, 0);
+    });
+  });
+}
+
 // ---------- Todo junto ----------
 
 // Arma el decorado de las tres paredes y lo devuelve fusionado en pocas mallas
@@ -279,5 +308,6 @@ export function crearDecorado(datos) {
   crearTorre(paredes[1], t2);
   crearMonitor(paredes[2], t3);
   crearPostes(paredes, datos);
+  crearEstantes(paredes, datos);
   return fusionar(raiz);
 }

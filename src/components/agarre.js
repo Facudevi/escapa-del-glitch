@@ -12,7 +12,8 @@ import { RESALTADO } from '../config.js';
 AFRAME.registerComponent('agarre', {
   schema: {
     tipo: { type: 'string', default: 'firme' },
-    tolerancia: { type: 'number', default: 1 }, // multiplica el radio de agarre: menos de 1 = hay que tocarlo más justo
+    tolerancia: { type: 'number', default: 1 },
+    brillo: { type: 'color', default: '' }, // color del brillo propio (si el agarre tiene textura, la malla es blanca) // multiplica el radio de agarre: menos de 1 = hay que tocarlo más justo
   },
 
   init() {
@@ -61,7 +62,8 @@ AFRAME.registerComponent('agarre', {
     const material = malla && malla.material;
     if (!material || !material.emissive) return;
     const resaltado = this.disponible && Object.keys(this.alAlcance).length > 0;
-    material.emissive.copy(material.color);
+    if (this.data.brillo) material.emissive.set(this.data.brillo);
+    else material.emissive.copy(material.color);
     material.emissiveIntensity = resaltado ? RESALTADO.intensidad : RESALTADO.base;
   },
 });

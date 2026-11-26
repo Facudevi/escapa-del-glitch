@@ -188,12 +188,16 @@ function pisoFinal(g, y, zFrente) {
   caja(g, 5.4, 0.18, 1.1, 0, y + 3.3, F.fondoZ + 0.95, D.soporte);
   caja(g, 5.0, 0.12, 0.1, 0, y + 0.3, F.fondoZ + 1.45, D.cables[0], { basico: true }); // luz de la consola
 
-  // Objetos de videojuegos
-  control(g, -4.0, -4.0, y, 0.2);
-  joystick(g, 4.0, -3.6, y);
-  cartuchos(g, -3.4, -6.1, y);
-  auriculares(g, 3.6, -6.2, y);
-  chiquitos(g, y);
+  // Objetos de videojuegos. Sus posiciones están medidas con el borde de adelante del piso en z = -1,8: el grupo
+  // los corre junto con ese borde
+  const objetos = new THREE.Group();
+  objetos.position.z = zFrente + 1.8;
+  g.add(objetos);
+  control(objetos, -4.0, -4.0, y, 0.2);
+  joystick(objetos, 4.0, -3.6, y);
+  cartuchos(objetos, -3.4, -6.1, y);
+  auriculares(objetos, 3.6, -6.2, y);
+  chiquitos(objetos, y);
 }
 
 // Posición del botón RESET grande, al fondo del piso de arriba (para otros componentes)

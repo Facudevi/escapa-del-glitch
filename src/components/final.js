@@ -13,6 +13,7 @@
 // así no se corta la sesión de VR.
 import { CAIDA, COLORES, ESCENARIO, FINAL } from '../config.js';
 import { crearCartelDeMadera, crearPedestalDelBoton, crearPodioConMedalla } from '../objetosFinal.js';
+import { crearPaisaje } from '../paisajeFinal.js';
 import { amanecer, roturaPantalla } from '../sonidos.js';
 import { crear, lugarFrenteAlTramo } from '../utilidades.js';
 
@@ -105,6 +106,10 @@ AFRAME.registerComponent('final', {
     paisaje.add(sol);
     this.paisaje = paisaje;
     this.grupo.setObject3D('paisaje', paisaje);
+
+    // Paisaje vivo: árboles, pasto, flores, pajaritos, mariposas y nubes que se mueven
+    this.vida = crearPaisaje();
+    this.grupo.object3D.add(this.vida.grupo);
 
     // Luz del amanecer, solo para los objetos del exterior (se enciende y apaga junto con el grupo)
     const luzSol = new THREE.DirectionalLight(COLORES.luzSolExterior, FINAL.exterior.intensidadSol);
@@ -316,8 +321,9 @@ AFRAME.registerComponent('final', {
     this.enCurso = false;
   },
 
-  tick(tiempo) {
+  tick(tiempo, dt) {
     if (this.activo && this.podio) this.podio.mecer(tiempo / 1000);
+    if (this.activo && this.vida) this.vida.animar(tiempo / 1000, (dt || 16) / 1000);
     // Animación de grietas y luz mientras dura la rotura
     if (this.rotura && this.grietas) {
       const transcurrido = (performance.now() - this.rotura.desde) / 1000;

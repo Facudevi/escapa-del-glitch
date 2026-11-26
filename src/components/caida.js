@@ -5,7 +5,7 @@
 // No hay game over ni movimiento de caída (para que no maree).
 //
 // También se encarga de los checkpoints: detecta cuándo el jugador llega a uno y, si está
-// parado sobre uno (o sobre el piso) sin agarrarse, lo apoya a la altura de la plataforma.
+// parado sobre uno (o sobre el piso, o sobre un estante) sin agarrarse, lo apoya a esa altura.
 //
 // Eventos que emite sobre la escena:
 //   'checkpoint-alcanzado' { orden }   al llegar a un checkpoint nuevo (la energía se recarga en la etapa 4)
@@ -15,6 +15,7 @@
 import { CAIDA } from '../config.js';
 import { lugarFrenteAlTramo } from '../utilidades.js';
 import { checkpoints } from './checkpoint.js';
+import { estantes } from './estante.js';
 
 const esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms));
 
@@ -67,9 +68,12 @@ AFRAME.registerComponent('caida', {
       return;
     }
 
-    if (apoyado) {
-      // Parado sin agarrarse: queda a la altura de la plataforma
+    // Un estante también sostiene (aunque no es un checkpoint)
+    const estante = bajoLosPies ? null : estantes.find((e) => e.sostiene(posRig, this.posCamara));
+    if (apoyado || estante) {
+      // Parado sin agarrarse: queda a la altura de la plataforma o del estante
       if (bajoLosPies) posRig.y = bajoLosPies.el.object3D.getWorldPosition(this.destino).y;
+      else if (estante) posRig.y = estante.zona().y;
       this.sinApoyo = 0;
       return;
     }

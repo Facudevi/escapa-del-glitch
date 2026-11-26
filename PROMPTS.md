@@ -193,6 +193,27 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** la música pasó a ser una melodía lenta y fluida, a volumen bajo, tocada con un sonido redondo y notas que se enlazan, con silencios entre repeticiones; no hay ningún sonido sostenido. Detalle en la entrada "Melodía tranquila" más abajo.
 
+### Prompt 29 — 2026-11-25
+
+> Quiero que dejes un poco más de espacio para moverse entre el piso/base y la pared para escalar. Cambiar de posición aquel fragmento que se pierde y aparece arriba debajo de un control, ya que es imposible de ver y no se sabe donde está si es que no pasaste por encima suyo o haciendo escaner. No modificar los tramos en sí
+
+**Respuesta:** los pisos de los escalones pasaron de 2,7 a 3,4 m de profundidad (de 1,55 a 2,25 m libres entre el borde y los agarres), con la sala un poco más grande para que entre todo; y los fragmentos que aparecen arriba quedaron a la vista, delante o al costado de los objetos, un poco más altos. Los agarres de los tramos no cambiaron. Detalle en la entrada "Más espacio en los pisos y fragmentos a la vista" más abajo.
+
+### Prompt 30 — 2026-11-25
+
+> No sube el glitch. Además, cuando paso un tramo sin agarrar el fragmento, el fragmento no reaparece en la parte de arriba (no hace falta que el glitch lo coma para que llegue arriba).
+> Quiero que hagas los tramos más largos y en cada tramo, agregues "estantes" o pequeñas bases donde el jugador pueda pararse. De esta forma, el jugador no debe estar agarrado todo el tiempo a los agarres. Por eso también debes agregarle un cuerpo al personaje, para que el jugador entienda si su cuerpo es tocado por el glitch o puede pararse en estas pequeñas bases.
+> Mejorar el diseño de los agarres, darles forma y una identidad visual más gráfica que no las haga parecer como formas geométricas con colores. Agregar más detalle a la pantalla de juego final (Más paisaje, flores, arboles, pajaritos que se muevan, animación en general para que no se sienta tan estático)
+
+**Respuesta:** se arregló la niebla, los fragmentos salteados ahora suben solos, los tramos son más altos y tienen estantes, el jugador tiene cuerpo, los agarres tienen dibujo propio y el final tiene un paisaje vivo. Detalle en la entrada "Niebla, estantes, cuerpo, agarres gráficos y paisaje vivo" más abajo.
+
+### Prompt 31 — 2026-11-25
+
+> el glitch todavía no sube. Hacé que lo haga. Por cada tramo que se completa, que el glitch automaticamente suba 3/4 de ese tramo, para no quedarse tan atrás respecto al jugador.
+> Hacer coincidir la manos con el movimiento del jugador, es decir, que si yo muevo mi cabeza hacia la izquierda (donde apunto), tanto el cuerpo como las manos deben apuntar a la izquierda (siempre mirando de frente respecto al eje del jugador). Distribuir mejor los agarres del tramo 2 (en la zona izquierda faltan algunos)
+
+**Respuesta:** la niebla ahora arranca también si el jugador se despega del piso, y al completar un tramo sube enseguida hasta 3/4 de ese tramo; las manos en reposo giran con la mirada; y el generador rellena los huecos de la pared con agarres conectados (la torre pasó de 35 a 46 agarres). Detalle en la entrada "Niebla que alcanza, manos con la mirada y huecos rellenos" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -697,4 +718,68 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Pendiente (depende del equipo):**
 - Escuchar con casco y ajustar `MUSICA.volumen`, `pulsosPorMinuto` y la melodía a gusto.
+- Intervención manual con commit antes y después.
+
+### 2026-11-25 — Más espacio en los pisos y fragmentos a la vista
+
+**Pedido:** más espacio para moverse entre el piso y la pared que se escala; que el fragmento que aparece arriba debajo del control se pueda ver; sin tocar los tramos.
+
+**Resumen de lo hecho:**
+- **Pisos más profundos** (`ESCENARIO.profundidadPiso` de 2,7 a 3,4 m): entre el borde del piso y la cara de los agarres de la pared siguiente quedan 2,25 m libres (antes 1,55). Para que entre todo, el primer escalón se adelantó (`zFrente` 4,0), el fondo del piso de arriba se corrió (`final.fondoZ` −8,4) y la sala pasó de 16 a 18 m de lado (`SALA.lado`, `LIMITES.sala`).
+- El piso de arriba conserva su tamaño: los objetos de videojuegos se mueven junto con su borde (`plataformas.js`), y el lugar donde aparece el jugador se mide desde ese borde (`final.spawnDesdeElBorde`).
+- **Escondites a la vista** (`FRAGMENTO.escondites`, ahora medidos desde el borde del piso de arriba): delante del control (antes quedaba adentro del control), al lado del joystick, junto a los cartuchos y junto a los auriculares, flotando a 0,5 m del piso (`alturaEscondite`, antes 0,02).
+- Los agarres, sus tipos y su distribución no cambiaron (misma semilla y mismas cantidades: 30, 34 y 23).
+
+**Buenas prácticas aplicadas:**
+- Espacio cómodo para moverse en los descansos.
+- Lo que hay que encontrar se ve: el escaneo ayuda, pero no es obligatorio.
+
+**Verificado en Chrome:** los tres ascensos llegan a su piso con el checkpoint; desde cinco lugares del piso de arriba, un rayo de la cámara a cada fragmento escondido no choca con ningún objeto (todos visibles); al caminar hasta ellos se juntan los tres. 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probar con casco que el espacio del piso se sienta cómodo.
+- Intervención manual con commit antes y después.
+
+### 2026-11-25 — Niebla, estantes, cuerpo, agarres gráficos y paisaje vivo
+
+**Pedido:** que suba el Glitch; que el fragmento salteado aparezca más arriba sin que lo coma la niebla; tramos más largos con estantes para pararse; cuerpo visible; agarres con identidad gráfica; final con más paisaje y animación.
+
+**Resumen de lo hecho:**
+- **Niebla** (`niebla.js`): el problema era que alcanzaba al jugador mientras seguía en el piso de la sala, lo «devolvía» al mismo lugar y volvía a bajar 3 m: parecía que nunca subía. Ahora en el piso de la sala no lo alcanza. Además empieza apenas debajo del piso (−0,6 m), sube a 0,2 m/s y arranca 4 s después del primer agarre.
+- **Fragmentos salteados** (`fragmentos.js`): al llegar a un piso, cada fragmento de un tramo ya pasado que no se juntó sube solo a un agarre de un tramo más alto o, si ya no hay, aparece en el piso de arriba. Cuenta como perdido para la medalla y el Glitch lo avisa («Te olvidaste un fragmento: lo mando más arriba»).
+- **Tramos más largos:** 9, 10 y 9 m (antes 7,2, 8 y 7); la altura total es 28 m. La sala, las luces y el decorado (teclado con franjas de luz y logo, ventiladores repartidos) se ajustaron a la nueva altura.
+- **Estantes** (`estante.js`, `tramos.js`, `decorado.js`): cinco bases de madera con borde ámbar (una en el teclado y dos en cada uno de los otros tramos). El jugador puede pararse encima sin agarrarse; si se suelta hasta 0,8 m por encima, cae parado. No son checkpoints. El generador despeja los agarres donde va el estante y agrega agarres de acceso a los costados y arriba, y comprueba que se llegue a cada estante y se siga subiendo.
+- **Cuerpo** (`cuerpo.js`): torso, cadera, piernas y pies que siguen a la cabeza. Se pone rojizo cuando la niebla le llega a los pies, antes de alcanzarlo.
+- **Agarres con identidad gráfica** (`forma-agarre.js`): cada tipo tiene su dibujo. La tecla firme tiene flecha hacia arriba y un tornillo; la que se hunde, una flecha grande hacia abajo; la lata, etiqueta «COLA», grieta, tapa y anillo; el bloque intermitente es un mosaico de píxeles; el reborde, verde con flechas; el USB, el símbolo grabado. El brillo al tener un agarre al alcance respeta el color de cada tipo.
+- **Paisaje vivo** (`paisajeFinal.js`, `PAISAJE`): 34 árboles (redondos y pinos) que se mecen, 260 matas de pasto, 170 flores que se mueven con el viento, 7 pajaritos que vuelan en círculos aleteando, 5 mariposas que revolotean cerca y 7 nubes que pasan.
+
+**Buenas prácticas aplicadas:**
+- Descanso dentro del tramo (estantes) para bajar la fatiga de brazos.
+- Cuerpo visible: conciencia del propio cuerpo y aviso claro del peligro.
+- Affordance: cada agarre muestra con un dibujo qué hace.
+- Final con movimiento suave y continuo, sin destellos.
+
+**Verificado en Chrome:** la niebla sube de forma continua (de −0,6 a 1,6 m en 12 s); el jugador queda parado sobre un estante sin caer; los fragmentos salteados pasan de tramo en tramo y aparecen arriba; el cuerpo cambia de color cerca de la niebla; cada tramo se puede subir hasta el reborde (comprobado en el grafo, también usando solo agarres firmes y estantes); el paisaje final se anima (pajaritos, mariposas y nubes en movimiento). 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probar con casco el alto del cuerpo, los estantes y la duración de la partida (los tramos son más largos; se puede ajustar `NIEBLA.velocidad` y `FINAL.medallas`).
+- Intervención manual con commit antes y después.
+
+### 2026-11-25 — Niebla que alcanza, manos con la mirada y huecos rellenos
+
+**Pedido:** que el Glitch suba de verdad y que, al completar cada tramo, suba automáticamente 3/4 de ese tramo; manos (y cuerpo) que giren con la mirada; mejor distribución de agarres en la torre (faltaban a la izquierda).
+
+**Resumen de lo hecho:**
+- **Niebla** (`niebla.js`, `NIEBLA.alcanceTramo` y `velocidadAlcance`): al llegar al piso de un tramo, la niebla sube a 1,5 m/s hasta 3/4 de ese tramo (por ejemplo, 6,75 m al terminar el teclado) y después sigue a su velocidad normal. Además arranca si el jugador se despega del piso aunque no se haya registrado un agarre, y la altura mínima baja junto con ella cuando el jugador cae.
+- **Manos con la mirada** (`escalada-mouse.js`): en modo escritorio, las manos en reposo giran alrededor de la cabeza según hacia dónde mira el jugador y apuntan hacia ese lado; el cuerpo ya lo hacía. Con casco, las manos las siguen moviendo los controles.
+- **Huecos rellenos** (`tramos.js`, paso 5a-bis): donde quedó un hueco más grande que el alcance (por estantes, paneles o agarres que se sacaron), el generador agrega agarres firmes que crecen desde los que ya hay y saca al final los que no quedaron con camino. No rellena alrededor de los fragmentos difíciles ni debajo del fragmento de la torre. La torre pasó de 35 a 46 agarres (17 a la izquierda y 10 a la derecha, antes 2), y el hueco más grande bajó de 4,2 a 2,2 m.
+
+**Buenas prácticas aplicadas:**
+- Presión constante y visible (la niebla acompaña al jugador).
+- Las manos y el cuerpo responden a la orientación de la cabeza (propiocepción).
+
+**Verificado en Chrome:** con un clic real del mouse sobre un agarre, la niebla arranca y sube; al completar el teclado subió de 2 a 6,75 m y siguió subiendo; las manos giran con la mirada; los tres tramos se pueden subir (también solo con agarres firmes) y el fragmento de la torre sigue exigiendo el panel y la lata. 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probar con personas si la niebla resulta muy exigente al quedarse descansando en un piso (`NIEBLA.velocidad`, `alcanceTramo`).
 - Intervención manual con commit antes y después.

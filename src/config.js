@@ -71,13 +71,13 @@ export const AMBIENTE = {
   nieblaDensidad: 0.02,
   intensidadAmbiente: 1.5,
   intensidadPunto: 1.2,
-  luces: [{ y: 5, z: 7 }, { y: 12, z: 5 }, { y: 19, z: 3 }, { y: 25, z: 0 }], // luces puntuales cálidas: altura y z (delante de cada tramo)
+  luces: [{ y: 5, z: 7 }, { y: 14, z: 5 }, { y: 23, z: 3 }, { y: 31, z: 0 }], // luces puntuales cálidas: altura y z (delante de cada tramo)
 };
 
 // Medidas de la sala de pruebas de la etapa 1 (en metros).
 export const SALA = {
-  lado: 16, // la sala es un cuadrado de lado x lado
-  altoParedes: 30, // paredes que marcan los límites (tienen que llegar a lo más alto de la escalada)
+  lado: 18, // la sala es un cuadrado de lado x lado
+  altoParedes: 36, // paredes que marcan los límites (tienen que llegar a lo más alto de la escalada)
 };
 
 // Jugador y manos.
@@ -106,22 +106,22 @@ export const ESCENARIO = {
   semilla: 20261339, // cambia la distribución de los agarres (la misma semilla da siempre la misma pared)
   escala: 18, // cuántas veces más grande que el objeto real es todo el setup
   anchoPared: 12.5, // la pared va de -ancho/2 a +ancho/2 en x
-  zFrente: 3.6, // z del frente del primer escalón (el teclado); el de cada tramo siguiente queda más atrás
-  profundidadPiso: 2.7, // lo que mide hacia atrás el piso de cada escalón (m)
+  zFrente: 4.0, // z del frente del primer escalón (el teclado); el de cada tramo siguiente queda más atrás
+  profundidadPiso: 3.4, // lo que mide hacia atrás el piso de cada escalón (m): deja lugar para moverse entre el borde y la pared
   distanciaAlJugador: 1.65, // a cuántos m del frente de una pared se para el jugador al escalarla (y al llegar a su piso)
   salienteAgarres: 1.15, // cuánto salen los agarres del frente de la pared: más que todo el decorado (que sale hasta 0,7)
   tecla: { ancho: 0.46, alto: 0.3, profundidad: 0.65 }, // medida de la tecla firme y la que se hunde (larga: llega hasta el decorado)
   primerAgarre: 1.2, // altura del primer agarre sobre el piso de cada tramo
   panel: { separacionAgarres: 0.3, centro: 0.82 }, // los agarres de un panel quedan a ±separacion del centro; centro = cuánto sale su cuerpo de la pared
   // Teclado del primer tramo: unidad de tecla, y y (sobre el piso) de la fila de arriba de las teclas
-  teclado: { unidad: 0.5, arriba: 6.8 },
+  teclado: { unidad: 0.5, arriba: 8.0 },
   // Reborde de arriba de cada pared: tramos cortos de barra que el jugador agarra para subir al piso
   borde: { alto: 0.16, grosor: 0.18, bajoElTope: 0.15, ancho: 2.2, posiciones: [-3.2, 0, 3.2] }, // ancho de cada tramo de reborde y dónde están (x)
   // Piso de arriba (sobre el monitor): se camina hasta el botón RESET, al fondo de la sala
   final: {
     ancho: 12.5,
-    fondoZ: -7.4, // hasta dónde llega el piso hacia el fondo de la sala
-    spawnZ: -3.0, // dónde queda el jugador al llegar o reaparecer
+    fondoZ: -8.4, // hasta dónde llega el piso hacia el fondo de la sala
+    spawnDesdeElBorde: 1.2, // a cuántos m del borde de adelante queda el jugador al llegar o reaparecer
     altoFondo: 6, // alto del panel del fondo, donde está el botón RESET grande
   },
 
@@ -134,24 +134,26 @@ export const ESCENARIO = {
   //   mezcla: qué fracción de los agarres es de cada tipo especial y desde qué fracción de altura del tramo
   //     (más difícil cuanto más arriba); se reparten lo más lejos posible entre sí
   //   paneles: fracciones del tramo donde hay un panel que gira
+  //   estantes: pequeñas bases salientes donde el jugador puede pararse y soltarse (fracción de altura y x del centro)
   //   fragmento: fracción de altura donde está el fragmento; en los tramos de arriba, `dificiles` son los tipos con los
   //     que se endurece la zona de `zona` metros alrededor del fragmento (y el agarre más cercano también);
   //     con `panelDebajo`, el fragmento queda en `zonaX` (x) sobre una lata, y el único camino hasta ella pasa por un panel
   tramos: [
     {
       nombre: 'Teclado',
-      alto: 7.2, // más alto que el objeto real a propósito, para que el primer tramo no se supere tan rápido
+      alto: 9, // más alto que el objeto real a propósito, para que el primer tramo no se supere tan rápido
       xMax: 4.4,
       rejilla: { columnas: 1.7, filas: 0.85 },
       alcance: 1.35,
       quitar: 0.1,
       mezcla: [{ tipo: 'hunde', fraccion: 0.1, desde: 0.6 }], // fácil: casi todo firme, y apenas teclas que se hunden arriba
       paneles: [],
-      fragmento: { fraccion: 0.45 },
+      estantes: [{ fraccion: 0.45, x: -2.8 }],
+      fragmento: { fraccion: 0.7 },
     },
     {
       nombre: 'Torre de PC',
-      alto: 8,
+      alto: 10,
       xMax: 4.4,
       rejilla: { columnas: 1.8, filas: 0.9 },
       alcance: 1.4,
@@ -160,12 +162,13 @@ export const ESCENARIO = {
         { tipo: 'hunde', fraccion: 0.1, desde: 0.15 },
         { tipo: 'lata', fraccion: 0.15, desde: 0.3 },
       ], // media: latas que se rompen y teclas que se hunden, repartidas
-      paneles: [0.25], // más el panel que está justo debajo del fragmento
-      fragmento: { fraccion: 0.65, dificiles: ['lata', 'hunde'], zona: 1.2, panelDebajo: true, zonaX: [-4.0, -2.0] }, // el fragmento está en la zona izquierda, sobre una lata a la que se llega por un panel que gira
+      paneles: [0.2], // más el panel que está justo debajo del fragmento
+      estantes: [{ fraccion: 0.3, x: -2.8 }, { fraccion: 0.82, x: -1.4 }],
+      fragmento: { fraccion: 0.62, dificiles: ['lata', 'hunde'], zona: 1.2, panelDebajo: true, zonaX: [-4.4, -1.6] }, // el fragmento está en la zona izquierda, sobre una lata a la que se llega por un panel que gira
     },
     {
       nombre: 'Monitor',
-      alto: 7,
+      alto: 9,
       xMax: 4.4,
       rejilla: { columnas: 1.85, filas: 0.95 },
       alcance: 1.55,
@@ -175,16 +178,39 @@ export const ESCENARIO = {
         { tipo: 'lata', fraccion: 0.1, desde: 0.4 },
         { tipo: 'hunde', fraccion: 0.05, desde: 0.2 },
       ], // difícil: bloques que aparecen y desaparecen, con algunas latas
-      paneles: [0.25, 0.5, 0.75],
+      paneles: [0.2, 0.55, 0.85],
+      estantes: [{ fraccion: 0.38, x: -2.8 }, { fraccion: 0.7, x: 2.8 }],
       fragmento: { fraccion: 0.7, dificiles: ['intermitente', 'lata'], zona: 1.3 }, // el fragmento queda en una zona de bloques que aparecen y desaparecen
     },
   ],
 };
 
+// Estantes: pequeñas bases que salen de la pared en medio de cada tramo, donde el jugador puede pararse sin
+// agarrarse (no son checkpoints: si cae, vuelve al último piso).
+export const ESTANTE = {
+  ancho: 1.9, // m
+  profundidad: 2.1, // m que sale de la pared (llega por delante de los agarres, hasta donde está el jugador)
+  grosor: 0.14,
+  despejeArriba: 1.0, // m por encima del estante sin agarres (lugar para el cuerpo)
+  despejeAbajo: 0.35, // m por debajo del estante sin agarres
+  caidaMaxima: 0.8, // m: si el jugador se suelta hasta esta altura sobre un estante, cae parado en él
+};
+
+// Cuerpo del jugador: torso, cadera y piernas que siguen a la cabeza, para ver dónde está el cuerpo (si la
+// niebla lo toca o si está parado sobre un estante).
+export const CUERPO = {
+  color: '#7b6aa8',
+  colorPeligro: '#c4665b', // cuando la niebla le llega a los pies
+  distanciaPeligro: 0.6, // m: a cuánto por encima de los pies tiene que estar la niebla para avisar
+  anchoTorso: 0.34,
+  alturaHombros: 0.25, // m por debajo de los ojos
+  alturaCadera: 0.85, // m sobre los pies (en modo escritorio)
+};
+
 // Límites para el jugador: no puede salir del espacio de juego (ni caminar por el "limbo" de afuera).
 export const LIMITES = {
   margen: 0.3, // m que se deja de borde respecto de las paredes y los bordes de los pisos
-  sala: 8, // medio lado de la sala (m)
+  sala: 9, // medio lado de la sala (m)
   aire: { zAtras: -0.6, zAdelante: 0.6 }, // mientras escala, cuánto puede separarse de su lugar frente a la pared (m)
   piso: { cercaDeLaPared: 0.9 }, // en el piso de la sala, a cuánto del frente de la pared puede acercarse (m)
   pisoTolerancia: 0.05, // altura (m) hasta la que se considera que está en el piso de la sala
@@ -313,15 +339,17 @@ export const FRAGMENTO = {
   radioRecogerDificil: 0.36, // en la torre y el monitor hay que acercar más la mano (m)
   radioRecogerCuerpo: 0.6, // en la plataforma de arriba también se recogen al pasar cerca (m)
   velocidadPulso: 0.5, // Hz: el brillo respira muy despacio, sin parpadeo
-  // Escondites sobre el piso de arriba (x y z del mundo), pegados a los objetos de videojuegos que lo decoran:
-  // detrás del joystick, del control, de los cartuchos y de los auriculares
+  // Escondites sobre el piso de arriba, entre los objetos de videojuegos pero a la vista (nunca debajo ni detrás
+  // de ellos, mirando desde donde llega el jugador): x del mundo y z medida desde el borde de adelante del piso
+  // (negativo = hacia el fondo). Delante del control, al lado del joystick, junto a los cartuchos y junto a los
+  // auriculares.
   escondites: [
-    { x: -5.3, z: -4.5 },
-    { x: 5.2, z: -4.4 },
-    { x: -4.3, z: -6.6 },
-    { x: 4.5, z: -6.6 },
+    { x: -4.6, z: -0.9 },
+    { x: 2.4, z: -2.0 },
+    { x: -2.0, z: -3.8 },
+    { x: 2.2, z: -3.7 },
   ],
-  hundimiento: 0.02, // altura del centro respecto del piso de la plataforma: medio escondidos
+  alturaEscondite: 0.5, // altura del centro sobre el piso de arriba: flota un poco, así se ve desde lejos
   sonido: {
     distanciaMax: 8, // m: más lejos que esto no se oye
     frecuencias: [523.25, 783.99], // do y sol, un aviso tranquilo
@@ -350,13 +378,15 @@ export const ESCANEO = {
 
 // Niebla de píxeles: sube despacio desde abajo y a velocidad constante.
 export const NIEBLA = {
-  alturaInicial: -2, // m
-  velocidad: 0.15, // m/s
-  retardoInicio: 5, // s después de agarrarse por primera vez
+  alturaInicial: -0.6, // m: apenas debajo del piso, así se ve desde que empieza a subir
+  velocidad: 0.2, // m/s
+  retardoInicio: 4, // s después de agarrarse por primera vez
   retroceso: 3, // m por debajo del checkpoint donde queda al devolver al jugador
+  alcanceTramo: 0.75, // al completar un tramo, la niebla sube enseguida hasta esta fracción de ese tramo
+  velocidadAlcance: 1.5, // m/s con que sube hasta ahí
   velocidadFinal: 2, // m/s: cuando el jugador llega arriba, se come lo que quedó sin juntar
   distanciaAPlataforma: 0.8, // m: arriba se detiene por debajo del piso de la plataforma
-  ancho: 16, // m (igual que la sala)
+  ancho: 18, // m (igual que la sala)
   alto: 30, // m de espesor
   pixeles: 260, // cantidad de píxeles flotando en el borde de arriba
   tamanoPixel: 0.5,
@@ -376,6 +406,7 @@ export const GLITCH = {
   maxEnCola: 2, // frases que pueden esperar su turno mientras se muestra otra
   frases: {
     comido: ['Ñam, este te lo escondo arriba'],
+    salteado: ['Te olvidaste un fragmento: lo mando más arriba'],
     caida: ['Ese agarre no te quería'],
     quieto: ['¿Te tomaste un cooldown?'],
     sinFragmentos: ['¿No te olvidaste de algo?'],
@@ -451,6 +482,20 @@ export const FINAL = {
   },
 };
 
+// Paisaje del exterior del final (árboles, pasto, flores, pajaritos, mariposas y nubes que se mueven).
+export const PAISAJE = {
+  arboles: 34,
+  radioArboles: [9, 50], // m desde el jugador
+  colorHojas: ['#6fae8f', '#5b9a7a', '#86b98f', '#4f8a6c'],
+  matas: 260,
+  flores: 170,
+  radioFlores: 16, // m
+  colorFlores: ['#f2a7c3', '#f6d36b', '#c1adf5', '#ffffff', '#f6a67a'],
+  pajaros: 7,
+  mariposas: 5,
+  nubes: 7,
+};
+
 // Modo fácil: para quien quiere más margen (se elige en la pantalla de inicio o con ?facil=1 en el link).
 // Los números son multiplicadores sobre los valores normales.
 export const FACIL = {
@@ -500,7 +545,9 @@ export const DECORADO = {
   torreFondoTira: '#40395f',
   enchufeOculto: '#4a4666', // enchufe USB de la tirolesa: casi del color de la torre
   poste: '#8a85a8', // poste que une cada agarre con la pared (más claro que el decorado, para que se vea)
-  postePlaca: '#6a6590', // placa que lo apoya contra la pared
+  postePlaca: '#6a6590',
+  estante: '#8a6f55', // estantes: madera cálida, distinta de la pared
+  luzEstante: '#e0b36a', // borde ámbar suave de los estantes // placa que lo apoya contra la pared
   soporte: '#2f2b42',
   luzCheckpoint: '#6fae8f', // franja de luz suave que marca el checkpoint
   pisoFinal: '#6a5a88',

@@ -7,7 +7,7 @@
 //
 // No tiene lógica de escalada propia: mueve las entidades de las manos y dispara los mismos
 // eventos que el control real ('mano-agarra' / 'mano-suelta'), así que usa el componente climb.
-// Se desactiva solo al entrar en VR.
+// Se desactiva solo al entrar en VR. En reposo, las manos giran con la mirada del jugador.
 import { ESCRITORIO } from '../config.js';
 
 const BOTONES = { 0: 'izquierda', 2: 'derecha' };
@@ -186,6 +186,26 @@ AFRAME.registerComponent('escalada-mouse', {
   pausarMirada(pausar) {
     const camara = document.querySelector('#camara');
     if (camara) camara.setAttribute('look-controls', 'enabled', !pausar);
+  },
+
+  // Las manos acompañan la mirada: si el jugador gira la cabeza, las manos en reposo giran con él (quedan
+  // siempre adelante, de frente al eje del jugador) y todas apuntan hacia donde mira
+  tick() {
+    if (this.el.is('vr-mode')) return; // con casco, las manos las mueven los controles
+    const camara = document.querySelector('#camara');
+    if (!camara) return;
+    const giro = camara.object3D.rotation.y;
+    const cabeza = camara.object3D.position;
+    const coseno = Math.cos(giro);
+    const seno = Math.sin(giro);
+    Object.keys(ID_MANO).forEach((nombre) => {
+      const mano = this.mano(nombre);
+      if (!mano) return;
+      mano.object3D.rotation.y = giro;
+      if (this.agarradas[nombre]) return; // agarrada: queda en el agarre
+      const [x, y, z] = ESCRITORIO.reposoMano[nombre];
+      mano.object3D.position.set(cabeza.x + x * coseno + z * seno, y, cabeza.z - x * seno + z * coseno);
+    });
   },
 
   // Le avisa a modo-escritorio cuántas manos hay agarradas (para no caminar ni viajar mientras tanto)

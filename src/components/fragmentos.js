@@ -13,10 +13,10 @@
 // o 'pared' → 'comido' → 'escondido' → 'recogido'.
 // Cada fragmento tiene su número (tramo) de origen y el tramo donde está ahora (tramoActual).
 //
-// Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-recogido' { tramo, total } y
+// Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-salteado' { tramo, destino }, 'fragmento-recogido' { tramo, total } y
 // 'fragmentos-revelados'. Escucha 'niebla-termino' para esconder arriba los fragmentos comidos.
 // Para otros componentes: recogidos, perdidos (los que se comió el Glitch), lista, marcar(tramo, ms), comer(tramo, reubicar) y revelar().
-import { COLORES, FRAGMENTO } from '../config.js';
+import { COLORES, ESCENARIO, FRAGMENTO } from '../config.js';
 import { frenteTramo } from '../utilidades.js';
 import { actualizarOyente, crearZumbido, fragmentoRecogido } from '../sonidos.js';
 
@@ -48,6 +48,7 @@ AFRAME.registerComponent('fragmentos', {
     this.textura = texturaBrillo();
 
     this.el.addEventListener('niebla-termino', () => this.revelar());
+    this.el.addEventListener('checkpoint-alcanzado', (e) => this.subirSalteados(e.detail.orden));
   },
 
   construir() {
@@ -142,7 +143,7 @@ AFRAME.registerComponent('fragmentos', {
 
   // El Glitch se come un fragmento que no se juntó. Con reubicar, intenta mandarlo a un agarre del tramo
   // siguiente; si no hay (o ya se completó el tercer tramo), queda 'comido' hasta que se esconde arriba.
-  comer(tramo, reubicar = false) {
+  comer(tramo, reubicar = false, evento = 'fragmento-comido') {
     const f = this.lista.find((x) => x.tramo === tramo && x.estado === 'pared');
     if (!f) return;
     this.perdidos.add(tramo); // aunque después se junte de nuevo, ya se perdió: baja la medalla
@@ -155,24 +156,34 @@ AFRAME.registerComponent('fragmentos', {
       f.z = frenteTramo(refugio.tramo) + FRAGMENTO.distanciaAlFrente;
       f.grupo.position.set(f.x, f.y, f.z);
       if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
-      this.el.emit('fragmento-comido', { tramo, destino: 'tramo' }, false);
+      this.el.emit(evento, { tramo, destino: 'tramo' }, false);
       return;
     }
     f.estado = 'comido';
     f.grupo.visible = false;
     if (f.zumbido) f.zumbido.silenciar(true);
-    this.el.emit('fragmento-comido', { tramo, destino: 'arriba' }, false);
+    this.el.emit(evento, { tramo, destino: 'arriba' }, false);
   },
 
-  // Los fragmentos comidos reaparecen medio escondidos en la plataforma de arriba
+  // El jugador llegó a un piso sin juntar el fragmento de un tramo que ya pasó: el fragmento sube solo (a un
+  // agarre de un tramo más alto o, si ya no hay, al piso de arriba). Cuenta como perdido para la medalla.
+  subirSalteados(orden) {
+    const datos = this.el.escalada;
+    this.lista.forEach((f) => {
+      if (f.estado === 'pared' && f.tramoActual < orden) this.comer(f.tramo, true, 'fragmento-salteado');
+    });
+    if (datos && orden >= datos.tramos.length) this.revelar(); // ya está arriba: aparecen enseguida
+  },
+
+  // Los fragmentos comidos reaparecen en el piso de arriba, entre los objetos de videojuegos pero a la vista
   revelar() {
     this.lista.forEach((f) => {
       if (f.estado !== 'comido') return;
       const sitio = FRAGMENTO.escondites[f.tramo % FRAGMENTO.escondites.length];
       f.estado = 'escondido';
       f.x = sitio.x;
-      f.y = this.alturaFinal + FRAGMENTO.hundimiento;
-      f.z = sitio.z;
+      f.y = this.alturaFinal + FRAGMENTO.alturaEscondite;
+      f.z = frenteTramo(ESCENARIO.tramos.length - 1) + sitio.z; // z medida desde el borde de adelante del piso de arriba
       f.grupo.position.set(f.x, f.y, f.z);
       f.grupo.visible = true;
       if (f.zumbido) {

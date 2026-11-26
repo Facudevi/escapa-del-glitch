@@ -26,6 +26,7 @@ La partida dura unos 2 minutos y medio. Si te caés, no pasa nada: volvés al ú
 ### El juego
 - Cinco tipos de agarre, cada uno con su color y su forma: **tecla firme** (lavanda), **tecla que se hunde**, **lata que se rompe** (cruje y cae a los 3 s), **bloque intermitente** (mirá su anillo) y **panel que gira**. Los agarres al alcance se resaltan.
 - Cada tramo es un **escalón** (teclado, torre de PC y monitor) con un piso arriba donde descansar: llegás agarrándote del **reborde verde** de arriba de la pared, y desde el piso ves de frente el tramo siguiente.
+- En medio de cada tramo hay **estantes** (pequeñas bases de madera con borde ámbar) donde te podés parar y soltar las manos. Tu **cuerpo** se ve, y se pone rojizo cuando la niebla te llega a los pies.
 - Un cable **USB** en lo alto de la torre, difícil de ver y de agarrar, te lleva solo hasta el piso de arriba de la torre.
 - Una **niebla de píxeles** sube despacio desde abajo. Si te alcanza, volvés al último checkpoint; si alcanza un fragmento sin juntar, el **Glitch** se lo come y lo manda más arriba: reaparece en un agarre del tramo siguiente o, si ya completaste el tercero, escondido entre los objetos de videojuegos del piso de arriba.
 - Al final, una medalla. **Primero cuentan los fragmentos perdidos** (los que se comió el Glitch): con uno perdido la medalla más alta es la de **plata**, con dos o más es de **bronce**, sin importar el tiempo. Después manda el tiempo: **oro** menos de 2 min, **plata** menos de 3, **bronce** el resto; vale la peor de las dos.

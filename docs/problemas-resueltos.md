@@ -154,3 +154,11 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** el generador armaba primero un camino y después agregaba agarres alrededor.
 - **Solución:** se eliminó la ruta. Ahora hay una trama escalonada con un poco de desorden, se sacan agarres al azar sin dejar a ninguno sin salida (un camino hacia arriba y otro hacia abajo) y los tipos difíciles se reparten lo más lejos posible entre sí.
 - **Aprendizaje:** la garantía de que se puede subir puede ser una propiedad del conjunto (todo agarre tiene salida) y no un camino dibujado.
+
+## 22. La niebla del Glitch no subía
+
+- **Qué pasó:** la niebla parecía quedarse siempre abajo.
+- **Por qué:** cuando llegaba al piso, alcanzaba al jugador que todavía estaba en el piso de la sala. Lo «devolvía» al mismo lugar y, como después de alcanzarlo baja 3 m, volvía a empezar desde abajo una y otra vez.
+- **Solución:** en el piso de la sala la niebla ya no alcanza al jugador; solo lo alcanza cuando está escalando.
+- **Aprendizaje:** una regla que castiga hay que revisarla en el estado inicial, donde no hay a dónde devolver al jugador.
+

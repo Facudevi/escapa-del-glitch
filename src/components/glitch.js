@@ -39,6 +39,7 @@ AFRAME.registerComponent('glitch', {
 
     const escena = this.el;
     escena.addEventListener('fragmento-comido', () => this.decir('comido'));
+    escena.addEventListener('fragmento-salteado', () => this.decir('salteado'));
     escena.addEventListener('niebla-alcanza', () => {
       this.ultimaNiebla = performance.now();
       this.decir('niebla');
