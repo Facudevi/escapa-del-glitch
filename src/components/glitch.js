@@ -7,7 +7,8 @@
 //   comido         cuando se come un fragmento («Ñam, este te lo escondo arriba»)
 //   quieto         si el jugador se queda quieto mucho tiempo («¿Te tomaste un cooldown?»)
 //   pasado         si sube por encima del fragmento de su pared sin juntarlo
-//   nuevoTramo     al llegar a un piso que no es el último: recuerda buscar el fragmento del tramo siguiente
+//   progreso       al llegar a un piso que no es el último, si no se salteó ningún fragmento: cuántos lleva y
+//                  dónde está el próximo (GLITCH.progreso y GLITCH.lugarDelFragmento)
 //   sinFragmentos  si llega arriba sin los tres fragmentos («¿No te olvidaste de algo?»)
 //   faltan         si golpea el RESET apagado
 //   reset          al romper el RESET («Bueno, ganaste. Nos vemos afuera»)
@@ -51,15 +52,30 @@ AFRAME.registerComponent('glitch', {
       // Si la niebla fue la causa, ya habló por ella
       if (performance.now() - this.ultimaNiebla > 500) this.decir('caida');
     });
+    // INTERVENCIÓN MANUAL: al llegar a un piso, el Glitch dice cuántos fragmentos lleva el jugador y dónde está el próximo
     escena.addEventListener('checkpoint-alcanzado', (e) => {
       const datos = escena.escalada;
       const fragmentos = escena.components.fragmentos;
-      if (datos && e.detail.orden === datos.checkpoints.length && fragmentos && fragmentos.recogidos < FRAGMENTO.total) {
-        this.decir('sinFragmentos');
-      } else if (datos && e.detail.orden < datos.checkpoints.length) {
-        this.decir('nuevoTramo'); // recuerda buscar el fragmento del tramo que tiene adelante
+      if (!datos || !fragmentos) return;
+      const orden = e.detail.orden; // piso al que llegó (1 = arriba del teclado)
+      const llevados = fragmentos.recogidos;
+
+      // Piso de arriba de todo: solo avisa si le faltan fragmentos
+      if (orden === datos.checkpoints.length) {
+        if (llevados < FRAGMENTO.total) this.decir('sinFragmentos');
+        return;
       }
+      // Si se salteó el fragmento de algún tramo ya completado, de eso avisa la frase 'salteado'
+      if (llevados < orden) return;
+
+      // Va al día: le cuenta su progreso y le dice en qué tramo está el próximo fragmento
+      const texto = GLITCH.progreso
+        .replace('{llevados}', llevados)
+        .replace('{total}', FRAGMENTO.total)
+        .replace('{lugar}', GLITCH.lugarDelFragmento[orden]);
+      this.mostrarOEncolar('progreso', texto);
     });
+    // FIN INTERVENCIÓN MANUAL
     // Moverse, agarrarse o escanear cuenta como no estar quieto
     ['mano-agarra', 'mano-suelta', 'escaneo'].forEach((n) => escena.addEventListener(n, () => this.alMoverse()));
   },

@@ -468,7 +468,6 @@ export const GLITCH = {
     comido: ['Ñam, este te lo escondo arriba'],
     salteado: ['Te olvidaste un fragmento: lo mando más arriba'],
     pasado: ['Te pasaste el fragmento de este tramo: está más abajo'],
-    nuevoTramo: ['Tramo nuevo: buscá su fragmento antes de trepar'],
     caida: ['Ese agarre no te quería'],
     quieto: ['¿Te tomaste un cooldown?'],
     sinFragmentos: ['¿No te olvidaste de algo?'],
@@ -476,6 +475,9 @@ export const GLITCH = {
     reset: ['Bueno, ganaste. Nos vemos afuera'],
     faltan: ['El RESET todavía no enciende: faltan fragmentos'],
   },
+  // Al llegar a un piso con los fragmentos al día: {llevados}, {total} y {lugar} se completan en glitch.js
+  progreso: 'Vas {llevados} de {total}. El próximo está en {lugar}',
+  lugarDelFragmento: ['el teclado', 'la torre de PC', 'el monitor'], // por tramo (0 = teclado)
 };
 
 // Música de fondo: acordes suaves que cambian despacio.
