@@ -183,3 +183,17 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** el subtítulo no tenía prueba de profundidad, y en WebGL, sin esa prueba, tampoco se guarda la profundidad: los carteles transparentes que se dibujaban después le pasaban por encima. Además estaba debajo de la mirada, donde descansan las manos y donde, mirando hacia arriba, quedaba fuera de la pantalla.
 - **Solución:** el subtítulo es opaco, con prueba de profundidad, y va 10 cm por encima de la mirada a 70 cm, delante del monitor y sin nada entre él y los ojos.
 - **Aprendizaje:** desactivar `depthTest` no sirve para dejar algo «siempre adelante» si después se dibujan objetos transparentes.
+
+## 26. Los jugadores trepaban sin buscar los fragmentos
+
+- **Qué pasó:** en las pruebas con personas, varios jugadores empezaban a trepar enseguida, sin mirar el tramo, y llegaban arriba sin fragmentos.
+- **Por qué:** el objetivo se contaba con un subtítulo en la intro y un cartel al pie de la pared, pero nunca se mostraba dónde estaban los fragmentos. Además la intro se podía saltear.
+- **Solución:** la intro ya no se saltea y termina con un recorrido desde el RESET hasta el pie del teclado que para frente a cada fragmento y lo marca. Durante el juego, el Glitch avisa si el jugador sube por encima del fragmento de su pared sin juntarlo, y en cada piso le recuerda buscar el del tramo siguiente.
+- **Aprendizaje:** un objetivo se entiende mejor mostrándolo en su lugar que explicándolo con texto; y los avisos sirven más en el momento del error.
+
+## 27. Caer al soltarse apenas por encima del piso
+
+- **Qué pasó:** soltarse unos centímetros por encima del piso de abajo, o un poco más arriba de un piso o un estante, contaba como caída: la vista se iba a negro y el jugador reaparecía.
+- **Por qué:** el piso de abajo solo sostenía hasta 5 cm, y los demás apoyos tenían un margen justo, sin tolerancia al costado del borde.
+- **Solución:** un margen extra (`CAIDA.margenSinCaida`: 35 cm de alto y 25 cm al costado) en todos los apoyos. Si el jugador queda un poco más arriba, baja suave hasta pararse en vez de saltar de golpe.
+- **Aprendizaje:** en VR, donde la altura de la mano y del cuerpo no es exacta, los límites de apoyo necesitan tolerancia.

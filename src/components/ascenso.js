@@ -1,7 +1,9 @@
 // Ascenso automático hasta un piso. Va en dos tipos de agarre, junto al componente agarre:
 //   - el REBORDE de arriba de cada pared (tipo 'borde'): quien se agarra de él sube solo hasta el piso del
 //     escalón, como si se impulsara con los brazos, y queda parado de frente a la pared siguiente;
-//   - el ENCHUFE de la tirolesa (tipo 'tirolesa'): un atajo hasta el piso del segundo escalón.
+//   - el ENCHUFE de la tirolesa (tipo 'tirolesa'): un atajo hasta el piso del segundo escalón;
+//   - el BORDE ÁMBAR de un estante (tipo 'estante'): sube igual que el reborde, pero hasta el estante. No es un
+//     checkpoint: si después cae, vuelve al último piso.
 //
 // El camino es una curva suave y el jugador lo recorre a velocidad constante, sin aceleraciones ni
 // sacudidas, porque un movimiento que no controla el jugador es lo que más marea. Mientras dura no se puede
@@ -13,9 +15,14 @@ import { deslizar } from '../sonidos.js';
 
 AFRAME.registerComponent('ascenso', {
   schema: {
-    tipo: { type: 'string', default: 'borde' }, // 'borde' o 'tirolesa'
-    orden: { type: 'int', default: 1 }, // checkpoint al que lleva (1 = piso del teclado)
+    tipo: { type: 'string', default: 'borde' }, // 'borde', 'tirolesa' o 'estante'
+    orden: { type: 'int', default: 1 }, // checkpoint al que lleva (1 = piso del teclado); 0 en los estantes
     xDestino: { type: 'number', default: 9999 }, // x donde llega (por defecto, la misma donde estaba)
+    // Destino propio (estantes): altura y z donde queda parado, y entre qué x (se acerca al centro si hace falta)
+    yDestino: { type: 'number', default: 9999 },
+    zDestino: { type: 'number', default: 9999 },
+    xMin: { type: 'number', default: -9999 },
+    xMax: { type: 'number', default: 9999 },
   },
 
   init() {
@@ -33,11 +40,17 @@ AFRAME.registerComponent('ascenso', {
     if (this.activo || escena.juegoTerminado || !datos) return;
 
     const rig = document.querySelector('#rig');
-    const checkpoint = datos.checkpoints[this.data.orden - 1];
     const inicio = rig.object3D.position.clone();
     const limiteX = ESCENARIO.anchoPared / 2 - LIMITES.margen;
-    const x = this.data.xDestino === 9999 ? Math.max(-limiteX, Math.min(limiteX, inicio.x)) : this.data.xDestino;
-    const fin = new THREE.Vector3(x, checkpoint.y, checkpoint.spawnZ);
+    let x = this.data.xDestino === 9999 ? Math.max(-limiteX, Math.min(limiteX, inicio.x)) : this.data.xDestino;
+    x = Math.max(this.data.xMin, Math.min(this.data.xMax, x));
+    let fin;
+    if (this.data.yDestino !== 9999) {
+      fin = new THREE.Vector3(x, this.data.yDestino, this.data.zDestino);
+    } else {
+      const checkpoint = datos.checkpoints[this.data.orden - 1];
+      fin = new THREE.Vector3(x, checkpoint.y, checkpoint.spawnZ);
+    }
 
     if (this.data.tipo === 'tirolesa') {
       this.velocidad = TIROLESA.velocidad;

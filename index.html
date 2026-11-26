@@ -17,6 +17,7 @@
       /* Pantalla de inicio */
       #inicio[hidden] { display: none; }
       #inicio:not([hidden]) ~ #ayuda { display: none; } /* la ayuda de pantalla espera a que se cierre el inicio */
+      body.en-intro #ayuda { display: none; } /* y a que termine la intro (si no, tapa los subtítulos) */
       #inicio {
         position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
         padding: 16px; background: rgba(29, 23, 39, 0.94); color: #e9e2f5;

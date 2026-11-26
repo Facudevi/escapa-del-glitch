@@ -28,7 +28,7 @@ AFRAME.registerComponent('modo-escritorio', {
   },
 
   alClickear(e) {
-    if (this.enVR() || this.el.introActiva) return; // durante la intro el clic la saltea
+    if (this.enVR() || this.el.introActiva) return; // durante la intro el clic no hace nada
 
     // Un clic que termina de agarrar o soltar con el mouse no es un pedido de viaje
     if (this.manosMouse > 0 || performance.now() - this.ultimoCambio < 150) return;

@@ -270,6 +270,15 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se explicó que, si no se vio la intro, probablemente se abrió `index.html` directo (sin `npm run dev`) o GitHub Pages todavía no se había actualizado. La intro se rehízo como animación en primera persona de 23,6 s: habitación oscura a las 3:47 con el setup de tamaño real, la pantalla falla, salen píxeles, la pantalla crece y lo traga, y aparece frente al setup gigante; solo tres subtítulos cortos. El RESET usa ahora los mismos colores y medidas que el título del final. Detalle en la entrada "Intro animada: la compu te abduce, y RESET con la letra del título" más abajo.
 
+### Prompt 41 — 2026-11-26
+
+> personaje sensible a la caída, deja una cantidad pequeña de espacio más que no cuente como caída. Las bases para pararse durante el tramo pueden interactuarse, y cuando se interactúa el personaje se sube (haciendo como la animación cuando alcanza el checkpoint), pero no cuenta como checkpoint.
+> Hacer más entendible la idea de obtener los fragmentos, ya que varios jugadores fueron de una a trepar en lugar de inspeccionar el tramo para ver que hay.
+> No se puede saltear la introducción, y agregar al final una vista que arranque desde el boton Reset hasta abajo del todo (Teclado) así se pueden ver los fragmentos y el jugador entiende mejor.
+> Aumentar el tiempo que se tiene en cuenta para la medalla, si hace menos de 3:30 es dorada, menos de 4:30 plateada, sino bronce. Seguir teniendo en cuenta la pérdida de fragmentos
+
+**Respuesta:** soltarse hasta 35 cm por encima de un piso o un estante (o 25 cm al costado de su borde) ya no es caída: el jugador baja suave y queda parado. Los estantes tienen un borde ámbar que se agarra y sube al jugador con el mismo movimiento que al llegar a un piso, sin contar como checkpoint. La intro ya no se saltea, se repite al volver a jugar y termina con un recorrido del RESET al pie del teclado que para frente a cada fragmento. El Glitch avisa si el jugador sube por encima del fragmento de su pared sin juntarlo y, en cada piso, le recuerda buscar el del tramo siguiente. Medallas: oro menos de 3:30, plata menos de 4:30, bronce el resto (los fragmentos perdidos siguen mandando). Detalle en la entrada "Caída más tolerante, estantes que suben, intro con recorrido y medallas más largas" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -933,3 +942,45 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Probar con casco que la abducción no maree y que la habitación no quede demasiado oscura (`INTRO.luzAmbienteHabitacion`, `INTRO.luzPantalla`).
 - En VR la habitación aparece hacia donde está la cabeza del rig: si alguien empieza mirando para otro lado, ve primero la cama o la ventana.
+
+### 2026-11-26 — Caída más tolerante, estantes que suben, intro con recorrido y medallas más largas
+
+**Pedido:** que la caída no sea tan sensible; que los estantes se puedan agarrar para subirse (como al llegar a un piso, pero sin checkpoint); que se entienda mejor que hay que buscar los fragmentos (en las pruebas, varios trepaban sin mirar el tramo); que la intro no se pueda saltear y termine con una vista desde el RESET hasta el teclado; y medallas con más tiempo (oro menos de 3:30, plata menos de 4:30).
+
+**Resumen de lo hecho:**
+- **Margen sin caída** (`CAIDA.margenSinCaida` y `velocidadAterrizaje`): soltarse hasta 35 cm por encima de lo que antes contaba como apoyo (el piso de abajo, un piso de arriba o un estante), o hasta 25 cm al costado de su borde, ya no es caída. El jugador baja suave, a 2,5 m/s, hasta quedar parado, sin saltos de golpe. Lo usan `caida.js`, `checkpoint.js` y `estante.js`.
+- **Estantes que suben** (`escenario.js`, `ascenso.js`, `ESTANTE.borde`): el borde ámbar del estante (adelante y a los costados) es un agarre. Al agarrarlo, el jugador sube solo hasta el estante con el mismo recorrido suave que al llegar a un piso. No es un checkpoint: no se emite `checkpoint-alcanzado` y, si cae, vuelve al último piso. El borde dejó de dibujarse en `decorado.js` y ahora lo crea `escenario.js`.
+- **Intro sin saltear y con recorrido** (`intro.js`, `INTRO.recorrido`):
+  - Se sacó el salteo (teclas, clic, botones y grip) y la pista «saltear».
+  - Después de la llegada, la intro hace un recorrido: arranca frente al RESET («Este es el RESET, tu salida…») y para frente al fragmento del monitor, de la torre y del teclado, cada uno marcado como con el escaneo y con su subtítulo. Termina al pie del teclado con «Antes de trepar, mirá bien cada tramo y buscá su fragmento. Si no lo ves, escaneá.».
+  - En la compu baja deslizándose a velocidad constante. Con casco pasa de una parada a otra con fundidos, para no marear (se puede cambiar con `enVR: 'deslizar'`).
+  - La intro dura unos 47 s y se repite al volver a jugar (`INTRO.soloLaPrimeraVez: false`), así cada jugador nuevo del festival la ve.
+  - Mientras dura, la ayuda del modo escritorio se esconde y no se pueden juntar fragmentos.
+- **Más pistas sobre los fragmentos:**
+  - El Glitch avisa «Te pasaste el fragmento de este tramo: está más abajo» si el jugador sube por encima del fragmento de su pared sin juntarlo (`FRAGMENTO.avisoPasado`). Avisa una vez por lugar.
+  - Al llegar a un piso que no es el último, el Glitch dice «Tramo nuevo: buscá su fragmento antes de trepar».
+  - El cartel del pie del teclado dice «Cada tramo esconde un fragmento: buscalo antes de trepar».
+- **Medallas** (`FINAL.medallas`): oro menos de 3:30, plata menos de 4:30, bronce el resto. Los fragmentos perdidos siguen mandando: con uno, plata como máximo; con dos o más, bronce.
+
+**Buenas prácticas aplicadas:**
+- Recorrido guiado a velocidad constante en la compu y con fundidos en VR (mareo, p. 46 y 107).
+- Aterrizaje suave en vez de saltos bruscos de altura.
+- Onboarding que muestra el objetivo en el lugar donde está, con subtítulos cortos y el elemento marcado.
+- Avisos contextuales del Glitch en el momento en que el jugador comete el error.
+
+**Contradicción consciente:** el libro recomienda tutoriales salteables (p. 107). El equipo decidió que la intro no se saltee porque en las pruebas con personas muchos no entendían que había que buscar los fragmentos. Si en el festival molesta, `INTRO.soloLaPrimeraVez: true` hace que se vea una sola vez.
+
+**Verificado en Chrome:**
+- Ni Enter ni agarrar saltean la intro.
+- El recorrido para en el RESET, el monitor, la torre y el teclado, con el fragmento marcado y el subtítulo sin taparlo, y termina al pie del teclado (con capturas de cada parada).
+- Al volver a jugar, la intro se repite.
+- Soltarse a 0,8 m del piso y a 1 m de un estante no es caída.
+- Agarrar el borde de un estante sube al jugador hasta él sin emitir `checkpoint-alcanzado`.
+- El aviso de fragmento pasado aparece.
+- La tabla de medallas da los resultados esperados (200 s → oro, 250 s → plata, 300 s → bronce, con 1 perdido → plata, con 2 → bronce).
+- 0 errores en la consola y el build compila.
+
+**Pendiente (depende del equipo):**
+- Probar con casco los fundidos del recorrido y el margen de caída.
+- Ver con personas si la intro de 47 s se hace larga (se acorta con `INTRO.recorrido.pausa` y `velocidad`).
+- Intervención manual con commit antes y después.

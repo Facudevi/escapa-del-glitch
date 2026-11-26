@@ -6,13 +6,15 @@
 //
 // También se encarga de los checkpoints: detecta cuándo el jugador llega a uno y, si está
 // parado sobre uno (o sobre el piso, o sobre un estante) sin agarrarse, lo apoya a esa altura.
+// Hay un pequeño margen (CAIDA.margenSinCaida): soltarse apenas por encima de un apoyo, o apenas al costado
+// de su borde, no es caída; el jugador baja suave hasta quedar parado.
 //
 // Eventos que emite sobre la escena:
 //   'checkpoint-alcanzado' { orden }   al llegar a un checkpoint nuevo (la energía se recarga en la etapa 4)
 //   'caida'                { orden }   cuando empieza la caída (el Glitch comenta en la etapa 9)
 //   'reaparecer'           { orden }   cuando el jugador reaparece
 // Escucha 'escritorio-viaje' (modo escritorio) para no dejar caer al jugador mientras viaja.
-import { CAIDA } from '../config.js';
+import { CAIDA, CHECKPOINT } from '../config.js';
 import { lugarFrenteAlTramo } from '../utilidades.js';
 import { checkpoints } from './checkpoint.js';
 import { estantes } from './estante.js';
@@ -61,7 +63,8 @@ AFRAME.registerComponent('caida', {
     }
 
     const agarrando = Object.keys(this.el.components.climb.sujetas).length > 0;
-    const enElPiso = posRig.y <= CAIDA.toleranciaPiso;
+    // Piso de abajo: con el mismo margen que los pisos de arriba (soltarse apenas por encima no es caída)
+    const enElPiso = posRig.y <= CHECKPOINT.alturaApoyo + CAIDA.margenSinCaida.alto;
     const apoyado = enElPiso || !!bajoLosPies;
 
     if (agarrando || performance.now() < this.protegidoHasta) {
@@ -72,9 +75,13 @@ AFRAME.registerComponent('caida', {
     // Un estante también sostiene (aunque no es un checkpoint)
     const estante = bajoLosPies ? null : estantes.find((e) => e.sostiene(posRig, this.posCamara));
     if (apoyado || estante) {
-      // Parado sin agarrarse: queda a la altura de la plataforma o del estante
-      if (bajoLosPies) posRig.y = bajoLosPies.el.object3D.getWorldPosition(this.destino).y;
-      else if (estante) posRig.y = estante.zona().y;
+      // Parado sin agarrarse: queda a la altura de la plataforma, del estante o del piso. Si quedó un poco
+      // más arriba, baja suave hasta apoyarse (sin saltos de golpe)
+      let altura = 0;
+      if (bajoLosPies) altura = bajoLosPies.el.object3D.getWorldPosition(this.destino).y;
+      else if (estante) altura = estante.zona().y;
+      if (posRig.y > altura) posRig.y = Math.max(altura, posRig.y - CAIDA.velocidadAterrizaje * (Math.min(dt, 100) / 1000));
+      else posRig.y = altura;
       this.sinApoyo = 0;
       return;
     }

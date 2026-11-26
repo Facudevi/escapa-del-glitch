@@ -6,19 +6,23 @@
 //    sin parpadeos) y aparece «¿SEGUÍS AHÍ?». Subtítulo: «¿Qué le pasa a la pantalla?».
 // 3. Abducción (12–16,3 s): salen píxeles de la pantalla que giran en espiral alrededor del jugador, la luz se
 //    vuelve lavanda y la pantalla crece y avanza hasta envolverlo; la vista se funde a lavanda.
-// 4. Llegada (16,3–23,6 s): aparece frente al setup gigante (fundido desde lavanda). Subtítulo: «Te atrapó el
-//    Glitch. Juntá los 3 fragmentos y golpeá el RESET para escapar.». Al final, fundido a negro y queda al pie
-//    del teclado, listo para escalar.
+// 4. Llegada (16,3–22,4 s): aparece frente al setup gigante (fundido desde lavanda). Subtítulo: «Te atrapó el
+//    Glitch. Juntá los 3 fragmentos y golpeá el RESET para escapar.».
+// 5. Recorrido (desde 22,4 s): empieza frente al botón RESET y baja hasta el pie del teclado, parando frente a
+//    cada fragmento (monitor, torre y teclado), que se marca como con el escaneo. Un subtítulo dice qué es cada
+//    cosa. Al final, fundido a negro y queda al pie del teclado, listo para escalar.
 //
-// Comodidad: el jugador nunca se mueve; lo que se mueve es la pantalla. Los cambios de lugar son con fundido.
-// Se saltea con A, X, gatillo o grip; en la compu, con Enter, espacio, Escape o un clic (sin arrastrar).
-// Mientras dura no se camina, no se escanea, no hay caídas ni límites (escena.introActiva), y el grip que la
-// saltea no arranca el cronómetro ni la niebla. Se ve solo la primera vez (INTRO.soloLaPrimeraVez).
+// Comodidad: en la habitación el jugador no se mueve; lo que se mueve es la pantalla. En el recorrido, con casco
+// pasa de una parada a otra con fundidos; en la compu baja deslizándose a velocidad constante (INTRO.recorrido).
+// No se puede saltear: explica el objetivo del juego. Mientras dura no se camina, no se escanea, no se juntan
+// fragmentos, no hay caídas ni límites (escena.introActiva), y agarrar no arranca el cronómetro ni la niebla.
+// Se repite al volver a jugar salvo que INTRO.soloLaPrimeraVez sea true.
 // Tiempos, textos, medidas y colores: INTRO y COLORES.habitacion / COLORES.subtitulo en src/config.js.
 import '@fontsource/lilita-one/latin-400.css';
 import '@fontsource/fredoka/latin-500.css';
 import { CAIDA, COLORES, INTRO } from '../config.js';
 import { construirHabitacion } from '../habitacion.js';
+import { posicionReset } from '../plataformas.js';
 import { lugarFrenteAlTramo } from '../utilidades.js';
 import { blipGlitch, deslizar } from '../sonidos.js';
 
@@ -27,6 +31,8 @@ const FUENTE_TEXTO = '"Fredoka", system-ui, sans-serif';
 const H = COLORES.habitacion;
 const T = INTRO.tiempos;
 
+const R = INTRO.recorrido;
+const esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms));
 const acotar = (v, a, b) => Math.min(b, Math.max(a, v));
 const entre = (t, desde, hasta) => acotar((t - desde) / (hasta - desde), 0, 1);
 
@@ -58,25 +64,6 @@ AFRAME.registerComponent('intro', {
     this.dibujarPantalla(0, 0, 0);
 
     this.escena.addEventListener('inicio-cerrado', () => this.empezar());
-
-    // Saltear: botones de los controles, agarrar, teclas o un clic sin arrastrar (arrastrar es para mirar)
-    this.alSaltear = () => this.saltear();
-    ['abuttondown', 'xbuttondown', 'triggerdown', 'mano-agarra'].forEach((n) => this.escena.addEventListener(n, this.alSaltear));
-    this.alTeclear = (e) => {
-      if (INTRO.teclasSaltear.includes(e.code)) this.saltear();
-    };
-    window.addEventListener('keydown', this.alTeclear);
-    this.alApretar = (e) => (this.apretadoEn = { x: e.clientX, y: e.clientY });
-    this.alSoltar = (e) => {
-      if (this.apretadoEn && Math.hypot(e.clientX - this.apretadoEn.x, e.clientY - this.apretadoEn.y) < 6) this.saltear();
-      this.apretadoEn = null;
-    };
-    const conectarMouse = () => {
-      this.escena.canvas.addEventListener('mousedown', this.alApretar);
-      this.escena.canvas.addEventListener('mouseup', this.alSoltar);
-    };
-    if (this.escena.canvas) conectarMouse();
-    else this.escena.addEventListener('render-target-loaded', conectarMouse);
 
     if (document.fonts && document.fonts.load) {
       Promise.all([document.fonts.load(`40px ${FUENTE_JUEGO}`), document.fonts.load(`500 40px ${FUENTE_TEXTO}`)])
@@ -129,6 +116,11 @@ AFRAME.registerComponent('intro', {
 
   // ---------- Flujo ----------
 
+  // ¿Se ve al volver a jugar? (si es false, la partida nueva arranca directo)
+  seRepite() {
+    return !INTRO.soloLaPrimeraVez;
+  },
+
   empezar() {
     if (this.escena.introActiva) return;
     if (this.vista && INTRO.soloLaPrimeraVez) return;
@@ -137,6 +129,9 @@ AFRAME.registerComponent('intro', {
     this.terminando = false;
     this.t = 0;
     this.hechos = {};
+    this.parada = null;
+    this.viaje = null;
+    document.body.classList.add('en-intro'); // la ayuda del modo escritorio se esconde mientras dura
 
     // Arranca en negro y aparece en su habitación
     const fundido = this.fundido();
@@ -151,18 +146,14 @@ AFRAME.registerComponent('intro', {
     this.mostrarInterfazDeJuego(false); // la pulsera y los anillos aparecen recién adentro del juego
   },
 
-  saltear() {
-    if (!this.escena.introActiva || this.terminando) return;
-    if (this.t < INTRO.esperaParaSaltear) return; // la misma tecla o clic que cerró el inicio
-    this.terminar();
-  },
-
   async terminar() {
     if (this.terminando) return;
     this.terminando = true;
     const fundido = this.fundido();
     await fundido.ir(1, T.duracionFin * 1000);
 
+    this.parada = null;
+    this.viaje = null;
     this.subtitulo.visible = false;
     this.pixeles.visible = false;
     this.datosPixel.forEach((p) => (p.activo = false));
@@ -172,6 +163,7 @@ AFRAME.registerComponent('intro', {
     this.mostrarInterfazDeJuego(true);
     this.irA(0, 0, lugarFrenteAlTramo(0), 0);
     this.escena.introActiva = false;
+    document.body.classList.remove('en-intro');
     this.escena.emit('intro-terminada', {}, false);
 
     await fundido.ir(0, T.duracionFin * 1000);
@@ -212,6 +204,105 @@ AFRAME.registerComponent('intro', {
     });
   },
 
+  // ---------- Recorrido: del RESET al pie del teclado ----------
+
+  // Paradas en orden: el RESET, los fragmentos de arriba hacia abajo y el pie del teclado
+  armarParadas() {
+    const datos = this.escena.escalada;
+    const fragmentos = this.escena.components.fragmentos;
+    const paradas = [];
+    if (datos) {
+      const r = posicionReset(datos.alturaFinal);
+      paradas.push({ rig: new THREE.Vector3(r.x, datos.alturaFinal, r.z + R.distanciaReset), mira: new THREE.Vector3(r.x, r.y, r.z), texto: R.textos.reset });
+    }
+    const enLaPared = fragmentos ? fragmentos.lista.filter((f) => f.estado === 'pared').sort((a, b) => b.tramo - a.tramo) : [];
+    enLaPared.forEach((f) => {
+      paradas.push({
+        rig: new THREE.Vector3(f.x, f.y - this.alturaOjos() + R.sobreLaMirada, f.z + R.distanciaFragmento),
+        mira: new THREE.Vector3(f.x, f.y, f.z),
+        texto: R.textos.fragmento[f.tramo] || '',
+        fragmento: f,
+      });
+    });
+    const base = lugarFrenteAlTramo(0);
+    paradas.push({ rig: new THREE.Vector3(0, 0, base), mira: new THREE.Vector3(0, this.alturaOjos() - 0.25, base - 3), texto: R.textos.base, ultima: true });
+    return paradas;
+  },
+
+  alturaOjos() {
+    const camara = document.querySelector('#camara');
+    const y = camara ? camara.object3D.position.y : 0;
+    return y > 0.5 ? y : 1.6;
+  },
+
+  // Inclinación (en la compu) para mirar el punto `mira` desde `rig`
+  inclinacionHacia(rig, mira) {
+    const dy = mira.y - (rig.y + this.alturaOjos());
+    const dz = Math.hypot(mira.x - rig.x, mira.z - rig.z);
+    return Math.atan2(dy, Math.max(dz, 0.1));
+  },
+
+  llegarA(parada) {
+    this.parada = parada;
+    this.irA(parada.rig.x, parada.rig.y, parada.rig.z, this.inclinacionHacia(parada.rig, parada.mira));
+    // El fragmento se marca como con el escaneo mientras dura la parada
+    if (parada.fragmento) parada.fragmento.marcaHasta = performance.now() + (R.pausa + R.fundido * 2 + 1) * 1000;
+  },
+
+  async recorrer() {
+    const paradas = this.armarParadas();
+    const fundido = this.fundido();
+    const conFundidos = this.escena.is('vr-mode') && R.enVR === 'fundido';
+
+    await fundido.ir(1, R.fundido * 1000);
+    if (this.terminando) return;
+    this.llegarA(paradas[0]);
+    await fundido.ir(0, R.fundido * 1000);
+
+    for (let i = 0; i < paradas.length - 1; i++) {
+      await esperar(R.pausa * 1000);
+      if (this.terminando || !this.escena.introActiva) return;
+      if (conFundidos) {
+        await fundido.ir(1, R.fundido * 1000);
+        this.llegarA(paradas[i + 1]);
+        await fundido.ir(0, R.fundido * 1000);
+      } else {
+        await this.deslizar(paradas[i], paradas[i + 1]);
+      }
+    }
+    await esperar(R.pausaUltima * 1000);
+    this.terminar();
+  },
+
+  // Va de una parada a la otra en línea recta y a velocidad constante; la mirada pasa de un punto al otro
+  deslizar(desde, hasta) {
+    return new Promise((resolver) => {
+      this.viaje = {
+        desde,
+        hasta,
+        largo: desde.rig.distanceTo(hasta.rig),
+        recorrido: 0,
+        inclinacionDesde: this.inclinacionHacia(desde.rig, desde.mira),
+        inclinacionHasta: this.inclinacionHacia(hasta.rig, hasta.mira),
+        resolver,
+      };
+      this.parada = { texto: null }; // en el viaje no hay subtítulo
+    });
+  },
+
+  avanzarViaje(s) {
+    const v = this.viaje;
+    v.recorrido += R.velocidad * s;
+    const u = v.largo > 0 ? Math.min(v.recorrido / v.largo, 1) : 1;
+    const pos = this.v.tmp.lerpVectors(v.desde.rig, v.hasta.rig, u);
+    this.irA(pos.x, pos.y, pos.z, v.inclinacionDesde + (v.inclinacionHasta - v.inclinacionDesde) * u);
+    if (u >= 1) {
+      this.viaje = null;
+      this.llegarA(v.hasta);
+      v.resolver();
+    }
+  },
+
   // ---------- Línea de tiempo ----------
 
   tick(tiempo, dt) {
@@ -246,8 +337,9 @@ AFRAME.registerComponent('intro', {
         this.fundido().ir(0, T.duracionLlegada * 1000);
       });
     }
-    if (t >= T.fin) una('fin', () => this.terminar());
+    if (t >= T.fin) una('fin', () => this.recorrer());
     if (this.terminando) return;
+    if (this.viaje) this.avanzarViaje(s);
 
     // Habitación: pantalla, luz, ventilador y abducción
     const g = entre(t, T.glitch, T.abduccion); // cuánto falla la pantalla
@@ -357,14 +449,14 @@ AFRAME.registerComponent('intro', {
 
   actualizarSubtitulo(t, s) {
     const actual = INTRO.subtitulos.find(([desde, hasta]) => t >= desde && t < hasta);
-    const texto = actual ? actual[2] : null;
+    const texto = this.hechos.fin ? (this.parada && this.parada.texto) || null : actual ? actual[2] : null;
     if (texto !== this.subtituloActual) {
       this.subtituloActual = texto;
       if (texto) this.dibujarSubtitulo(texto);
       this.subtitulo.visible = !!texto;
       if (texto) this.colocarSubtitulo(1);
     }
-    if (texto) this.colocarSubtitulo(Math.min(INTRO.subtitulo.suavizado * s, 1));
+    if (texto) this.colocarSubtitulo(this.hechos.fin ? 1 : Math.min(INTRO.subtitulo.suavizado * s, 1));
   },
 
   // Un poco por encima de la mirada, siguiendo la cabeza con retraso
@@ -377,7 +469,8 @@ AFRAME.registerComponent('intro', {
     dir.y = 0;
     if (dir.lengthSq() < 1e-4) dir.set(0, 0, -1);
     dir.normalize();
-    obj.copy(cam).addScaledVector(dir, S.distancia).setY(cam.y + S.sobreLaMirada);
+    const arriba = this.hechos.fin ? R.subtituloSobreLaMirada : S.sobreLaMirada;
+    obj.copy(cam).addScaledVector(dir, S.distancia).setY(cam.y + arriba);
     this.subtitulo.position.lerp(obj, mezcla);
     this.subtitulo.lookAt(cam.x, this.subtitulo.position.y, cam.z);
   },
@@ -404,12 +497,8 @@ AFRAME.registerComponent('intro', {
     } while (lineas.length > 2 && tamano > 10);
     ctx.fillStyle = C.texto;
     const alturaLinea = tamano * 1.2;
-    const centro = h * 0.42;
+    const centro = h * 0.5;
     lineas.forEach((linea, i) => ctx.fillText(linea, w / 2, centro + (i - (lineas.length - 1) / 2) * alturaLinea));
-
-    ctx.font = `500 ${h * 0.13}px ${FUENTE_TEXTO}`;
-    ctx.fillStyle = C.pista;
-    ctx.fillText(INTRO.pistaSaltear, w / 2, h * 0.86);
     this.texturaSub.needsUpdate = true;
   },
 
@@ -521,11 +610,6 @@ AFRAME.registerComponent('intro', {
   },
 
   remove() {
-    window.removeEventListener('keydown', this.alTeclear);
-    if (this.escena.canvas) {
-      this.escena.canvas.removeEventListener('mousedown', this.alApretar);
-      this.escena.canvas.removeEventListener('mouseup', this.alSoltar);
-    }
     this.escena.object3D.remove(this.subtitulo);
     this.escena.object3D.remove(this.pixeles);
     this.escena.object3D.remove(this.cuarto.grupo);

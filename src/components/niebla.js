@@ -63,7 +63,7 @@ AFRAME.registerComponent('niebla', {
     const escena = this.el;
     // Empieza al agarrarse por primera vez
     this.alAgarrar = () => {
-      if (escena.introActiva) return; // el grip que saltea la intro no la hace arrancar
+      if (escena.introActiva) return; // agarrar durante la intro no la hace arrancar
       if (this.iniciaEn === Infinity) this.iniciaEn = performance.now() + NIEBLA.retardoInicio * 1000;
     };
     escena.addEventListener('mano-agarra', this.alAgarrar);
@@ -110,7 +110,7 @@ AFRAME.registerComponent('niebla', {
     const caida = this.rig.components.caida;
 
     // También empieza si el jugador ya se despegó del piso (por si nunca se emitió un agarre)
-    if (this.iniciaEn === Infinity && this.rig.object3D.position.y > 0.3) this.iniciaEn = ahora + NIEBLA.retardoInicio * 1000;
+    if (this.iniciaEn === Infinity && !this.el.introActiva && this.rig.object3D.position.y > 0.3) this.iniciaEn = ahora + NIEBLA.retardoInicio * 1000;
 
     if (enMarcha && caida.estado === 'normal') {
       const datos = this.el.escalada;

@@ -268,13 +268,13 @@ function crearPostes(paredes, datos) {
 
 // ---------- Estantes ----------
 
-// Pequeña base donde pararse: una tabla con borde de luz ámbar y dos ménsulas en diagonal que la sostienen
+// Pequeña base donde pararse: una tabla y dos ménsulas en diagonal que la sostienen. El borde ámbar, que se
+// puede agarrar para subirse, lo crea escenario.js (es un agarre)
 function crearEstantes(paredes, datos) {
   datos.estantes.forEach((e) => {
     const g = paredes[e.tramo];
     const { ancho, profundidad, grosor } = ESTANTE;
     caja(g, ancho, grosor, profundidad, e.x, e.y - grosor / 2, 0, D.estante);
-    caja(g, ancho + 0.06, 0.07, 0.1, e.x, e.y + 0.02, profundidad - 0.1, D.luzEstante, { basico: true });
     caja(g, ancho, 0.5, 0.12, e.x, e.y - 0.25, 0, D.estante); // placa contra la pared
     [-1, 1].forEach((lado) => {
       const alto = 1.0;

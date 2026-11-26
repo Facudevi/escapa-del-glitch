@@ -6,7 +6,7 @@
 //   3. El jugador aparece en un paisaje al aire libre al amanecer: pasto, montañas y cielo abierto, que
 //      contrasta con el interior del setup.
 //   4. Delante tiene el título «Subiste de nivel», con la bajada «adentro y afuera de la pantalla», en el cielo, un
-//      podio con la medalla según su tiempo (oro menos de 2 min, plata menos de 3 min, bronce el resto) y un
+//      podio con la medalla según su tiempo (oro menos de 3:30, plata menos de 4:30, bronce el resto) y un
 //      pedestal con el botón para volver a jugar. Todo se acomoda delante de donde aparece el jugador.
 //
 // Volver a jugar (botón golpeable, clic en escritorio o tecla R) reinicia todo sin recargar la página,
@@ -152,7 +152,7 @@ AFRAME.registerComponent('final', {
 
   // Medalla: primero cuentan los fragmentos perdidos (los que se comió el Glitch). Con uno perdido, la medalla
   // más alta posible es la de plata; con dos o más, la de bronce, sin importar el tiempo. Después manda el
-  // tiempo: oro menos de 2 min, plata menos de 3 min, bronce el resto. Gana la peor de las dos.
+  // tiempo: oro menos de 3:30, plata menos de 4:30, bronce el resto. Gana la peor de las dos.
   tipoDeMedalla(segundos, perdidos = 0) {
     const orden = ['oro', 'plata', 'bronce'];
     const porTiempo = segundos < FINAL.medallas.oro ? 0 : segundos < FINAL.medallas.plata ? 1 : 2;
@@ -317,7 +317,10 @@ AFRAME.registerComponent('final', {
     const boton = document.querySelector('#reset-boton');
     if (boton && boton.components['reset-boton']) boton.components['reset-boton'].reiniciar();
 
-    await fundido.ir(0, 700);
+    // Se repite la intro (cada jugador nuevo la ve): ella misma vuelve a mostrar la vista
+    const intro = this.escena.components.intro;
+    if (intro && intro.seRepite()) intro.empezar();
+    else await fundido.ir(0, 700);
     this.enCurso = false;
   },
 

@@ -25,13 +25,14 @@ La partida dura unos 2 minutos y medio. Si te caés, no pasa nada: volvés al ú
 - Hay un **modo fácil** (más alcance, más energía, niebla más lenta): se elige en la pantalla de inicio o con `?facil=1` al final del link.
 
 ### El juego
-- Antes de escalar hay una **intro animada de 23,6 s** en primera persona: estás en tu habitación a oscuras, a las 3:47 de la madrugada, frente a tu setup; la pantalla empieza a fallar, te traga y aparecés frente al setup gigante. Tres subtítulos cortos cuentan lo que pasa y que hay que juntar 3 fragmentos para encender el RESET. Se saltea con **A, X, gatillo o grip** (en la compu, **Enter o clic**) y se ve solo la primera vez.
+- Antes de escalar hay una **intro animada** en primera persona (unos 47 s): estás en tu habitación a oscuras, a las 3:47 de la madrugada, frente a tu setup; la pantalla empieza a fallar, te traga y aparecés frente al setup gigante. Después un **recorrido** te muestra el botón RESET y, bajando, dónde está cada uno de los 3 fragmentos, hasta el pie del teclado. **No se puede saltear** y se repite al volver a jugar.
 - Cinco tipos de agarre, cada uno con su color y su forma: **tecla firme** (lavanda), **tecla que se hunde**, **lata que se rompe** (cruje y cae a los 3 s), **bloque intermitente** (mirá su anillo) y **panel que gira**. Los agarres al alcance se resaltan.
 - Cada tramo es un **escalón** (teclado, torre de PC y monitor) con un piso arriba donde descansar: llegás agarrándote del **reborde verde** de arriba de la pared, y desde el piso ves de frente el tramo siguiente.
-- En medio de cada tramo hay **estantes** (pequeñas bases de madera con borde ámbar) donde te podés parar y soltar las manos. Tu **cuerpo** se ve, y se pone rojizo cuando la niebla te llega a los pies.
+- En medio de cada tramo hay **estantes** (pequeñas bases de madera con borde ámbar) donde te podés parar y soltar las manos. Si te agarrás del **borde ámbar**, te subís solo al estante (no es un checkpoint).
+- Soltarte apenas por encima de un piso o de un estante no cuenta como caída: bajás suave y quedás parado. Tu **cuerpo** se ve, y se pone rojizo cuando la niebla te llega a los pies.
 - Un cable **USB** en lo alto de la torre, difícil de ver y de agarrar, te lleva solo hasta el piso de arriba de la torre.
 - Una **niebla de píxeles** sube despacio desde abajo. Si te alcanza, volvés al último checkpoint; si alcanza un fragmento sin juntar, el **Glitch** se lo come y lo manda más arriba: reaparece en un agarre del tramo siguiente o, si ya completaste el tercero, escondido entre los objetos de videojuegos del piso de arriba.
-- Al final, una medalla. **Primero cuentan los fragmentos perdidos** (los que se comió el Glitch): con uno perdido la medalla más alta es la de **plata**, con dos o más es de **bronce**, sin importar el tiempo. Después manda el tiempo: **oro** menos de 2 min, **plata** menos de 3, **bronce** el resto; vale la peor de las dos.
+- Al final, una medalla. **Primero cuentan los fragmentos perdidos** (los que se comió el Glitch): con uno perdido la medalla más alta es la de **plata**, con dos o más es de **bronce**, sin importar el tiempo. Después manda el tiempo: **oro** menos de 3 min 30 s, **plata** menos de 4 min 30 s, **bronce** el resto; vale la peor de las dos.
 
 ## Cómo correrlo
 

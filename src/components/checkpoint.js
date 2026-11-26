@@ -4,7 +4,7 @@
 // escenario.js: este componente solo define la zona y el punto de reaparición.
 //
 // Los checkpoints se alcanzan en orden creciente: el progreso no retrocede.
-import { CHECKPOINT } from '../config.js';
+import { CAIDA, CHECKPOINT } from '../config.js';
 
 // Todos los checkpoints de la escena; los consulta el componente caida.
 export const checkpoints = [];
@@ -47,10 +47,12 @@ AFRAME.registerComponent('checkpoint', {
   },
 
   // ¿Está el jugador parado sobre este checkpoint? posRig: pies; posCamara: dónde está su cuerpo en x y z.
+  // Tiene un pequeño margen (CAIDA.margenSinCaida) para no ser tan exigente con el borde y la altura.
   sostiene(posRig, posCamara) {
     const z = this.zona();
-    const dentro = posCamara.x >= z.x0 && posCamara.x <= z.x1 && posCamara.z >= z.z0 && posCamara.z <= z.z1;
+    const m = CAIDA.margenSinCaida;
+    const dentro = posCamara.x >= z.x0 - m.lado && posCamara.x <= z.x1 + m.lado && posCamara.z >= z.z0 - m.lado && posCamara.z <= z.z1 + m.lado;
     const dy = posRig.y - z.y;
-    return dentro && dy >= -CHECKPOINT.toleranciaApoyo && dy <= CHECKPOINT.alturaApoyo;
+    return dentro && dy >= -CHECKPOINT.toleranciaApoyo && dy <= CHECKPOINT.alturaApoyo + m.alto;
   },
 });

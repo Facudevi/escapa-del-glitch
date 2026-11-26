@@ -6,6 +6,8 @@
 //   niebla         cuando la niebla lo alcanza
 //   comido         cuando se come un fragmento («Ñam, este te lo escondo arriba»)
 //   quieto         si el jugador se queda quieto mucho tiempo («¿Te tomaste un cooldown?»)
+//   pasado         si sube por encima del fragmento de su pared sin juntarlo
+//   nuevoTramo     al llegar a un piso que no es el último: recuerda buscar el fragmento del tramo siguiente
 //   sinFragmentos  si llega arriba sin los tres fragmentos («¿No te olvidaste de algo?»)
 //   faltan         si golpea el RESET apagado
 //   reset          al romper el RESET («Bueno, ganaste. Nos vemos afuera»)
@@ -40,6 +42,7 @@ AFRAME.registerComponent('glitch', {
     const escena = this.el;
     escena.addEventListener('fragmento-comido', () => this.decir('comido'));
     escena.addEventListener('fragmento-salteado', () => this.decir('salteado'));
+    escena.addEventListener('fragmento-pasado', () => this.decir('pasado'));
     escena.addEventListener('niebla-alcanza', () => {
       this.ultimaNiebla = performance.now();
       this.decir('niebla');
@@ -53,6 +56,8 @@ AFRAME.registerComponent('glitch', {
       const fragmentos = escena.components.fragmentos;
       if (datos && e.detail.orden === datos.checkpoints.length && fragmentos && fragmentos.recogidos < FRAGMENTO.total) {
         this.decir('sinFragmentos');
+      } else if (datos && e.detail.orden < datos.checkpoints.length) {
+        this.decir('nuevoTramo'); // recuerda buscar el fragmento del tramo que tiene adelante
       }
     });
     // Moverse, agarrarse o escanear cuenta como no estar quieto

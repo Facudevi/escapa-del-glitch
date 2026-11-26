@@ -1,7 +1,8 @@
 // Estante: una pequeña base que sale de la pared en medio de un tramo, donde el jugador puede pararse sin
 // agarrarse (y descansar las manos). No es un checkpoint: si el jugador cae, vuelve al último piso.
+// Su borde ámbar se puede agarrar: quien se agarra de él se sube solo al estante (ver ascenso.js, tipo 'estante').
 // La entidad va en el centro de la superficie del estante; el dibujo lo arma decorado.js.
-import { CHECKPOINT, ESTANTE } from '../config.js';
+import { CAIDA, CHECKPOINT, ESTANTE } from '../config.js';
 
 // Todos los estantes de la escena; los consultan caida y limites
 export const estantes = [];
@@ -35,10 +36,12 @@ AFRAME.registerComponent('estante', {
   },
 
   // ¿Puede quedar parado acá? Si se suelta un poco más arriba (hasta ESTANTE.caidaMaxima), cae parado en él.
+  // Con el mismo margen extra que los pisos (CAIDA.margenSinCaida).
   sostiene(posRig, posCamara) {
     const z = this.zona();
-    const dentro = posCamara.x >= z.x0 && posCamara.x <= z.x1 && posCamara.z >= z.z0 && posCamara.z <= z.z1;
+    const m = CAIDA.margenSinCaida;
+    const dentro = posCamara.x >= z.x0 - m.lado && posCamara.x <= z.x1 + m.lado && posCamara.z >= z.z0 && posCamara.z <= z.z1 + m.lado;
     const dy = posRig.y - z.y;
-    return dentro && dy >= -CHECKPOINT.toleranciaApoyo && dy <= ESTANTE.caidaMaxima;
+    return dentro && dy >= -CHECKPOINT.toleranciaApoyo && dy <= ESTANTE.caidaMaxima + m.alto;
   },
 });

@@ -98,7 +98,7 @@ export const COLORES = {
     fundidoAbduccion: '#cfc0f0', // color del fundido al ser tragado por la pantalla
   },
   // Subtítulos de la introducción
-  subtitulo: { fondo: '#1d1727', texto: '#f0e9fb', pista: '#9b8cc0' },
+  subtitulo: { fondo: '#1d1727', texto: '#f0e9fb' },
   luzRotura: '#ffe9c7', // luz cálida que sale de la grieta del RESET
   grieta: '#efe6ff',
   resetListo: '#9b82e6', // botón RESET encendido
@@ -241,6 +241,13 @@ export const ESTANTE = {
   despejeArriba: 1.0, // m por encima del estante sin agarres (lugar para el cuerpo)
   despejeAbajo: 0.35, // m por debajo del estante sin agarres
   caidaMaxima: 0.8, // m: si el jugador se suelta hasta esta altura sobre un estante, cae parado en él
+  // Borde ámbar que se agarra para subirse al estante (adelante y a los costados)
+  borde: {
+    alto: 0.09, // m
+    grosor: 0.1, // m
+    desdeLaPared: 0.5, // m: los bordes de los costados empiezan a esta distancia de la pared
+    margenDestino: 0.35, // m: al subirse, queda al menos a esta distancia de los costados del estante
+  },
 };
 
 // Cuerpo del jugador: torso, cadera y piernas que siguen a la cabeza, para ver dónde está el cuerpo (si la
@@ -329,6 +336,10 @@ export const CAIDA = {
   graciaReinicio: 1500, // ms sin poder caer después de volver a jugar
   graciaViaje: 3000, // ms extra sin caer después de un viaje en modo escritorio (para agarrarse)
   toleranciaPiso: 0.05, // altura (m) hasta la que se considera que está parado en el piso
+  // Margen extra que no cuenta como caída: si se suelta hasta esta altura por encima del piso, de un piso de
+  // arriba o de un estante (o apenas al costado de su borde), baja suave y queda parado en vez de caer
+  margenSinCaida: { alto: 0.35, lado: 0.25 }, // m
+  velocidadAterrizaje: 2.5, // m/s a la que baja hasta quedar parado (sin saltos de golpe)
   colorFundido: '#000000',
 };
 
@@ -382,6 +393,8 @@ export const FRAGMENTO = {
   distanciaAlFrente: 1.25, // cuánto sale del frente de la pared (m): por delante de todo el decorado y los agarres
   alturaMinimaSobreJugador: 1.0, // un fragmento reubicado queda al menos esto (m) por encima del jugador
   separacionMinima: 1.5, // distancia (m) mínima entre dos fragmentos en la pared
+  // Aviso del Glitch cuando el jugador ya subió por encima del fragmento de su pared sin juntarlo
+  avisoPasado: { altura: 0.4, distanciaPared: 1.2 }, // m de los pies por encima del fragmento; m de la pared
   radioRecoger: 0.45, // distancia (m) de la mano a la que se recoge
   radioRecogerDificil: 0.36, // en la torre y el monitor hay que acercar más la mano (m)
   radioRecogerCuerpo: 0.6, // en la plataforma de arriba también se recogen al pasar cerca (m)
@@ -454,6 +467,8 @@ export const GLITCH = {
   frases: {
     comido: ['Ñam, este te lo escondo arriba'],
     salteado: ['Te olvidaste un fragmento: lo mando más arriba'],
+    pasado: ['Te pasaste el fragmento de este tramo: está más abajo'],
+    nuevoTramo: ['Tramo nuevo: buscá su fragmento antes de trepar'],
     caida: ['Ese agarre no te quería'],
     quieto: ['¿Te tomaste un cooldown?'],
     sinFragmentos: ['¿No te olvidaste de algo?'],
@@ -504,13 +519,12 @@ export const ASCENSO = {
   margenProteccion: 700, // ms extra sin caer después de llegar al piso
 };
 
-// Introducción antes de escalar (menos de 25 s): una animación en primera persona. El jugador está en su
-// habitación a oscuras, de madrugada, frente a su setup; la pantalla empieza a fallar y lo traga, y aparece
-// frente al setup gigante. Solo tres subtítulos cortos cuentan lo que pasa. Se ve una sola vez y se saltea.
+// Introducción antes de escalar: una animación en primera persona. El jugador está en su habitación a oscuras,
+// de madrugada, frente a su setup; la pantalla empieza a fallar y lo traga, y aparece frente al setup gigante.
+// Después hace un recorrido desde el botón RESET hasta el pie del teclado, parando frente a cada fragmento.
+// No se puede saltear: es lo que explica el objetivo (en las pruebas, muchos trepaban sin buscar los fragmentos).
 export const INTRO = {
-  soloLaPrimeraVez: true, // al volver a jugar no se repite
-  esperaParaSaltear: 0.8, // s al principio en que no se puede saltear (la tecla que cerró el inicio no cuenta)
-  teclasSaltear: ['Enter', 'Space', 'Escape'],
+  soloLaPrimeraVez: false, // false: se ve también al volver a jugar (en el festival, cada jugador nuevo la ve)
 
   // Momentos de la animación (s desde que empieza). Total: 23,6 s
   tiempos: {
@@ -531,7 +545,6 @@ export const INTRO = {
     [7.6, 11.8, '¿Qué le pasa a la pantalla?'],
     [17.2, 22.2, 'Te atrapó el Glitch. Juntá los 3 fragmentos y golpeá el RESET para escapar.'],
   ],
-  pistaSaltear: 'A / X / Enter: saltear',
   // Subtítulo un poco por encima de la mirada: abajo lo tapaban las manos y, frente al setup gigante, quedaba fuera de vista
   subtitulo: { distancia: 0.7, sobreLaMirada: 0.1, ancho: 0.74, alto: 0.13, suavizado: 4, pixelesPorMetro: 1800 },
 
@@ -550,6 +563,26 @@ export const INTRO = {
   vidaPixel: [1.1, 1.9], // s que tarda un píxel en llegar hasta el jugador (mín, máx)
   tamanoPixel: [0.015, 0.045], // m
   giroPixel: 2.2, // vueltas en espiral alrededor del jugador
+
+  // Recorrido final: del RESET hacia abajo, parando frente a cada fragmento (que se marca como con el escaneo).
+  // En la compu baja deslizándose a velocidad constante; con casco pasa de una parada a otra con un fundido
+  // (un movimiento que el jugador no controla marea; se puede cambiar con enVR: 'deslizar').
+  recorrido: {
+    velocidad: 3.2, // m/s al deslizarse entre paradas (constante, sin aceleraciones)
+    pausa: 2.8, // s en cada parada
+    pausaUltima: 3.2, // s en la última (el pie del teclado)
+    fundido: 0.35, // s de cada fundido (entrada y salida)
+    enVR: 'fundido', // 'fundido' o 'deslizar'
+    distanciaReset: 4.6, // m delante del botón RESET (parado en el piso de arriba)
+    distanciaFragmento: 2.4, // m delante de cada fragmento
+    sobreLaMirada: 0.3, // m: el fragmento queda un poco por debajo de los ojos (arriba va el subtítulo)
+    subtituloSobreLaMirada: 0.22, // m: en el recorrido el subtítulo va más arriba, para no tapar lo que muestra
+    textos: {
+      reset: 'Este es el RESET, tu salida. Para encenderlo necesitás los 3 fragmentos.',
+      fragmento: ['Fragmento 1: está en el teclado.', 'Fragmento 2: está en la torre de PC.', 'Fragmento 3: está en el monitor.'],
+      base: 'Antes de trepar, mirá bien cada tramo y buscá su fragmento. Si no lo ves, escaneá.',
+    },
+  },
 };
 
 // Final: el botón RESET, la rotura de la pantalla, el exterior al amanecer y la medalla.
@@ -560,7 +593,7 @@ export const FINAL = {
   radioGolpeReset: 1.3, // el botón RESET es grande: se puede golpear desde más lejos de su centro
   alcanceClic: 3.4, // m: en modo escritorio, hasta dónde se puede hacer clic en un botón
   enfriamientoGolpe: 1.2, // s hasta que el mismo botón vuelve a aceptar un golpe
-  medallas: { oro: 120, plata: 180 }, // s: menos de 2 min oro, menos de 3 min plata, el resto bronce
+  medallas: { oro: 210, plata: 270 }, // s: menos de 3:30 oro, menos de 4:30 plata, el resto bronce
   frase: { titulo: 'Subiste de nivel', bajada: 'adentro y afuera de la pantalla' }, // título del cielo y su bajada
   cielo: {
     y: 14, // dónde flota el título, en el cielo, frente al jugador

@@ -42,6 +42,7 @@ AFRAME.registerComponent('escenario-glitch', {
         estante: `ancho: ${ESTANTE.ancho}; profundidad: ${ESTANTE.profundidad}`,
         position: `${e.x} ${e.y.toFixed(3)} ${(frenteTramo(e.tramo) + ESTANTE.profundidad / 2).toFixed(3)}`,
       });
+      this.crearBordeDeEstante(e);
     });
     this.crearReset(datos);
     this.crearMensajeDelPie();
@@ -132,6 +133,35 @@ AFRAME.registerComponent('escenario-glitch', {
         depth: B.grosor,
         color: '#ffffff',
         material: 'roughness: 0.7; metalness: 0',
+      });
+    });
+  },
+
+  // Borde ámbar de un estante: el de adelante y los dos de los costados. Son agarres: quien se agarra de uno se
+  // sube solo al estante, con el mismo movimiento que al llegar a un piso, pero no es un checkpoint (ascenso.js)
+  crearBordeDeEstante(e) {
+    const { ancho, profundidad } = ESTANTE;
+    const B = ESTANTE.borde;
+    const frente = frenteTramo(e.tramo);
+    const margen = ancho / 2 - B.margenDestino;
+    const ascenso = `tipo: estante; orden: 0; yDestino: ${e.y.toFixed(3)}; zDestino: ${lugarFrenteAlTramo(e.tramo).toFixed(3)}; xMin: ${(e.x - margen).toFixed(3)}; xMax: ${(e.x + margen).toFixed(3)}`;
+    const largoCostado = profundidad - B.desdeLaPared;
+    const piezas = [
+      // [x, z del centro, ancho, profundidad]
+      [e.x, frente + profundidad - B.grosor / 2, ancho + B.grosor, B.grosor],
+      [e.x - ancho / 2, frente + B.desdeLaPared + largoCostado / 2, B.grosor, largoCostado],
+      [e.x + ancho / 2, frente + B.desdeLaPared + largoCostado / 2, B.grosor, largoCostado],
+    ];
+    piezas.forEach(([x, z, w, d]) => {
+      crear(this.el, 'a-box', {
+        agarre: `tipo: estante; brillo: ${DECORADO.luzEstante}`,
+        ascenso,
+        position: `${x.toFixed(3)} ${(e.y + B.alto / 2 - 0.02).toFixed(3)} ${z.toFixed(3)}`,
+        width: w,
+        height: B.alto,
+        depth: d,
+        color: DECORADO.luzEstante,
+        material: 'roughness: 0.6; metalness: 0',
       });
     });
   },
@@ -244,7 +274,7 @@ AFRAME.registerComponent('escenario-glitch', {
   // Mensaje abajo de todo, sobre el apoyamuñecas del teclado, donde no lo tapa ningún agarre
   crearMensajeDelPie() {
     crear(this.el, 'a-entity', {
-      cartel: 'texto: A lo largo de la escalada tenés que juntar los fragmentos para escapar; ancho: 6.4; alto: 0.7',
+      cartel: 'texto: Cada tramo esconde un fragmento: buscalo antes de trepar; ancho: 6.4; alto: 0.7',
       position: `0 0.6 ${(frenteTramo(0) + 0.46).toFixed(3)}`,
     });
   },

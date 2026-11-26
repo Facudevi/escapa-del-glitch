@@ -13,7 +13,8 @@
 // o 'pared' → 'comido' → 'escondido' → 'recogido'.
 // Cada fragmento tiene su número (tramo) de origen y el tramo donde está ahora (tramoActual).
 //
-// Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-salteado' { tramo, destino }, 'fragmento-recogido' { tramo, total } y
+// Eventos sobre la escena: 'fragmento-comido' { tramo, destino }, 'fragmento-salteado' { tramo, destino }, 'fragmento-recogido' { tramo, total },
+// 'fragmento-pasado' { tramo } (el jugador subió por encima de uno sin juntarlo; avisa una vez por lugar) y
 // 'fragmentos-revelados'. Escucha 'niebla-termino' para esconder arriba los fragmentos comidos.
 // Para otros componentes: recogidos, perdidos (los que se comió el Glitch), lista, marcar(tramo, ms), comer(tramo, reubicar) y revelar().
 import { COLORES, ESCENARIO, FRAGMENTO } from '../config.js';
@@ -155,6 +156,7 @@ AFRAME.registerComponent('fragmentos', {
       f.y = refugio.sitio.y;
       f.z = frenteTramo(refugio.tramo) + FRAGMENTO.distanciaAlFrente;
       f.grupo.position.set(f.x, f.y, f.z);
+      f.avisado = false;
       if (f.zumbido) f.zumbido.mover(f.x, f.y, f.z);
       this.el.emit(evento, { tramo, destino: 'tramo' }, false);
       return;
@@ -185,6 +187,7 @@ AFRAME.registerComponent('fragmentos', {
       f.y = this.alturaFinal + FRAGMENTO.alturaEscondite;
       f.z = frenteTramo(ESCENARIO.tramos.length - 1) + sitio.z; // z medida desde el borde de adelante del piso de arriba
       f.grupo.position.set(f.x, f.y, f.z);
+      f.avisado = false;
       f.grupo.visible = true;
       if (f.zumbido) {
         f.zumbido.mover(f.x, f.y, f.z);
@@ -206,6 +209,7 @@ AFRAME.registerComponent('fragmentos', {
       f.y = origen.y;
       f.z = frenteTramo(f.tramo) + FRAGMENTO.distanciaAlFrente;
       f.grupo.position.set(f.x, f.y, f.z);
+      f.avisado = false;
       f.grupo.visible = true;
       f.marcaHasta = 0;
       if (f.zumbido) f.zumbido.detener();
@@ -260,7 +264,16 @@ AFRAME.registerComponent('fragmentos', {
         const horizontal = Math.hypot(this.posCamara.x - f.x, this.posCamara.z - f.z);
         toca = horizontal <= FRAGMENTO.radioRecogerCuerpo && Math.abs(rigY - f.y) <= 0.6;
       }
-      if (toca) this.recoger(f);
+      if (toca && !this.el.introActiva) this.recoger(f);
+
+      // Aviso: el jugador ya subió por encima del fragmento de la pared en la que está, sin juntarlo
+      if (f.estado === 'pared' && !f.avisado && !this.el.introActiva && !this.el.rigAutomatico) {
+        const enEsaPared = Math.abs(this.posCamara.z - (frenteTramo(f.tramoActual) + ESCENARIO.distanciaAlJugador)) < FRAGMENTO.avisoPasado.distanciaPared;
+        if (enEsaPared && rigY > f.y + FRAGMENTO.avisoPasado.altura) {
+          f.avisado = true;
+          this.el.emit('fragmento-pasado', { tramo: f.tramo }, false);
+        }
+      }
     });
   },
 
