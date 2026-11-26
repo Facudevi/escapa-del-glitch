@@ -5,7 +5,7 @@
 //   2. Una luz cálida se abre desde la grieta y la vista se funde hacia ella (despacio, sin destellos).
 //   3. El jugador aparece en un paisaje al aire libre al amanecer: pasto, montañas y cielo abierto, que
 //      contrasta con el interior del setup.
-//   4. Delante tiene la frase «Subiste de nivel, adentro y afuera de la pantalla» flotando en el cielo, un
+//   4. Delante tiene el título «Subiste de nivel», con la bajada «adentro y afuera de la pantalla», en el cielo, un
 //      podio con la medalla según su tiempo (oro menos de 2 min, plata menos de 3 min, bronce el resto) y un
 //      pedestal con el botón para volver a jugar. Todo se acomoda delante de donde aparece el jugador.
 //
@@ -116,10 +116,10 @@ AFRAME.registerComponent('final', {
     luzSol.position.set(-4, 7, 5);
     this.grupo.object3D.add(luzSol);
 
-    // Frase en el cielo, delante del jugador y sin cuadro de texto
+    // Título en el cielo, delante del jugador, estilo cartel de «nivel superado» (ver titulo-nivel.js)
     const C = FINAL.cielo;
     this.frase = crear(this.grupo, 'a-entity', {
-      cartel: `texto: ${FINAL.frase}; ancho: ${C.ancho}; alto: ${C.alto}; sinFondo: true; pixelesPorMetro: 60`,
+      'titulo-nivel': `titulo: ${FINAL.frase.titulo}; bajada: ${FINAL.frase.bajada}; ancho: ${C.ancho}; alto: ${C.alto}`,
       position: `0 ${C.y} ${-C.distancia}`,
     });
 

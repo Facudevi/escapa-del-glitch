@@ -57,7 +57,15 @@ export const COLORES = {
   sol: '#f7c982',
   nieblaExterior: '#f3d3b5',
   luzSolExterior: '#fff1da', // luz cálida del amanecer sobre los objetos del exterior
-  fraseCielo: '#fffaf0', // letras de la frase del final, en el cielo
+  fraseCielo: '#fffaf0', // letras de los carteles sin fondo
+  // Título del final en el cielo, estilo «nivel superado»: cara crema, volumen lavanda a violeta y cinta clara
+  tituloNivel: {
+    cara: '#fffaf0',
+    volumen: ['#b9a6dc', '#9b84cf', '#7b5cc4'], // de la capa pegada a la cara a la más profunda
+    sombra: 'rgba(60, 40, 90, 0.35)',
+    cinta: '#fffaf0',
+    cintaTexto: '#3c3489',
+  },
   luzRotura: '#ffe9c7', // luz cálida que sale de la grieta del RESET
   grieta: '#efe6ff',
   resetListo: '#9b82e6', // botón RESET encendido
@@ -466,8 +474,16 @@ export const FINAL = {
   alcanceClic: 3.4, // m: en modo escritorio, hasta dónde se puede hacer clic en un botón
   enfriamientoGolpe: 1.2, // s hasta que el mismo botón vuelve a aceptar un golpe
   medallas: { oro: 120, plata: 180 }, // s: menos de 2 min oro, menos de 3 min plata, el resto bronce
-  frase: 'Subiste de nivel, adentro y afuera de la pantalla',
-  cielo: { y: 14, distancia: 30, ancho: 30, alto: 8 }, // dónde flota la frase, en el cielo, frente al jugador
+  frase: { titulo: 'Subiste de nivel', bajada: 'adentro y afuera de la pantalla' }, // título del cielo y su bajada
+  cielo: {
+    y: 14, // dónde flota el título, en el cielo, frente al jugador
+    distancia: 30,
+    ancho: 30,
+    alto: 8,
+    pixelesPorMetro: 80, // resolución del dibujo del título
+    entrada: { duracion: 0.9, escalaInicial: 0.75, rebote: 1.2 }, // al aparecer: crece con un rebote chico (s)
+    flotar: { amplitud: 0.3, periodo: 5 }, // después flota despacio: m arriba y abajo, s por vuelta
+  },
   teclaReiniciar: 'KeyR', // en modo escritorio, para volver a jugar
   duracionGrietas: 0.9, // s que tardan las grietas en abrirse
   pausaAntesDeLuz: 1.2, // s entre el golpe y el comienzo del fundido (tiempo para leer la frase del Glitch)

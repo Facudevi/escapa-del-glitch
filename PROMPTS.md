@@ -214,6 +214,18 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** la niebla ahora arranca también si el jugador se despega del piso, y al completar un tramo sube enseguida hasta 3/4 de ese tramo; las manos en reposo giran con la mirada; y el generador rellena los huecos de la pared con agarres conectados (la torre pasó de 35 a 46 agarres). Detalle en la entrada "Niebla que alcanza, manos con la mirada y huecos rellenos" más abajo.
 
+### Prompt 32 — 2026-11-25
+
+> Que la frase final tenga una tipografía y diseño más impactante o que coincida con el paisaje siendo más llamativa sin hacer cualquier cosa. Primero muestrame las opciones y elijo
+
+**Respuesta:** se mostraron cuatro opciones de diseño para la frase del cielo (letras redondeadas con degradé de amanecer, letras con volumen estilo título de videojuego, letra manuscrita que se escribe sola y frase en arco como un arcoíris), con una maqueta sobre el cielo del final, para que el equipo elija antes de programar.
+
+### Prompt 33 — 2026-11-25
+
+> Elijo la opción B: título de videojuego
+
+**Respuesta:** la frase del final pasó a ser un título de videojuego: «SUBISTE DE NIVEL» en letras de bloque crema con volumen lavanda y violeta, y la bajada en una cinta clara; entra con un rebote chico y después flota despacio. Detalle en la entrada "Título del final estilo videojuego" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -782,4 +794,26 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Pendiente (depende del equipo):**
 - Probar con personas si la niebla resulta muy exigente al quedarse descansando en un piso (`NIEBLA.velocidad`, `alcanceTramo`).
+- Intervención manual con commit antes y después.
+
+### 2026-11-25 — Título del final estilo videojuego
+
+**Pedido:** que la frase final del cielo tenga una tipografía y un diseño más impactantes, que combinen con el paisaje sin exagerar. Se mostraron cuatro maquetas y el equipo eligió la opción B, «título de videojuego».
+
+**Resumen de lo hecho:**
+- **Componente nuevo `titulo-nivel`** (`src/components/titulo-nivel.js`): dibuja en un canvas el título «SUBISTE DE NIVEL» en letras de bloque (tipografía Lilita One), color crema y con volumen (tres capas apiladas de lavanda a violeta) más una sombra suave. Debajo va la bajada «adentro y afuera de la pantalla» en letra redondeada (Fredoka) sobre una cinta clara.
+- **Animación:** cuando aparece el exterior, el título entra creciendo con un rebote chico (0,9 s) y después flota despacio (0,3 m cada 5 s). Sin parpadeos ni destellos.
+- **Tipografías:** instaladas con npm (`@fontsource/lilita-one` y `@fontsource/fredoka`, solo el subconjunto latino, que incluye tildes y ñ). Van dentro del build, así que no hace falta internet. Mientras cargan se dibuja con la letra del sistema y se redibuja al terminar.
+- **Config:** `FINAL.frase` pasó a ser `{ titulo, bajada }`. `FINAL.cielo` suma `pixelesPorMetro`, `entrada` y `flotar`, y `COLORES.tituloNivel` tiene los colores de la cara, el volumen, la sombra y la cinta.
+- `final.js` usa `titulo-nivel` en lugar del `cartel` sin fondo.
+
+**Buenas prácticas aplicadas:**
+- Texto grande, con alto contraste y separado del fondo por el volumen y la sombra, legible a 30 m.
+- Jerarquía clara: el título arriba y la bajada más chica abajo.
+- Movimiento suave y continuo, sin parpadeos (ambiente calmo).
+
+**Verificado en Chrome:** el título aparece en el cielo sobre el podio con las dos tipografías cargadas; el build incluye los archivos de las fuentes. 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Ver con casco si el tamaño y la altura del título se leen cómodos (`FINAL.cielo`).
 - Intervención manual con commit antes y después.

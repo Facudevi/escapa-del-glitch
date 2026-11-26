@@ -50,7 +50,7 @@ Abrir `http://localhost:5173`. Otros comandos: `npm run build` (genera `dist/`) 
 
 ## Cómo está hecho
 
-**A-Frame 1.8** con **Vite**. Solo primitivas de A-Frame (cajas, cilindros, planos): no hay modelos 3D, librerías externas ni motor de física. Los sonidos se sintetizan con la Web Audio API, sin archivos.
+**A-Frame 1.8** con **Vite**. Solo primitivas de A-Frame (cajas, cilindros, planos): no hay modelos 3D, librerías externas ni motor de física. Los sonidos se sintetizan con la Web Audio API, sin archivos. Las dos tipografías del título final (Lilita One y Fredoka) vienen de `@fontsource` y quedan dentro del build.
 
 ```
 ├── CLAUDE.md          reglas del proyecto

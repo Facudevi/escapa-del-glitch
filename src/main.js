@@ -31,6 +31,7 @@ import './components/glitch.js';
 import './components/golpeable.js';
 import './components/reset-boton.js';
 import './components/cronometro.js';
+import './components/titulo-nivel.js';
 import './components/final.js';
 import './components/ascenso.js';
 import './components/audio-juego.js';
