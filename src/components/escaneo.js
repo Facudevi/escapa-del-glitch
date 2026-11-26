@@ -55,6 +55,7 @@ AFRAME.registerComponent('escaneo', {
   },
 
   pedir() {
+    if (this.el.introActiva) return false; // durante la intro, A y X la saltean
     const ahora = performance.now();
     if (ahora < this.listoEn) return false; // todavía en espera
     this.listoEn = ahora + ESCANEO.espera * 1000;

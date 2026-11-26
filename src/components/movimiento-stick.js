@@ -53,7 +53,7 @@ AFRAME.registerComponent('movimiento-stick', {
 
   puedeCaminar() {
     const escena = this.el.sceneEl;
-    if (escena.rigAutomatico) return false;
+    if (escena.rigAutomatico || escena.introActiva) return false;
     const climb = this.el.components.climb;
     if (climb && Object.keys(climb.sujetas).length > 0) return false; // colgado de un agarre se escala, no se camina
     const caida = this.el.components.caida;

@@ -63,6 +63,7 @@ AFRAME.registerComponent('niebla', {
     const escena = this.el;
     // Empieza al agarrarse por primera vez
     this.alAgarrar = () => {
+      if (escena.introActiva) return; // el grip que saltea la intro no la hace arrancar
       if (this.iniciaEn === Infinity) this.iniciaEn = performance.now() + NIEBLA.retardoInicio * 1000;
     };
     escena.addEventListener('mano-agarra', this.alAgarrar);

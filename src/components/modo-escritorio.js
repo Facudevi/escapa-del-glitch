@@ -28,7 +28,8 @@ AFRAME.registerComponent('modo-escritorio', {
   },
 
   alClickear(e) {
-    if (this.enVR()) return;
+    if (this.enVR() || this.el.introActiva) return; // durante la intro el clic la saltea
+
     // Un clic que termina de agarrar o soltar con el mouse no es un pedido de viaje
     if (this.manosMouse > 0 || performance.now() - this.ultimoCambio < 150) return;
     const objetivo = e.target;
@@ -60,7 +61,7 @@ AFRAME.registerComponent('modo-escritorio', {
   },
 
   tick(tiempo, dt) {
-    if (this.enVR() || this.manosMouse > 0) return; // colgado de un agarre no se camina
+    if (this.enVR() || this.manosMouse > 0 || this.el.introActiva) return; // colgado de un agarre (o en la intro) no se camina
     if (!this.rig) this.rig = document.querySelector('#rig');
     const camara = document.querySelector('#camara');
     if (!this.rig || !camara) return;

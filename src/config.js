@@ -66,6 +66,24 @@ export const COLORES = {
     cinta: '#fffaf0',
     cintaTexto: '#3c3489',
   },
+  // Palabra RESET sobre el botón: letras de bloque crema con volumen violeta (mismo estilo que el título final)
+  etiquetaReset: {
+    cara: '#fffaf0',
+    volumen: ['#c9b8ee', '#9b84cf', '#4b3a7a'], // de la capa pegada a la cara a la más profunda
+    sombra: 'rgba(20, 12, 40, 0.55)',
+  },
+  // Tarjetas de la introducción
+  intro: {
+    fondo: '#2b2140',
+    borde: '#b9a6dc',
+    titulo: '#fffaf0',
+    tituloVolumen: '#7b5cc4',
+    texto: '#e9e2f5',
+    pista: '#b9a6dc',
+    punto: '#5d4a8f', // paso que todavía no se vio
+    puntoActual: '#d9a15b',
+    barra: '#d9a15b', // barra de tiempo de la tarjeta
+  },
   luzRotura: '#ffe9c7', // luz cálida que sale de la grieta del RESET
   grieta: '#efe6ff',
   resetListo: '#9b82e6', // botón RESET encendido
@@ -469,6 +487,55 @@ export const ASCENSO = {
   velocidad: 1.6, // m/s, constante (sin aceleraciones, para no marear)
   alturaPorEncima: 0.35, // m que sube el camino por encima del piso antes de avanzar sobre él
   margenProteccion: 700, // ms extra sin caer después de llegar al piso
+};
+
+// Introducción antes de escalar: tarjetas que cuentan la situación del jugador (menos de 25 s en total).
+// El jugador la ve parado lejos de la pared, de frente al setup gigante; al terminar (o al saltearla) se
+// funde a negro y aparece al pie del teclado, listo para escalar.
+export const INTRO = {
+  soloLaPrimeraVez: true, // al volver a jugar no se repite
+  duracionPaso: 4.4, // s que se ve cada tarjeta (5 tarjetas = 22 s; con los dos fundidos quedan 23,2 s)
+  fundido: 600, // ms del fundido a negro al terminar (ida y vuelta)
+  entradaTarjeta: 300, // ms que tarda cada tarjeta en aparecer (crece suave, sin parpadeo)
+  escalaInicial: 0.92, // tamaño con el que empieza cada tarjeta antes de llegar al suyo
+  esperaParaSaltear: 0.8, // s al principio en que no se puede saltear (la tecla que cerró el inicio no cuenta)
+  miradorZ: 8.4, // z donde está parado el jugador durante la intro (lejos de la pared: se ve el setup entero)
+  inclinacionEscritorio: 0.12, // rad que mira hacia arriba la cámara en la compu durante la intro
+  distancia: 1.6, // m delante de la cabeza
+  alturaRelativa: -0.05, // m respecto de los ojos (apenas abajo, sin tapar las manos)
+  suavizado: 3, // cuánto sigue a la cabeza (más alto = más rápido)
+  ancho: 1.6, // m
+  alto: 0.84, // m
+  pixelesPorMetro: 900,
+  teclasSaltear: ['Enter', 'Space', 'Escape'],
+  saltear: 'A, X o gatillo: saltear  ·  En la compu: Enter o clic',
+  pasos: [
+    {
+      titulo: 'Te atrapó el Glitch',
+      texto: 'Te quedaste jugando hasta tarde y el Glitch te metió adentro de tu propio setup gamer.',
+      dibujo: 'atrapado',
+    },
+    {
+      titulo: 'Todo es gigante',
+      texto: 'El teclado, la torre de la PC y el monitor ahora son paredes. Para salir, hay que escalarlas.',
+      dibujo: 'setup',
+    },
+    {
+      titulo: 'La salida: el RESET',
+      texto: 'Está arriba de todo, sobre el monitor. Si lo golpeás, rompés la pantalla y escapás.',
+      dibujo: 'reset',
+    },
+    {
+      titulo: 'Pero está apagado',
+      texto: 'Para encenderlo, juntá los 3 fragmentos escondidos en la pared: uno en cada tramo.',
+      dibujo: 'fragmentos',
+    },
+    {
+      titulo: '¡A escalar!',
+      texto: 'Subí con los brazos, alterná las manos y no dejes que te alcance la niebla de píxeles.',
+      dibujo: 'escalar',
+    },
+  ],
 };
 
 // Final: el botón RESET, la rotura de la pantalla, el exterior al amanecer y la medalla.

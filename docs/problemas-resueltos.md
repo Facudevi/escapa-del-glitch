@@ -169,3 +169,10 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** en VR el juego solo tenía el movimiento del cuerpo (seguimiento del casco); caminar con teclas existía únicamente en el modo escritorio (WASD).
 - **Solución:** un componente nuevo, `movimiento-stick`, mueve al jugador con el stick de cualquiera de los dos controles, a velocidad constante y hacia donde mira. No actúa mientras está agarrado ni mientras cae, y respeta los mismos límites que el resto del juego.
 - **Aprendizaje:** lo que en la compu se resolvía con WASD también necesita una versión con los controles; probar con personas muestra problemas que el modo escritorio no deja ver.
+
+## 24. La tarjeta de la intro quedaba tapada por un cartel de la pared
+
+- **Qué pasó:** al probar la intro, el cartel del pie de la pared («A lo largo de la escalada…») se dibujaba por encima de la tarjeta, aunque estaba más lejos.
+- **Por qué:** A-Frame no ordena los objetos transparentes al dibujarlos, así que el orden lo decide cuándo se agregó cada uno a la escena; ni `renderOrder` ni desactivar la prueba de profundidad alcanzaban.
+- **Solución:** la tarjeta pasó a ser opaca (las esquinas redondeadas se recortan con `alphaTest`), y la aparición, en vez de un fundido de opacidad, es un crecimiento suave.
+- **Aprendizaje:** en A-Frame, un panel que tiene que quedar adelante conviene hacerlo opaco; la transparencia trae problemas de orden.

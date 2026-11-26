@@ -37,3 +37,5 @@ import './components/final.js';
 import './components/ascenso.js';
 import './components/audio-juego.js';
 import './components/pantalla-inicio.js';
+import './components/etiqueta-reset.js';
+import './components/intro.js';

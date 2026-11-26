@@ -231,7 +231,7 @@ AFRAME.registerComponent('escenario-glitch', {
       material: 'roughness: 0.9; metalness: 0',
     });
     crear(this.el, 'a-entity', {
-      cartel: 'texto: RESET; ancho: 1.6; alto: 0.5',
+      'etiqueta-reset': 'texto: RESET; ancho: 1.7; alto: 0.62',
       position: `${R.x} ${R.y} ${R.z + 0.27}`, // sobre la cara del botón
     });
     // Huecos de los fragmentos sobre el botón

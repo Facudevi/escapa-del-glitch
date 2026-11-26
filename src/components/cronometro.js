@@ -8,6 +8,7 @@ AFRAME.registerComponent('cronometro', {
   init() {
     this.reiniciar();
     this.el.addEventListener('mano-agarra', () => {
+      if (this.el.introActiva) return; // el grip que saltea la intro no cuenta como primer agarre
       if (this.inicio === null) this.inicio = performance.now();
     });
     this.el.addEventListener('reset-activado', () => {

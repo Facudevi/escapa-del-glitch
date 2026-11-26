@@ -256,6 +256,13 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se agregó el componente `movimiento-stick`: en VR el jugador camina por los pisos con el stick de cualquiera de los dos controles, hacia donde mira y a velocidad constante (1,8 m/s, en `STICK` de `src/config.js`). No camina mientras está agarrado o cayendo, y respeta los límites. La escalada sigue siendo con los brazos. Detalle en la entrada "Caminar con el stick en VR" más abajo.
 
+### Prompt 39 — 2026-11-26
+
+> Quiero que hagas una introducción rápida de la experiencia antes de escalar, para entender el contexto y saber en la situación en la que estas. No debe superar los 25 segundos y debe explicar bien la situación del jugador (también algo que indique que debe escapar con fragmentos).
+> Cambiar la tipografía del botón, para que no quede muy trucho
+
+**Respuesta:** se preguntó a qué botón se refería y el equipo eligió el RESET. Se agregó una intro de 23,2 s con cinco tarjetas (el Glitch te atrapó en tu setup, todo es gigante, la salida es el RESET, está apagado y hay que juntar 3 fragmentos, y cómo escalar), salteable con los controles, el teclado o un clic, que se ve solo la primera vez. La palabra RESET del botón pasó a letras de bloque con volumen, como el título del final. Detalle en la entrada "Intro antes de escalar y tipografía del botón RESET" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -871,3 +878,27 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Probarlo con casco y con las personas que se quejaron, y ajustar `STICK.velocidad` si marea o resulta lento.
 - Evaluar giro por pasos con el stick derecho y una viñeta de comodidad. El giro por pasos hoy no se puede agregar sin cambiar `climb`, que asume que el rig no está rotado.
+
+### 2026-11-26 — Intro antes de escalar y tipografía del botón RESET
+
+**Pedido:** una introducción rápida antes de escalar (menos de 25 s) que explique la situación del jugador y que tiene que escapar juntando fragmentos; y cambiar la tipografía del botón RESET, que se veía improvisada.
+
+**Resumen de lo hecho:**
+- **Componente nuevo `intro`** (`src/components/intro.js`), en la escena. Al cerrar la pantalla de inicio (o al entrar en VR) el jugador aparece lejos de la pared, de frente al setup gigante, y ve cinco tarjetas de 4,4 s: «Te atrapó el Glitch», «Todo es gigante», «La salida: el RESET», «Pero está apagado» (los 3 fragmentos) y «¡A escalar!». Total: 23,2 s con los fundidos.
+- Cada tarjeta tiene un dibujo simple hecho en canvas (monitor con el jugador adentro, los tres escalones, el botón con sus huecos, los fragmentos con 0/3, la pared con la niebla), título en Lilita One, texto en Fredoka, los puntos de los pasos y una barra con el tiempo que queda. Sigue la cabeza con retraso, como las frases del Glitch.
+- **Saltear:** A, X, gatillo o grip; en la compu, Enter, espacio, Escape o clic. Los primeros 0,8 s no cuentan, para que la tecla que cerró el inicio no la saltee. Al terminar se funde a negro y el jugador aparece al pie del teclado.
+- Durante la intro no se camina (WASD ni stick), no se viaja con clic y no se escanea; el grip que la saltea no arranca el cronómetro ni la niebla (`escena.introActiva`). Se ve solo la primera vez (`INTRO.soloLaPrimeraVez`).
+- **Componente nuevo `etiqueta-reset`** (`src/components/etiqueta-reset.js`): la palabra RESET del botón pasó de un cartel con panel oscuro y letra del sistema a letras de bloque Lilita One color crema con volumen violeta, el mismo estilo que el título del final.
+- **Config:** `INTRO` (tiempos, medidas, textos de las tarjetas) y `COLORES.intro` y `COLORES.etiquetaReset`.
+
+**Buenas prácticas aplicadas:**
+- Onboarding corto y salteable, con la meta clara desde el principio (los 3 fragmentos y el RESET).
+- Sin movimientos de cámara impuestos: el jugador queda quieto y las transiciones son con fundido (p. 46).
+- Texto grande, con alto contraste y pocas palabras por tarjeta; la tarjeta aparece creciendo suave, sin parpadeo.
+- Se puede saltear con cualquiera de los dos controles, y también con mouse o teclado.
+
+**Verificado en Chrome:** las cinco tarjetas aparecen en orden; Enter cierra el inicio sin saltear la intro; un clic la saltea y el jugador queda al pie del teclado, con el cronómetro y la niebla sin arrancar. El RESET se ve con la tipografía nueva apagado y encendido. `npm run build` sin errores y 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probar con casco que las tarjetas se lean cómodas (`INTRO.distancia`, `INTRO.ancho`) y que 4,4 s por tarjeta alcancen para leerlas.
+- La captura del RESET del documento del informe muestra la etiqueta vieja.
