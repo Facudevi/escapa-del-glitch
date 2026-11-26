@@ -25,65 +25,23 @@ Se adjuntó `idea-final.md` y dos esquemas (manos/pulsera y paredes de escalada)
 
 ### Prompt 3 — 2026-11-19
 
-> podes ir haciendo una bitácora de prompts de los que te voy haciendo a lo largo del chat. Que debería hacer el juego en este momento, solo veo 3 bloques, pero entiendo que es para probar si funcionan las herramientas?
-
-**Respuesta:** se reestructuró este archivo como bitácora y se agregó la regla a `CLAUDE.md`. Se explicó que los 3 bloques son agarres de prueba de la Etapa 1 y qué debe hacer el juego en este punto.
-
-### Prompt 4 — 2026-11-19
-
-> como hago lo del github pages. Ya hice lo del source: github actions, pero no sé donde está el link ni nada por el estilo
-
-**Respuesta:** se revisó el estado público del repo: el commit inicial ya estaba subido, el job `build` del workflow salió bien pero `deploy` falló, y el sitio respondía 404. Se explicó que hay que volver a ejecutar el workflow ahora que el source de Pages es GitHub Actions, y dónde queda el link.
-
-### Prompt 5 — 2026-11-19
-
-> Ya anda
-
-**Respuesta:** se verificó que https://facudevi.github.io/escapa-del-glitch/ responde 200 con la página de la experiencia. Etapa 1 desplegada.
-
-### Prompt 6 — 2026-11-19
-
 > Empezar Etapa 2
 
 **Respuesta:** se implementó la Etapa 2 (escalar): componente `climb`, pared de prueba con 10 teclas firmes y carteles de tutorial. Detalle en la entrada "Etapa 2" más abajo.
 
-### Prompt 7 — 2026-11-19
-
-> donde debo poner el npm run dev para probar con el emulador? Donde está el emulador?
-
-**Respuesta:** se explicó que `npm run dev` se corre en una terminal dentro de la carpeta del proyecto, que se abre `http://localhost:5173` en Chrome, y que el Immersive Web Emulator es una extensión de Chrome (se instala desde la Chrome Web Store y aparece como pestaña en las herramientas de desarrollador).
-
-### Prompt 8 — 2026-11-19
-
-> no tenemos ninguno de los 3 VR. Tenemos que probar con computadora por el momento hasta que alguno pueda probar con cascos. Como pruebo el immersive Web con teclado?
-
-**Respuesta:** se buscó cómo se controla el Immersive Web Emulator: la pestaña de las herramientas de desarrollador se llama "WebXR" (corrección de lo dicho antes) y se manejan casco y controles con el mouse y atajos de teclado, que hay que confirmar en el panel. Se propuso además un modo de escalada de escritorio con mouse para probar `climb` sin casco.
-
-### Prompt 9 — 2026-11-19
-
-> Pruebo con el emulador
-
-**Respuesta:** se dejó la escalada de escritorio con mouse como opción pendiente y se esperó el resultado de la prueba con el Immersive Web Emulator.
-
-### Prompt 10 — 2026-11-19
-
-> Armar modo mouse
-
-**Respuesta:** se creó el componente `escalada-mouse` para escalar en modo escritorio con el mouse (clic izquierdo = mano izquierda, clic derecho = mano derecha, bajar el mouse = subir). Detalle en la entrada "Escalada con mouse" más abajo.
-
-### Prompt 11 — 2026-11-19
+### Prompt 4 — 2026-11-19
 
 > Anda, seguir Etapa 3
 
 **Respuesta:** se implementó la Etapa 3 (caída y checkpoints): componentes `caida`, `checkpoint` y `fundido`, y dos checkpoints en la pared de prueba. Detalle en la entrada "Etapa 3" más abajo.
 
-### Prompt 12 — 2026-11-20
+### Prompt 5 — 2026-11-20
 
 > Bien, seguir Etapa 4
 
 **Respuesta:** se implementó la Etapa 4 (energía por mano): componentes `energia` y `anillo-energia`. Detalle en la entrada "Etapa 4" más abajo.
 
-### Prompt 13 — 2026-11-20
+### Prompt 6 — 2026-11-20
 Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.pdf`.
 
 > Quiero que realices un analisis completo del siguiente pdf de 200 paginas sobre buenas prácticas de VR, y lo agregues a la documentación del proyecto. Cada vez que debas realizar una etapa del desarrollo de la experiencia, usa el documento para cumplir con las buenas prácticas.
@@ -92,49 +50,49 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se extrajo el texto de los dos PDF y se leyeron en detalle los apartados del libro que aplican al proyecto (el libro tiene unas 380 páginas, no 200). Se creó `docs/buenas-practicas-xr.md` con los principios, un checklist por etapa, la revisión de las etapas 1 a 4 y el procedimiento de auditoría final; `docs/consigna-tp4.md` con los requisitos y entregas; y `docs/problemas-resueltos.md`. Se actualizaron `CLAUDE.md` (flujo de trabajo, modo escritorio como entrega) y el README. La etapa 5 quedó pendiente de retomar aplicando el checklist.
 
-### Prompt 14 — 2026-11-20
+### Prompt 7 — 2026-11-20
 
 > Sí, retomá la Etapa 5
 
 **Respuesta:** se implementó la Etapa 5 (agarres especiales) aplicando el checklist de `docs/buenas-practicas-xr.md`. Detalle en la entrada "Etapa 5" más abajo.
 
-### Prompt 15 — 2026-11-20
+### Prompt 8 — 2026-11-20
 
 > Bien, seguir Etapa 6
 
 **Respuesta:** se implementó la Etapa 6 (tramos completos): el setup gamer gigante con teclado, torre de PC y monitor, dificultad creciente, checkpoints entre tramos y el RESET apagado arriba de todo. Detalle en la entrada "Etapa 6" más abajo.
 
-### Prompt 16 — 2026-11-20
+### Prompt 9 — 2026-11-20
 
 > Bien, seguir Etapa 7
 
 **Respuesta:** se implementó la Etapa 7 (fragmentos, pulsera, escaneo y niebla): componentes `fragmentos`, `pulsera`, `escaneo`, `niebla` y `glitch`. Detalle en la entrada "Etapa 7" más abajo.
 
-### Prompt 17 — 2026-11-20
+### Prompt 10 — 2026-11-20
 
 > Bien, seguir Etapa 8
 
 **Respuesta:** se implementó la Etapa 8 (final): botón RESET, rotura de la pantalla, exterior al amanecer, frase, medalla y volver a jugar. Detalle en la entrada "Etapa 8" más abajo.
 
-### Prompt 18 — 2026-11-20
+### Prompt 11 — 2026-11-20
 
 > Bien, seguir Etapa 9
 
 **Respuesta:** se implementó la Etapa 9 (Glitch y extras): frases del Glitch con cola y tiempos de espera, tirolesa de cable USB en la torre, música de fondo y volumen general con silencio. Detalle en la entrada "Etapa 9" más abajo.
 
-### Prompt 19 — 2026-11-20
+### Prompt 12 — 2026-11-20
 
 > Seguir Etapa 10
 
 **Respuesta:** se implementó la Etapa 10 (pulido): pantalla de inicio con aviso de seguridad, modo fácil, auditoría final contra el libro y la consigna, guías para las pruebas y la intervención manual, y README final. Detalle en la entrada "Etapa 10" más abajo.
 
-### Prompt 20 — 2026-11-21
+### Prompt 13 — 2026-11-21
 
 > Voy a pedirte que el estilo y el diseño de los objetos sean más reales y detallados, que se entienda bien el entorno. Actualmente no parece que estas escalando un teclado, una pc y un monitor. Le falta profundidad a los objetos que componen las paredes de los 3 tramos. El jugador puede salir de el espacio del juego y puede caminar en el "limbo" donde no hay nada. Quiero que pongas limites al jugador para que no pueda avanzar por fuera del juego. Además, la base de los checkpoints no deja visualizar los botones que están por delante. Y quiero que por cada tramo tenga un espacio de profundidad, donde el jugador pueda pararse. en lugar de estar sobre un piso verde que levita. También quiero que la pared (es decir, el teclado, pc y monitor) sean más anchos y hayan más agarres, siempre y cuando se respete el tamaño real de los diferentes componentes que forman la pared. Elimina los comentarios que se encuentran en la pared, ya que no se pueden leer xq están por detrás de los elementos que la diseñan. Agrega un mensaje abajo del todo que diga que a lo largo de la escalada debe juntar los fragmentos para escapar. Cuando el glitch come un fragmento, desaparece en lugar de recolocarse en otro agarre del siguiente tramo. Arregla el problema. Hacé que el glitch vaya un poco más rápido y que el cable usb sea dificil de agarrar. Además, cuando llegues arriba del todo quiero que haya una base de piso donde puedas caminar libremente y esté el boton RESET más grande al fondo. Agregar objetos relacionados a los videojuegos en el piso/base de ahí, donde se puedan esconder aquellos fragmentos que come el glitch y manda para arriba si es que ya completaste el tercer tramo.
 
 **Respuesta:** rediseño visual y de juego en una sola tanda: decorado detallado con profundidad (escritorio, teclado TKL, torre con ventiladores y parlantes, monitor), pared más ancha con más agarres, entrepaños con profundidad para pararse, límites invisibles para el jugador, piso de arriba con RESET grande y objetos de videojuegos, mensaje al pie, fragmentos que se reubican en el tramo siguiente, niebla más rápida y enchufe USB más difícil. Detalle en la entrada "Rediseño visual y de juego" más abajo.
 
-### Prompt 21 — 2026-11-22
+### Prompt 14 — 2026-11-22
 
 > La mayoría de las cosas las cumpliste, pero quiero hacer un par de correcciones:
 >
@@ -147,32 +105,32 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se reestructuró el escenario en tres escalones con piso arriba de cada uno (el siguiente tramo se ve de frente), decorado simple y reconocible, tramo 1 solo teclado, agarres con poste y mejor repartidos, reborde para subir al piso, exterior del final rehecho (frase en el cielo, podio con medalla, pedestal con botón, cartel de madera) y manos y reloj nuevos. Detalle en la entrada "Escalones, agarres y final" más abajo.
 
-### Prompt 22 — 2026-11-22
+### Prompt 15 — 2026-11-22
 
 > hiciste demasiados agarres, está sobreexplotado, deben ser suficientes, pero no demasiados. Sigen habiendo agarres que parecen que estan levitando. Debes distribuir los agarres de manera correcta y de manera distribuida, sin que haya demasiada concentración de un mismo agarre en un espacio
 
 **Respuesta:** se pasó de unos 210 a 133 agarres, repartidos parejo con el método del «mejor candidato» y siempre al alcance de otros; todos los agarres (también latas, bloques y paneles) quedaron apoyados en la pared con una placa y un poste visibles. Detalle en la entrada "Menos agarres, mejor repartidos" más abajo.
 
-### Prompt 23 — 2026-11-22
+### Prompt 16 — 2026-11-22
 
 > No sacaste los agarres que ocupan toda la pared, tienen que haber menos cantidad pero distribuidos en el sentido del tipo de agarre, teniendo en cuenta la dificultad de los tramos. Que hayan menos cantidad de agarres por favor.
 > Quiero que el tramo 1 sea un poco más largo verticalmente, así no es tan rápido de superar
 
 **Respuesta:** el reborde que ocupaba todo el ancho pasó a ser dos tramos cortos de barra (uno sobre cada carril de la ruta); la ruta pasó a dos carriles, uno en cada mitad de la pared, con 76 agarres en total; los tipos especiales se reparten según la dificultad del tramo; el tramo del teclado subió de 5,6 a 7,2 m. Detalle en la entrada "Menos agarres por dificultad y teclado más alto" más abajo.
 
-### Prompt 24 — 2026-11-22
+### Prompt 17 — 2026-11-22
 
 > No me parece correcto que tenga rutas marcadas, deben ser agarres distribuidos por el tramo, sin ocupar todos los espacios, pero distribuidos de cierta forma que hayan diferentes caminos posibles que se pueden recorrer sin ser tan marcados
 
 **Respuesta:** se sacaron las rutas (los dos carriles) y el generador reparte los agarres por toda la pared con una trama escalonada con un poco de desorden, sin huecos grandes y con muchos caminos posibles; quedan 83 agarres (más los paneles). Detalle en la entrada "Agarres sin rutas marcadas" más abajo.
 
-### Prompt 25 — 2026-11-22
+### Prompt 18 — 2026-11-22
 
 > Quiero que los fragmentos del tramo 2 y 3 sean díficiles de agarrar o requieran ir por un lugar más dificil, sin cambiar la distribución actual de los agarres, aunque se puede hacer un poco más dificil. Además quiero que el USB sea dificilisimo de agarrar
 
 **Respuesta:** los fragmentos de la torre y el monitor quedaron sobre un agarre especial y rodeados de agarres especiales, y el enchufe USB es mucho más chico, del color de la torre y más lejos de los agarres. Detalle en la entrada "Fragmentos difíciles y USB dificilísimo" más abajo.
 
-### Prompt 26 — 2026-11-22
+### Prompt 19 — 2026-11-22
 
 > Quiero que el jugador en caso de saltearse una medalla, disminuya a plata su medalla,y en caso de que se saltee dos  que sea de bronce, sin importar el tiempo. Ahora, la variable de tiempo sigue siendo igual para determinar la medalla, pero primero se prioriza la perdida de los fragmentos.
 > Además, para obtener el fragmento del tramo 2, debe haber en esa ruta si o si un agarre de un panel que gira y una lata al menos. El fragmento debe estar por la zona izquierda del tramo.
@@ -181,25 +139,25 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** la medalla ahora depende primero de los fragmentos perdidos (uno = plata como máximo, dos o más = bronce) y después del tiempo; el fragmento de la torre quedó a la izquierda, sobre una lata a la que solo se llega desde un panel que gira; la lata es un 50 % más grande; y la música pasó a ser un colchón de acordes bajito con campanitas sueltas, sin desafinaciones. Detalle en la entrada "Medallas por fragmentos, fragmento de la torre, lata y música" más abajo.
 
-### Prompt 27 — 2026-11-22
+### Prompt 20 — 2026-11-22
 
 > Sigue habiendo una especie de ruido blanco en la musica. Es una nota continua que no para en ningun momento, quiero que la elimines de la musica del fondo
 
 **Respuesta:** se eliminó el colchón de acordes sostenidos (la nota continua) y la música quedó solo con campanitas sueltas separadas por silencios; además el sonido de los fragmentos, que también era un tono continuo mientras estaba cerca, pasó a ser un aviso suave que se repite cada 2,6 s. Detalle en la entrada "Música sin nota continua" más abajo.
 
-### Prompt 28 — 2026-11-22
+### Prompt 21 — 2026-11-22
 
 > pero no quiero que sean notas que suenan y se apaguen, busco que sea una melodía tranquila sin un sonido que suene tan fuerte y continuo como el anterior que hacía que exploten los tímpanos
 
 **Respuesta:** la música pasó a ser una melodía lenta y fluida, a volumen bajo, tocada con un sonido redondo y notas que se enlazan, con silencios entre repeticiones; no hay ningún sonido sostenido. Detalle en la entrada "Melodía tranquila" más abajo.
 
-### Prompt 29 — 2026-11-25
+### Prompt 22 — 2026-11-25
 
 > Quiero que dejes un poco más de espacio para moverse entre el piso/base y la pared para escalar. Cambiar de posición aquel fragmento que se pierde y aparece arriba debajo de un control, ya que es imposible de ver y no se sabe donde está si es que no pasaste por encima suyo o haciendo escaner. No modificar los tramos en sí
 
 **Respuesta:** los pisos de los escalones pasaron de 2,7 a 3,4 m de profundidad (de 1,55 a 2,25 m libres entre el borde y los agarres), con la sala un poco más grande para que entre todo; y los fragmentos que aparecen arriba quedaron a la vista, delante o al costado de los objetos, un poco más altos. Los agarres de los tramos no cambiaron. Detalle en la entrada "Más espacio en los pisos y fragmentos a la vista" más abajo.
 
-### Prompt 30 — 2026-11-25
+### Prompt 23 — 2026-11-25
 
 > No sube el glitch. Además, cuando paso un tramo sin agarrar el fragmento, el fragmento no reaparece en la parte de arriba (no hace falta que el glitch lo coma para que llegue arriba).
 > Quiero que hagas los tramos más largos y en cada tramo, agregues "estantes" o pequeñas bases donde el jugador pueda pararse. De esta forma, el jugador no debe estar agarrado todo el tiempo a los agarres. Por eso también debes agregarle un cuerpo al personaje, para que el jugador entienda si su cuerpo es tocado por el glitch o puede pararse en estas pequeñas bases.
@@ -207,70 +165,40 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se arregló la niebla, los fragmentos salteados ahora suben solos, los tramos son más altos y tienen estantes, el jugador tiene cuerpo, los agarres tienen dibujo propio y el final tiene un paisaje vivo. Detalle en la entrada "Niebla, estantes, cuerpo, agarres gráficos y paisaje vivo" más abajo.
 
-### Prompt 31 — 2026-11-25
+### Prompt 24 — 2026-11-25
 
 > el glitch todavía no sube. Hacé que lo haga. Por cada tramo que se completa, que el glitch automaticamente suba 3/4 de ese tramo, para no quedarse tan atrás respecto al jugador.
 > Hacer coincidir la manos con el movimiento del jugador, es decir, que si yo muevo mi cabeza hacia la izquierda (donde apunto), tanto el cuerpo como las manos deben apuntar a la izquierda (siempre mirando de frente respecto al eje del jugador). Distribuir mejor los agarres del tramo 2 (en la zona izquierda faltan algunos)
 
 **Respuesta:** la niebla ahora arranca también si el jugador se despega del piso, y al completar un tramo sube enseguida hasta 3/4 de ese tramo; las manos en reposo giran con la mirada; y el generador rellena los huecos de la pared con agarres conectados (la torre pasó de 35 a 46 agarres). Detalle en la entrada "Niebla que alcanza, manos con la mirada y huecos rellenos" más abajo.
 
-### Prompt 32 — 2026-11-25
+### Prompt 25 — 2026-11-25
 
 > Que la frase final tenga una tipografía y diseño más impactante o que coincida con el paisaje siendo más llamativa sin hacer cualquier cosa. Primero muestrame las opciones y elijo
 
 **Respuesta:** se mostraron cuatro opciones de diseño para la frase del cielo (letras redondeadas con degradé de amanecer, letras con volumen estilo título de videojuego, letra manuscrita que se escribe sola y frase en arco como un arcoíris), con una maqueta sobre el cielo del final, para que el equipo elija antes de programar.
 
-### Prompt 33 — 2026-11-25
-
-> Elijo la opción B: título de videojuego
-
-**Respuesta:** la frase del final pasó a ser un título de videojuego: «SUBISTE DE NIVEL» en letras de bloque crema con volumen lavanda y violeta, y la bajada en una cinta clara; entra con un rebote chico y después flota despacio. Detalle en la entrada "Título del final estilo videojuego" más abajo.
-
-### Prompt 34 — 2026-11-26
-
-> como conecto los cascos VR y controles para probar la experiencia
-
-**Respuesta:** se explicaron las tres formas de probar en un Meta Quest: el link de GitHub Pages sin cable (lo más simple), el servidor local por USB con `adb reverse` (modo desarrollador, depuración USB y aceptar la huella en el casco) y el servidor local por Wi-Fi con HTTPS; más cómo emparejar y despertar los controles y qué botones usa el juego (grip para agarrar, A/X para escanear). No se tocó código.
-
-### Prompt 35 — 2026-11-26
-
-> necesito información sobre el proyecto para agregarlo a mi informe. Se va a encontrar en la parte de definición del proyecto, debo tener imagenes intercaladas con texto. Esto se encuentra en la consigna mejor explicado. Busca esa parte y haz el trabajo
-
-**Respuesta:** el PDF de la consigna no está en el repositorio, así que se tomó el resumen de `docs/consigna-tp4.md`, que pide en el informe la «definición y justificación de la idea». Se armó un documento con ocho bloques de texto (qué es, la historia, la mecánica, los tres tramos, la niebla y los fragmentos, el final, la justificación de la idea y de la VR, y la accesibilidad) intercalados con nueve capturas del juego real. Ocho están en 1920×1080, sacadas del render 3D con una cámara de fotos temporal desde la consola del navegador; la de la pantalla de inicio está en 800×450. No se tocó código del juego.
-
-### Prompt 36 — 2026-11-26
-
-> nono, no quiero que sea un un documento dentro del proyecto este, sino uno nuevo que sea externo al repo
-
-**Respuesta:** el documento de la definición del proyecto pasó a ser un documento externo en Claude Docs (https://claude.ai/artifact/9FjZHGLVXQmSD3tm7hy3F8), con el mismo texto y las nueve capturas intercaladas. Se puede editar, comentar y exportar a Word, PDF o Google Docs. Se borraron del repositorio la carpeta `docs/informe/` y la línea que se había agregado al `README.md`.
-
-### Prompt 37 — 2026-11-26
-
-> como se hace para probar en Linux
-
-**Respuesta:** se explicó cómo probar en Linux (Ubuntu 24.04 de la escuela, sin permisos de administrador): servidor local con `npm run dev` y Chromium con la extensión Immersive Web Emulator para simular casco y controles (Firefox no sirve porque no tiene WebXR); en el Quest, el link de GitHub Pages; y el camino por USB con `adb`, que en Linux necesita instalar `adb` y una regla de udev, para lo que hace falta `sudo`. No se tocó código.
-
-### Prompt 38 — 2026-11-26
+### Prompt 26 — 2026-11-26
 
 > Quiero que en VR, para moverse lo haga con el stick de los controles, no que hagas el movimiento "espacial", varios lo jugaron y se quejaron de eso
 
 **Respuesta:** se agregó el componente `movimiento-stick`: en VR el jugador camina por los pisos con el stick de cualquiera de los dos controles, hacia donde mira y a velocidad constante (1,8 m/s, en `STICK` de `src/config.js`). No camina mientras está agarrado o cayendo, y respeta los límites. La escalada sigue siendo con los brazos. Detalle en la entrada "Caminar con el stick en VR" más abajo.
 
-### Prompt 39 — 2026-11-26
+### Prompt 27 — 2026-11-26
 
 > Quiero que hagas una introducción rápida de la experiencia antes de escalar, para entender el contexto y saber en la situación en la que estas. No debe superar los 25 segundos y debe explicar bien la situación del jugador (también algo que indique que debe escapar con fragmentos).
 > Cambiar la tipografía del botón, para que no quede muy trucho
 
 **Respuesta:** se preguntó a qué botón se refería y el equipo eligió el RESET. Se agregó una intro de 23,2 s con cinco tarjetas (el Glitch te atrapó en tu setup, todo es gigante, la salida es el RESET, está apagado y hay que juntar 3 fragmentos, y cómo escalar), salteable con los controles, el teclado o un clic, que se ve solo la primera vez. La palabra RESET del botón pasó a letras de bloque con volumen, como el título del final. Detalle en la entrada "Intro antes de escalar y tipografía del botón RESET" más abajo.
 
-### Prompt 40 — 2026-11-26
+### Prompt 28 — 2026-11-26
 
 > no aparece la introducción, a menos a que sea el escrito largo. El jugador no va a querer leer una lista larguísima. Sobre la introducción me refería a una animación donde el usuario está en primera persona y muestra como la computadora en la que está jugando lo abduce. El ambiente ese debe ser oscuro como si hubiera estado todo el día jugando encerrado en su habitación, mostrando su setup. Algo así o parecido.
 > La tipografía es horrible la del boton RESET. ponele la misma tipografía que la de la frase del final
 
 **Respuesta:** se explicó que, si no se vio la intro, probablemente se abrió `index.html` directo (sin `npm run dev`) o GitHub Pages todavía no se había actualizado. La intro se rehízo como animación en primera persona de 23,6 s: habitación oscura a las 3:47 con el setup de tamaño real, la pantalla falla, salen píxeles, la pantalla crece y lo traga, y aparece frente al setup gigante; solo tres subtítulos cortos. El RESET usa ahora los mismos colores y medidas que el título del final. Detalle en la entrada "Intro animada: la compu te abduce, y RESET con la letra del título" más abajo.
 
-### Prompt 41 — 2026-11-26
+### Prompt 29 — 2026-11-26
 
 > personaje sensible a la caída, deja una cantidad pequeña de espacio más que no cuente como caída. Las bases para pararse durante el tramo pueden interactuarse, y cuando se interactúa el personaje se sube (haciendo como la animación cuando alcanza el checkpoint), pero no cuenta como checkpoint.
 > Hacer más entendible la idea de obtener los fragmentos, ya que varios jugadores fueron de una a trepar en lugar de inspeccionar el tramo para ver que hay.
