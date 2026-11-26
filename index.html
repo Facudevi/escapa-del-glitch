@@ -54,6 +54,7 @@
           <div>
             <h2>Con casco (Meta Quest)</h2>
             <ul>
+              <li>Mové el stick de cualquier control para caminar hacia donde mirás.</li>
               <li>Apretá el botón lateral (grip) cerca de una tecla y bajá el brazo para subir.</li>
               <li>Alterná las manos: la que agarra se cansa y la libre se recupera (mirá el anillo del guante).</li>
               <li>Escaneo de fragmentos: tocá la pulsera con la otra mano o apretá A/X.</li>
@@ -109,7 +110,7 @@
       loading-screen="backgroundColor: #1d1727; dotsColor: #b9a6dc"
     >
       <!-- Jugador: el rig se mueve, la cámara y las manos van adentro -->
-      <a-entity id="rig" position="0 0 0" climb energia caida limites cuerpo>
+      <a-entity id="rig" position="0 0 0" climb energia caida movimiento-stick limites cuerpo>
         <a-entity id="camara" camera look-controls="pointerLockEnabled: false" fundido position="0 1.6 0"></a-entity>
         <a-entity id="mano-izq" meta-touch-controls="hand: left; model: false" mano-guante="mano: izquierda" anillo-energia="mano: izquierda" pulsera></a-entity>
         <a-entity id="mano-der" meta-touch-controls="hand: right; model: false" mano-guante="mano: derecha" anillo-energia="mano: derecha"></a-entity>

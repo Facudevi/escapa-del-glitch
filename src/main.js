@@ -19,6 +19,7 @@ import './components/fundido.js';
 import './components/checkpoint.js';
 import './components/estante.js';
 import './components/caida.js';
+import './components/movimiento-stick.js';
 import './components/limites.js';
 import './components/cuerpo.js';
 import './components/modo-escritorio.js';

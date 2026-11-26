@@ -162,3 +162,10 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Solución:** en el piso de la sala la niebla ya no alcanza al jugador; solo lo alcanza cuando está escalando.
 - **Aprendizaje:** una regla que castiga hay que revisarla en el estado inicial, donde no hay a dónde devolver al jugador.
 
+
+## 23. En VR había que caminar por la habitación para moverse
+
+- **Qué pasó:** varias personas que lo probaron con casco se quejaron de tener que desplazarse físicamente para ir de un lado a otro del piso.
+- **Por qué:** en VR el juego solo tenía el movimiento del cuerpo (seguimiento del casco); caminar con teclas existía únicamente en el modo escritorio (WASD).
+- **Solución:** un componente nuevo, `movimiento-stick`, mueve al jugador con el stick de cualquiera de los dos controles, a velocidad constante y hacia donde mira. No actúa mientras está agarrado ni mientras cae, y respeta los mismos límites que el resto del juego.
+- **Aprendizaje:** lo que en la compu se resolvía con WASD también necesita una versión con los controles; probar con personas muestra problemas que el modo escritorio no deja ver.

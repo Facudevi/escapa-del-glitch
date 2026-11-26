@@ -96,6 +96,12 @@ export const JUGADOR = {
   radioAgarre: 0.18, // distancia máxima (m) entre la mano y el agarre para poder agarrarlo
 };
 
+// Caminar con el stick de los controles (VR), sin desplazarse físicamente por la habitación.
+export const STICK = {
+  velocidad: 1.8, // m/s, constante (sin aceleración, para que no maree)
+  zonaMuerta: 0.3, // de 0 a 1: por debajo de esta inclinación el stick no mueve al jugador
+};
+
 // Vibración del control al agarrar (si el casco la soporta).
 export const VIBRACION = {
   fuerza: 0.35, // de 0 a 1

@@ -12,6 +12,7 @@ La partida dura unos 2 minutos y medio. Si te caés, no pasa nada: volvés al ú
 
 ### Con casco (Meta Quest)
 - Abrí el link en el navegador del casco y tocá el botón de **gafas VR** (abajo a la derecha).
+- Mové el **stick** de cualquier control para **caminar** hacia donde mirás (no hace falta moverte por la habitación).
 - **Grip** (botón lateral) cerca de una tecla y **bajá el brazo** para subir. Alterná las manos.
 - Cada guante tiene un **anillo de energía** (verde, ámbar, rojo): la mano que agarra se cansa y la libre se recupera.
 - **Escanear** fragmentos: tocá la **pulsera** de la muñeca izquierda con la otra mano, o apretá **A / X**.

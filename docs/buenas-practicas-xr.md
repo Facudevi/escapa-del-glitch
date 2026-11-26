@@ -44,7 +44,7 @@ El libro propone como estándar ofrecer: jugar sentado o parado, ajuste de altur
 **Decisiones para el juego:**
 - Las dos manos son simétricas, así que no hay que elegir zurdo o diestro.
 - Se puede escalar con una sola mano alternando agarres.
-- La mecánica no tiene locomoción libre: el jugador mira a la pared. Por eso la rotación por pasos no es imprescindible, pero hay que **evaluarla** en la etapa 10.
+- En VR se camina por los pisos con el stick de cualquiera de los dos controles, a velocidad constante y sin aceleraciones (componente `movimiento-stick`, agregado el 2026-11-26 porque los jugadores se quejaban de tener que caminar por la habitación). Como el jugador casi siempre mira a la pared, la rotación por pasos no es imprescindible, pero queda para **evaluar** al probar con casco.
 - Quedan para evaluar: jugar sentado y adaptar la pared a la altura del jugador (ver el checklist).
 
 ### C. Interacción: affordance, signifiers y feedback (p. 27–28, 108, 151–153)

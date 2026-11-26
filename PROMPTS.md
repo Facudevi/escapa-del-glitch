@@ -226,6 +226,36 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** la frase del final pasó a ser un título de videojuego: «SUBISTE DE NIVEL» en letras de bloque crema con volumen lavanda y violeta, y la bajada en una cinta clara; entra con un rebote chico y después flota despacio. Detalle en la entrada "Título del final estilo videojuego" más abajo.
 
+### Prompt 34 — 2026-11-26
+
+> como conecto los cascos VR y controles para probar la experiencia
+
+**Respuesta:** se explicaron las tres formas de probar en un Meta Quest: el link de GitHub Pages sin cable (lo más simple), el servidor local por USB con `adb reverse` (modo desarrollador, depuración USB y aceptar la huella en el casco) y el servidor local por Wi-Fi con HTTPS; más cómo emparejar y despertar los controles y qué botones usa el juego (grip para agarrar, A/X para escanear). No se tocó código.
+
+### Prompt 35 — 2026-11-26
+
+> necesito información sobre el proyecto para agregarlo a mi informe. Se va a encontrar en la parte de definición del proyecto, debo tener imagenes intercaladas con texto. Esto se encuentra en la consigna mejor explicado. Busca esa parte y haz el trabajo
+
+**Respuesta:** el PDF de la consigna no está en el repositorio, así que se tomó el resumen de `docs/consigna-tp4.md`, que pide en el informe la «definición y justificación de la idea». Se armó un documento con ocho bloques de texto (qué es, la historia, la mecánica, los tres tramos, la niebla y los fragmentos, el final, la justificación de la idea y de la VR, y la accesibilidad) intercalados con nueve capturas del juego real. Ocho están en 1920×1080, sacadas del render 3D con una cámara de fotos temporal desde la consola del navegador; la de la pantalla de inicio está en 800×450. No se tocó código del juego.
+
+### Prompt 36 — 2026-11-26
+
+> nono, no quiero que sea un un documento dentro del proyecto este, sino uno nuevo que sea externo al repo
+
+**Respuesta:** el documento de la definición del proyecto pasó a ser un documento externo en Claude Docs (https://claude.ai/artifact/9FjZHGLVXQmSD3tm7hy3F8), con el mismo texto y las nueve capturas intercaladas. Se puede editar, comentar y exportar a Word, PDF o Google Docs. Se borraron del repositorio la carpeta `docs/informe/` y la línea que se había agregado al `README.md`.
+
+### Prompt 37 — 2026-11-26
+
+> como se hace para probar en Linux
+
+**Respuesta:** se explicó cómo probar en Linux (Ubuntu 24.04 de la escuela, sin permisos de administrador): servidor local con `npm run dev` y Chromium con la extensión Immersive Web Emulator para simular casco y controles (Firefox no sirve porque no tiene WebXR); en el Quest, el link de GitHub Pages; y el camino por USB con `adb`, que en Linux necesita instalar `adb` y una regla de udev, para lo que hace falta `sudo`. No se tocó código.
+
+### Prompt 38 — 2026-11-26
+
+> Quiero que en VR, para moverse lo haga con el stick de los controles, no que hagas el movimiento "espacial", varios lo jugaron y se quejaron de eso
+
+**Respuesta:** se agregó el componente `movimiento-stick`: en VR el jugador camina por los pisos con el stick de cualquiera de los dos controles, hacia donde mira y a velocidad constante (1,8 m/s, en `STICK` de `src/config.js`). No camina mientras está agarrado o cayendo, y respeta los límites. La escalada sigue siendo con los brazos. Detalle en la entrada "Caminar con el stick en VR" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -817,3 +847,27 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Ver con casco si el tamaño y la altura del título se leen cómodos (`FINAL.cielo`).
 - Intervención manual con commit antes y después.
+
+### 2026-11-26 — Caminar con el stick en VR
+
+**Pedido:** que en VR el jugador se mueva con el stick de los controles y no teniendo que desplazarse físicamente por la habitación, porque varias personas que lo probaron se quejaron de eso.
+
+**Resumen de lo hecho:**
+- **Componente nuevo `movimiento-stick`** (`src/components/movimiento-stick.js`), en el rig del jugador: lee el evento `thumbstickmoved` de los dos controles y mueve el rig hacia donde mira la cabeza, solo en el plano horizontal.
+- Sirve **cualquiera de los dos sticks** (si se mueven los dos, manda el más inclinado). No camina si hay una mano agarrada, mientras cae o mientras un ascenso automático lleva al jugador. Al reaparecer o volver a jugar se olvida el último valor del stick.
+- Va antes de `limites` en el rig, así que los límites de siempre (paredes, borde de los pisos, estantes) lo corrigen en el mismo cuadro.
+- **Config:** `STICK.velocidad` (1,8 m/s) y `STICK.zonaMuerta` (0,3) en `src/config.js`.
+- La pantalla de inicio y el README suman «Mové el stick de cualquier control para caminar».
+- La escalada sigue siendo con los brazos, como dice `docs/idea-final.md`; el stick solo reemplaza caminar por los pisos.
+
+**Buenas prácticas aplicadas:**
+- Velocidad **constante**, sin aceleraciones ni frenadas, para reducir el mareo (p. 107).
+- Zona muerta para que un stick apenas corrido no deslice al jugador.
+- Los dos sticks hacen lo mismo: sirve igual para zurdos y diestros (p. 29–30).
+- Sigue disponible moverse con el cuerpo: el stick se suma, no lo reemplaza.
+
+**Verificado en Chrome** (simulando el stick desde la consola, cuadro por cuadro): 1 s de stick = 1,8 m; con 0,2 de inclinación no se mueve; con una mano agarrada no se mueve; contra la pared y en el borde del piso del tramo 1 los límites lo frenan sin hacerlo caer. `npm run build` sin errores y 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probarlo con casco y con las personas que se quejaron, y ajustar `STICK.velocidad` si marea o resulta lento.
+- Evaluar giro por pasos con el stick derecho y una viñeta de comodidad. El giro por pasos hoy no se puede agregar sin cambiar `climb`, que asume que el rig no está rotado.
