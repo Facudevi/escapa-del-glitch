@@ -263,6 +263,13 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 
 **Respuesta:** se preguntó a qué botón se refería y el equipo eligió el RESET. Se agregó una intro de 23,2 s con cinco tarjetas (el Glitch te atrapó en tu setup, todo es gigante, la salida es el RESET, está apagado y hay que juntar 3 fragmentos, y cómo escalar), salteable con los controles, el teclado o un clic, que se ve solo la primera vez. La palabra RESET del botón pasó a letras de bloque con volumen, como el título del final. Detalle en la entrada "Intro antes de escalar y tipografía del botón RESET" más abajo.
 
+### Prompt 40 — 2026-11-26
+
+> no aparece la introducción, a menos a que sea el escrito largo. El jugador no va a querer leer una lista larguísima. Sobre la introducción me refería a una animación donde el usuario está en primera persona y muestra como la computadora en la que está jugando lo abduce. El ambiente ese debe ser oscuro como si hubiera estado todo el día jugando encerrado en su habitación, mostrando su setup. Algo así o parecido.
+> La tipografía es horrible la del boton RESET. ponele la misma tipografía que la de la frase del final
+
+**Respuesta:** se explicó que, si no se vio la intro, probablemente se abrió `index.html` directo (sin `npm run dev`) o GitHub Pages todavía no se había actualizado. La intro se rehízo como animación en primera persona de 23,6 s: habitación oscura a las 3:47 con el setup de tamaño real, la pantalla falla, salen píxeles, la pantalla crece y lo traga, y aparece frente al setup gigante; solo tres subtítulos cortos. El RESET usa ahora los mismos colores y medidas que el título del final. Detalle en la entrada "Intro animada: la compu te abduce, y RESET con la letra del título" más abajo.
+
 ---
 
 ## Entradas por tarea grande
@@ -902,3 +909,27 @@ Se adjuntaron el libro «UX for XR» (Cornel Hillmann) y `BIMESTRE 4 - consigna.
 **Pendiente (depende del equipo):**
 - Probar con casco que las tarjetas se lean cómodas (`INTRO.distancia`, `INTRO.ancho`) y que 4,4 s por tarjeta alcancen para leerlas.
 - La captura del RESET del documento del informe muestra la etiqueta vieja.
+
+### 2026-11-26 — Intro animada: la compu te abduce, y RESET con la letra del título
+
+**Pedido:** la intro de tarjetas no era lo buscado (y el equipo no la vio). Lo que se quería era una animación en primera persona donde la computadora en la que está jugando abduce al jugador, en un ambiente oscuro, como si hubiera pasado todo el día encerrado en su habitación jugando, mostrando su setup. Sin textos largos. Además, que el botón RESET use la misma tipografía que la frase del final.
+
+**Resumen de lo hecho:**
+- **Módulo nuevo `src/habitacion.js`:** la habitación del jugador, con formas básicas y lejos del resto de la escena (x = −300): escritorio, monitor en un brazo, teclado con una tira de luz suave, mouse, gabinete con vidrio y ventilador que gira, latas de energizante (una tirada), parlante, reloj que marca 3:47, cama sin hacer, ventana con la luna y cortinas, y un póster de RESET. La única luz fuerte es la de la pantalla.
+- **`intro` reescrito** como animación de 23,6 s: habitación con un juego de plataformas en la pantalla (0–7 s) → la pantalla falla de a poco y aparece «¿SEGUÍS AHÍ?» (7–12 s) → salen píxeles en espiral hacia el jugador, la luz se vuelve lavanda y la pantalla crece hasta envolverlo, con fundido lavanda (12–16,3 s) → aparece frente al setup gigante (16,3–22,4 s) → fundido y queda al pie del teclado.
+- **Solo tres subtítulos cortos:** «3:47 AM. Una partida más y me voy a dormir...», «¿Qué le pasa a la pantalla?» y «Te atrapó el Glitch. Juntá los 3 fragmentos y golpeá el RESET para escapar.». Van un poco por encima de la mirada y siguen la cabeza.
+- En la habitación se baja la luz ambiente y se ocultan la pulsera y los anillos de energía (aparecen al llegar al juego). Durante la intro no hay caídas ni límites.
+- Se saltea igual que antes (A, X, gatillo, grip, Enter, espacio, Escape); el clic ahora tiene que ser sin arrastrar, para poder mirar alrededor con el mouse.
+- **RESET:** la etiqueta usa ahora exactamente los colores y medidas del título del final (`COLORES.tituloNivel`, Lilita One); se borró `COLORES.etiquetaReset`.
+- **Config:** `INTRO` (línea de tiempo, subtítulos, habitación, pantalla, luces, píxeles) y `COLORES.habitacion` / `COLORES.subtitulo`. Se borraron las tarjetas (`INTRO.pasos`, `COLORES.intro`).
+
+**Buenas prácticas aplicadas:**
+- El jugador nunca se mueve durante la animación: lo que avanza es la pantalla. Los cambios de lugar son con fundido (p. 46), y la abducción va a ritmo parejo.
+- Sin destellos ni parpadeos: los bloques del glitch cambian tres veces por segundo y la luz pasa a lavanda despacio.
+- Texto mínimo: tres frases cortas, legibles y salteables.
+
+**Verificado en Chrome** (avanzando la animación cuadro por cuadro y con capturas): habitación, glitch, abducción, fundido lavanda, llegada con el subtítulo y fin al pie del teclado; un clic la saltea, la pulsera vuelve a verse y el cronómetro no arranca. El RESET se ve con la letra del título. `npm run build` sin errores y 0 errores en la consola.
+
+**Pendiente (depende del equipo):**
+- Probar con casco que la abducción no maree y que la habitación no quede demasiado oscura (`INTRO.luzAmbienteHabitacion`, `INTRO.luzPantalla`).
+- En VR la habitación aparece hacia donde está la cabeza del rig: si alguien empieza mirando para otro lado, ve primero la cama o la ventana.

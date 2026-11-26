@@ -1,93 +1,130 @@
-// Introducción antes de escalar (menos de 25 s). Va en la <a-scene>.
+// Introducción antes de escalar: una animación en primera persona de 23,6 s. Va en la <a-scene>.
 //
-// Cuando se cierra la pantalla de inicio (o se entra en VR), el jugador aparece parado lejos de la pared, de
-// frente al setup gigante, y delante de él se suceden cinco tarjetas que cuentan la situación: el Glitch lo
-// metió adentro de su setup, todo es gigante, la salida es el botón RESET de arriba, el RESET está apagado y
-// hay que juntar 3 fragmentos, y cómo se escala. Al terminar (o al saltearla) la vista se funde a negro y el
-// jugador aparece al pie del teclado, listo para escalar.
+// 1. Habitación (0–7 s): el jugador está en su cuarto a oscuras, de madrugada, frente a su setup. En la pantalla
+//    corre un juego de plataformas; el reloj marca las 3:47. Subtítulo: «Una partida más y me voy a dormir...».
+// 2. Glitch (7–12 s): la pantalla empieza a fallar de a poco (bloques lavanda y celeste que cambian despacio,
+//    sin parpadeos) y aparece «¿SEGUÍS AHÍ?». Subtítulo: «¿Qué le pasa a la pantalla?».
+// 3. Abducción (12–16,3 s): salen píxeles de la pantalla que giran en espiral alrededor del jugador, la luz se
+//    vuelve lavanda y la pantalla crece y avanza hasta envolverlo; la vista se funde a lavanda.
+// 4. Llegada (16,3–23,6 s): aparece frente al setup gigante (fundido desde lavanda). Subtítulo: «Te atrapó el
+//    Glitch. Juntá los 3 fragmentos y golpeá el RESET para escapar.». Al final, fundido a negro y queda al pie
+//    del teclado, listo para escalar.
 //
-// - Cada tarjeta tiene un dibujo simple, un título y una línea de texto, y abajo los puntos de los pasos y una
-//   barra con el tiempo que le queda. La tarjeta sigue la cabeza con retraso, como las frases del Glitch.
-// - Se saltea con A, X, el gatillo o agarrando algo; en la compu, con Enter, espacio, Escape o un clic.
-// - Mientras dura, no se camina, no se viaja con clic y no se escanea (escena.introActiva).
-// - Se ve una sola vez: al volver a jugar no se repite (INTRO.soloLaPrimeraVez).
-// Todos los tiempos, medidas, textos y colores están en INTRO y COLORES.intro (src/config.js).
+// Comodidad: el jugador nunca se mueve; lo que se mueve es la pantalla. Los cambios de lugar son con fundido.
+// Se saltea con A, X, gatillo o grip; en la compu, con Enter, espacio, Escape o un clic (sin arrastrar).
+// Mientras dura no se camina, no se escanea, no hay caídas ni límites (escena.introActiva), y el grip que la
+// saltea no arranca el cronómetro ni la niebla. Se ve solo la primera vez (INTRO.soloLaPrimeraVez).
+// Tiempos, textos, medidas y colores: INTRO y COLORES.habitacion / COLORES.subtitulo en src/config.js.
 import '@fontsource/lilita-one/latin-400.css';
 import '@fontsource/fredoka/latin-500.css';
-import { COLORES, INTRO } from '../config.js';
+import { CAIDA, COLORES, INTRO } from '../config.js';
+import { construirHabitacion } from '../habitacion.js';
 import { lugarFrenteAlTramo } from '../utilidades.js';
-import { blipGlitch } from '../sonidos.js';
+import { blipGlitch, deslizar } from '../sonidos.js';
 
-const FUENTE_TITULO = '"Lilita One", system-ui, sans-serif';
+const FUENTE_JUEGO = '"Lilita One", system-ui, sans-serif';
 const FUENTE_TEXTO = '"Fredoka", system-ui, sans-serif';
+const H = COLORES.habitacion;
+const T = INTRO.tiempos;
+
+const acotar = (v, a, b) => Math.min(b, Math.max(a, v));
+const entre = (t, desde, hasta) => acotar((t - desde) / (hasta - desde), 0, 1);
 
 AFRAME.registerComponent('intro', {
   init() {
     this.escena = this.el;
     this.escena.introActiva = false;
-    this.vista = false; // ya se mostró una vez
-    this.paso = -1;
-    this.enPaso = 0; // s que lleva la tarjeta actual
-    this.transcurrido = 0; // s desde que empezó la intro
+    this.vista = false;
+    this.t = 0;
+    this.hechos = {}; // momentos de la línea de tiempo que ya pasaron
     this.terminando = false;
+    this.ultimoDibujo = -1;
+    this.subtituloActual = null;
     this.camara = null;
-    this.posCamara = new THREE.Vector3();
-    this.direccion = new THREE.Vector3();
-    this.objetivo = new THREE.Vector3();
+    this.v = {
+      cam: new THREE.Vector3(),
+      dir: new THREE.Vector3(),
+      obj: new THREE.Vector3(),
+      tmp: new THREE.Vector3(),
+      perp: new THREE.Vector3(),
+    };
+    this.colorPantalla = new THREE.Color(H.luzPantalla);
+    this.colorAbduccion = new THREE.Color(H.luzAbduccion);
 
-    this.crearTarjeta();
+    this.cuarto = construirHabitacion(this.escena);
+    this.pantallaInicial = { pos: this.cuarto.pantalla.position.clone() };
+    this.crearSubtitulo();
+    this.crearPixeles();
+    this.dibujarPantalla(0, 0, 0);
 
     this.escena.addEventListener('inicio-cerrado', () => this.empezar());
 
-    // Saltear: botones de los controles, agarrar algo, teclas o clic
+    // Saltear: botones de los controles, agarrar, teclas o un clic sin arrastrar (arrastrar es para mirar)
     this.alSaltear = () => this.saltear();
     ['abuttondown', 'xbuttondown', 'triggerdown', 'mano-agarra'].forEach((n) => this.escena.addEventListener(n, this.alSaltear));
     this.alTeclear = (e) => {
       if (INTRO.teclasSaltear.includes(e.code)) this.saltear();
     };
     window.addEventListener('keydown', this.alTeclear);
-    this.alClickear = () => this.saltear();
-    if (this.escena.canvas) this.escena.canvas.addEventListener('mousedown', this.alClickear);
-    else this.escena.addEventListener('render-target-loaded', () => this.escena.canvas.addEventListener('mousedown', this.alClickear));
+    this.alApretar = (e) => (this.apretadoEn = { x: e.clientX, y: e.clientY });
+    this.alSoltar = (e) => {
+      if (this.apretadoEn && Math.hypot(e.clientX - this.apretadoEn.x, e.clientY - this.apretadoEn.y) < 6) this.saltear();
+      this.apretadoEn = null;
+    };
+    const conectarMouse = () => {
+      this.escena.canvas.addEventListener('mousedown', this.alApretar);
+      this.escena.canvas.addEventListener('mouseup', this.alSoltar);
+    };
+    if (this.escena.canvas) conectarMouse();
+    else this.escena.addEventListener('render-target-loaded', conectarMouse);
 
-    // Las tipografías cargan después: se redibuja la tarjeta cuando están
     if (document.fonts && document.fonts.load) {
-      Promise.all([document.fonts.load(`80px ${FUENTE_TITULO}`), document.fonts.load(`500 40px ${FUENTE_TEXTO}`)])
-        .then(() => this.paso >= 0 && this.dibujar(this.paso))
+      Promise.all([document.fonts.load(`40px ${FUENTE_JUEGO}`), document.fonts.load(`500 40px ${FUENTE_TEXTO}`)])
+        .then(() => this.subtituloActual && this.dibujarSubtitulo(this.subtituloActual))
         .catch(() => {});
     }
   },
 
-  // ---------- Armado de la tarjeta ----------
+  // ---------- Piezas ----------
 
-  crearTarjeta() {
-    const { ancho, alto, pixelesPorMetro } = INTRO;
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = Math.round(ancho * pixelesPorMetro);
-    this.canvas.height = Math.round(alto * pixelesPorMetro);
-    this.textura = new THREE.CanvasTexture(this.canvas);
-    this.textura.colorSpace = THREE.SRGBColorSpace;
-    this.textura.anisotropy = 4;
-    // Opaca (las esquinas redondeadas se recortan con alphaTest): A-Frame no ordena los objetos transparentes,
-    // así que una tarjeta transparente podía quedar tapada por otros carteles de la escena
-    const material = (opciones) => new THREE.MeshBasicMaterial({ fog: false, ...opciones });
+  crearSubtitulo() {
+    const S = INTRO.subtitulo;
+    this.canvasSub = document.createElement('canvas');
+    this.canvasSub.width = Math.round(S.ancho * S.pixelesPorMetro);
+    this.canvasSub.height = Math.round(S.alto * S.pixelesPorMetro);
+    this.texturaSub = new THREE.CanvasTexture(this.canvasSub);
+    this.texturaSub.colorSpace = THREE.SRGBColorSpace;
+    // Opaco y a 70 cm de la cara (delante del monitor), así nada queda entre el subtítulo y los ojos. Con prueba de profundidad:
+    // sin ella WebGL tampoco guarda la profundidad y los carteles transparentes de atrás se le dibujaban encima
+    this.subtitulo = new THREE.Mesh(
+      new THREE.PlaneGeometry(S.ancho, S.alto),
+      new THREE.MeshBasicMaterial({ map: this.texturaSub, alphaTest: 0.5, fog: false })
+    );
+    this.subtitulo.visible = false;
+    this.escena.object3D.add(this.subtitulo);
+  },
 
-    this.grupo = new THREE.Group();
-    this.contenido = new THREE.Group(); // lo que crece al aparecer cada tarjeta
-    this.grupo.add(this.contenido);
-    this.materialTarjeta = material({ map: this.textura, alphaTest: 0.5 });
-    const tarjeta = new THREE.Mesh(new THREE.PlaneGeometry(ancho, alto), this.materialTarjeta);
-    this.contenido.add(tarjeta);
-
-    // Barra del tiempo de la tarjeta: un plano aparte que se achica (no hace falta redibujar el canvas)
-    this.anchoBarra = ancho * 0.84;
-    this.materialBarra = material({ color: COLORES.intro.barra });
-    this.barra = new THREE.Mesh(new THREE.PlaneGeometry(1, alto * 0.018), this.materialBarra);
-    this.barra.position.set(0, -alto * 0.43, 0.003);
-    this.contenido.add(this.barra);
-
-    this.grupo.visible = false;
-    this.escena.object3D.add(this.grupo);
+  crearPixeles() {
+    const n = INTRO.pixeles;
+    this.pixeles = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial({ fog: false, toneMapped: false }),
+      n
+    );
+    this.pixeles.frustumCulled = false;
+    this.pixeles.visible = false;
+    const color = new THREE.Color();
+    this.datosPixel = [];
+    for (let i = 0; i < n; i++) {
+      this.pixeles.setColorAt(i, color.set(H.glitch[i % H.glitch.length]));
+      this.datosPixel.push({ activo: false, desde: new THREE.Vector3(), hasta: new THREE.Vector3(), u: 0, vida: 1, angulo: 0, radio: 0, tamano: 0 });
+    }
+    this.auxiliar = new THREE.Object3D();
+    this.auxiliar.scale.setScalar(0);
+    this.auxiliar.updateMatrix();
+    for (let i = 0; i < n; i++) this.pixeles.setMatrixAt(i, this.auxiliar.matrix);
+    this.escena.object3D.add(this.pixeles);
+    this.porNacer = 0;
   },
 
   // ---------- Flujo ----------
@@ -98,173 +135,282 @@ AFRAME.registerComponent('intro', {
     this.vista = true;
     this.escena.introActiva = true;
     this.terminando = false;
-    this.transcurrido = 0;
+    this.t = 0;
+    this.hechos = {};
 
-    // El jugador mira el setup desde lejos
-    const rig = document.querySelector('#rig');
-    if (rig) rig.object3D.position.set(0, 0, INTRO.miradorZ);
-    if (!this.escena.is('vr-mode')) this.inclinarCamara(INTRO.inclinacionEscritorio);
+    // Arranca en negro y aparece en su habitación
+    const fundido = this.fundido();
+    fundido.color(CAIDA.colorFundido);
+    fundido.opacidad = 1;
+    fundido.material.opacity = 1;
+    fundido.esfera.visible = true;
+    fundido.ir(0, T.entrada * 1000);
 
-    this.mostrarPaso(0);
-    this.colocar(true);
-    this.grupo.visible = true;
-  },
-
-  mostrarPaso(i) {
-    this.paso = i;
-    this.enPaso = 0;
-    this.dibujar(i);
-    this.contenido.scale.setScalar(INTRO.escalaInicial);
-    blipGlitch();
+    this.irA(INTRO.habitacion.x, 0, 0, INTRO.inclinacionHabitacion);
+    this.luzAmbiente(INTRO.luzAmbienteHabitacion);
+    this.mostrarInterfazDeJuego(false); // la pulsera y los anillos aparecen recién adentro del juego
   },
 
   saltear() {
     if (!this.escena.introActiva || this.terminando) return;
-    if (this.transcurrido < INTRO.esperaParaSaltear) return; // la misma tecla o clic que cerró el inicio
+    if (this.t < INTRO.esperaParaSaltear) return; // la misma tecla o clic que cerró el inicio
     this.terminar();
   },
 
   async terminar() {
     if (this.terminando) return;
     this.terminando = true;
-    const fundido = document.querySelector('#camara').components.fundido;
-    await fundido.ir(1, INTRO.fundido);
+    const fundido = this.fundido();
+    await fundido.ir(1, T.duracionFin * 1000);
 
-    this.grupo.visible = false;
-    const rig = document.querySelector('#rig');
-    if (rig) rig.object3D.position.set(0, 0, lugarFrenteAlTramo(0));
-    if (!this.escena.is('vr-mode')) this.inclinarCamara(0);
+    this.subtitulo.visible = false;
+    this.pixeles.visible = false;
+    this.datosPixel.forEach((p) => (p.activo = false));
+    this.cuarto.pantalla.position.copy(this.pantallaInicial.pos);
+    this.cuarto.pantalla.scale.setScalar(1);
+    this.luzAmbiente(null);
+    this.mostrarInterfazDeJuego(true);
+    this.irA(0, 0, lugarFrenteAlTramo(0), 0);
     this.escena.introActiva = false;
     this.escena.emit('intro-terminada', {}, false);
 
-    await fundido.ir(0, INTRO.fundido);
+    await fundido.ir(0, T.duracionFin * 1000);
+    fundido.color(CAIDA.colorFundido);
   },
 
-  // En la compu, la cámara mira un poco hacia arriba para que se vea el setup por encima de la tarjeta
-  inclinarCamara(radianes) {
-    const mirar = document.querySelector('#camara').components['look-controls'];
-    if (mirar && mirar.pitchObject) mirar.pitchObject.rotation.x = radianes;
+  fundido() {
+    return document.querySelector('#camara').components.fundido;
   },
+
+  // Pone al jugador en un lugar; en la compu, además, lo hace mirar de frente con la inclinación dada
+  irA(x, y, z, inclinacion) {
+    const rig = document.querySelector('#rig');
+    if (rig) rig.object3D.position.set(x, y, z);
+    if (this.escena.is('vr-mode')) return;
+    const mirar = document.querySelector('#camara').components['look-controls'];
+    if (mirar && mirar.pitchObject) {
+      mirar.pitchObject.rotation.x = inclinacion;
+      mirar.yawObject.rotation.y = 0;
+    }
+  },
+
+  // Baja la luz ambiente de la sala mientras está en la habitación (null: la deja como estaba)
+  luzAmbiente(intensidad) {
+    if (!this.ambiente) {
+      this.ambiente = [...this.escena.querySelectorAll('[light]')].find((e) => e.getAttribute('light').type === 'ambient');
+      if (this.ambiente) this.intensidadOriginal = this.ambiente.getAttribute('light').intensity;
+    }
+    if (!this.ambiente) return;
+    this.ambiente.setAttribute('light', 'intensity', intensidad === null ? this.intensidadOriginal : intensidad);
+  },
+
+  mostrarInterfazDeJuego(visible) {
+    const izq = document.querySelector('#mano-izq');
+    const der = document.querySelector('#mano-der');
+    [izq && izq.getObject3D('pulsera'), izq && izq.getObject3D('anillo'), der && der.getObject3D('anillo')].forEach((o) => {
+      if (o) o.visible = visible;
+    });
+  },
+
+  // ---------- Línea de tiempo ----------
 
   tick(tiempo, dt) {
-    if (!this.escena.introActiva || this.terminando || !dt) return;
+    if (!this.escena.introActiva || !dt) return;
     const s = Math.min(dt, 100) / 1000;
-    this.transcurrido += s;
-    this.enPaso += s;
+    this.t += s;
+    const t = this.t;
 
-    // Aparición suave de cada tarjeta: crece un poco hasta su tamaño (sin parpadeo)
-    const avance = Math.min((this.enPaso * 1000) / INTRO.entradaTarjeta, 1);
-    const suave = 1 - Math.pow(1 - avance, 3);
-    this.contenido.scale.setScalar(INTRO.escalaInicial + (1 - INTRO.escalaInicial) * suave);
-
-    // Barra del tiempo que le queda a la tarjeta
-    const resto = Math.max(1 - this.enPaso / INTRO.duracionPaso, 0.001);
-    this.barra.scale.x = this.anchoBarra * resto;
-    this.barra.position.x = (-this.anchoBarra * (1 - resto)) / 2;
-
-    if (this.enPaso >= INTRO.duracionPaso) {
-      if (this.paso + 1 < INTRO.pasos.length) this.mostrarPaso(this.paso + 1);
-      else this.terminar();
+    // Momentos puntuales
+    const una = (clave, accion) => {
+      if (!this.hechos[clave]) {
+        this.hechos[clave] = true;
+        accion();
+      }
+    };
+    if (t >= T.glitch) una('glitch', () => blipGlitch());
+    if (t >= T.abduccion) una('abduccion', () => deslizar());
+    if (t >= T.tragado && !this.terminando) {
+      una('tragado', () => {
+        const fundido = this.fundido();
+        fundido.color(H.fundidoAbduccion);
+        fundido.ir(1, T.duracionTragado * 1000);
+      });
     }
-    this.colocar(false, s);
+    if (t >= T.llegada && !this.terminando) {
+      una('llegada', () => {
+        this.pixeles.visible = false;
+        this.datosPixel.forEach((p) => (p.activo = false));
+        this.luzAmbiente(null);
+        this.mostrarInterfazDeJuego(true);
+        this.irA(0, 0, INTRO.miradorZ, INTRO.inclinacionMirador);
+        this.fundido().ir(0, T.duracionLlegada * 1000);
+      });
+    }
+    if (t >= T.fin) una('fin', () => this.terminar());
+    if (this.terminando) return;
+
+    // Habitación: pantalla, luz, ventilador y abducción
+    const g = entre(t, T.glitch, T.abduccion); // cuánto falla la pantalla
+    const a = entre(t, T.abduccion, T.tragado); // cuánto avanzó la abducción
+    if (t < T.llegada) {
+      this.cuarto.aspas.rotation.x += s * 9;
+      if (Math.floor(t * INTRO.pantalla.fps) !== this.ultimoDibujo) {
+        this.ultimoDibujo = Math.floor(t * INTRO.pantalla.fps);
+        this.dibujarPantalla(t, g, a);
+      }
+      this.animarLuz(g, a);
+      this.animarAbduccion(a);
+      this.animarPixeles(t, s);
+    }
+
+    this.actualizarSubtitulo(t, s);
   },
 
-  // Pone la tarjeta delante de la cabeza (de golpe o siguiéndola con retraso)
-  colocar(inmediato, s = 0) {
+  animarLuz(g, a) {
+    const luz = this.cuarto.luzPantalla;
+    const L = INTRO.luzPantalla;
+    luz.color.copy(this.colorPantalla).lerp(this.colorAbduccion, Math.max(g * 0.4, a));
+    luz.intensity = L.intensidad + (L.intensidadAbduccion - L.intensidad) * a;
+  },
+
+  // La pantalla crece y avanza hacia la cabeza del jugador hasta envolverlo
+  animarAbduccion(a) {
+    const pantalla = this.cuarto.pantalla;
+    if (a <= 0) return;
+    this.camaraEnElCuarto(this.v.cam);
+    const destino = this.v.obj.set(this.v.cam.x, this.v.cam.y, this.v.cam.z - 0.25);
+    pantalla.position.lerpVectors(this.pantallaInicial.pos, destino, a);
+    pantalla.scale.setScalar(1 + (INTRO.escalaPantallaFinal - 1) * a);
+  },
+
+  // Posición de la cámara en coordenadas de la habitación
+  camaraEnElCuarto(destino) {
     if (!this.camara) this.camara = document.querySelector('#camara');
-    if (!this.camara) return;
-    this.camara.object3D.getWorldPosition(this.posCamara);
-    this.camara.object3D.getWorldDirection(this.direccion);
-    this.direccion.negate(); // getWorldDirection apunta hacia atrás en la cámara
-    this.direccion.y = 0;
-    if (this.direccion.lengthSq() < 1e-4) this.direccion.set(0, 0, -1);
-    this.direccion.normalize();
-    this.objetivo
-      .copy(this.posCamara)
-      .addScaledVector(this.direccion, INTRO.distancia)
-      .setY(this.posCamara.y + INTRO.alturaRelativa);
-
-    const pos = this.grupo.position;
-    if (inmediato) pos.copy(this.objetivo);
-    else pos.lerp(this.objetivo, Math.min(INTRO.suavizado * s, 1));
-    this.grupo.lookAt(this.posCamara.x, pos.y, this.posCamara.z); // de frente, sin inclinarse
+    this.camara.object3D.getWorldPosition(destino);
+    return this.cuarto.grupo.worldToLocal(destino);
   },
 
-  // ---------- Dibujo de la tarjeta ----------
+  animarPixeles(t, s) {
+    const activo = t >= T.abduccion - 1.5 && t < T.llegada;
+    this.pixeles.visible = activo;
+    if (!activo) return;
+    // Primero salen unos pocos; durante la abducción, muchos
+    const ritmo = t < T.abduccion ? 25 : 110;
+    this.porNacer += ritmo * s;
+    const cuarto = this.cuarto;
+    if (!this.camara) this.camara = document.querySelector('#camara');
+    this.camara.object3D.getWorldPosition(this.v.cam);
 
-  dibujar(i) {
-    const C = COLORES.intro;
-    const paso = INTRO.pasos[i];
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    const ctx = this.canvas.getContext('2d');
+    this.datosPixel.forEach((p, i) => {
+      if (!p.activo && this.porNacer >= 1) {
+        this.porNacer -= 1;
+        p.activo = true;
+        p.u = 0;
+        p.vida = INTRO.vidaPixel[0] + Math.random() * (INTRO.vidaPixel[1] - INTRO.vidaPixel[0]);
+        p.angulo = Math.random() * Math.PI * 2;
+        p.radio = 0.25 + Math.random() * 0.45;
+        p.tamano = INTRO.tamanoPixel[0] + Math.random() * (INTRO.tamanoPixel[1] - INTRO.tamanoPixel[0]);
+        // Nace en un punto de la pantalla y va hacia la cabeza (con un poco de desvío)
+        const P = cuarto.pantalla;
+        const escala = P.scale.x;
+        p.desde.set(
+          (Math.random() - 0.5) * INTRO.pantalla.ancho * escala,
+          (Math.random() - 0.5) * INTRO.pantalla.alto * escala,
+          0.02
+        );
+        P.localToWorld(p.desde);
+        p.hasta.set(
+          this.v.cam.x + (Math.random() - 0.5) * 0.6,
+          this.v.cam.y + (Math.random() - 0.5) * 0.5,
+          this.v.cam.z + 0.6 + Math.random() * 0.6
+        );
+      }
+      const aux = this.auxiliar;
+      if (p.activo) {
+        p.u += s / p.vida;
+        if (p.u >= 1) p.activo = false;
+      }
+      if (!p.activo) {
+        aux.scale.setScalar(0);
+      } else {
+        // Recorrido en espiral alrededor de la línea que va de la pantalla a la cabeza
+        const u = p.u;
+        const eje = this.v.dir.subVectors(p.hasta, p.desde).normalize();
+        const perp1 = this.v.tmp.set(0, 1, 0).cross(eje).normalize();
+        const perp2 = this.v.perp.crossVectors(eje, perp1);
+        const ang = p.angulo + u * INTRO.giroPixel * Math.PI * 2;
+        const r = p.radio * Math.sin(Math.PI * u);
+        aux.position
+          .lerpVectors(p.desde, p.hasta, u)
+          .addScaledVector(perp1, Math.cos(ang) * r)
+          .addScaledVector(perp2, Math.sin(ang) * r);
+        aux.rotation.set(u * 4, u * 3, 0);
+        aux.scale.setScalar(p.tamano * Math.sin(Math.PI * Math.min(u * 1.3, 1)));
+      }
+      aux.updateMatrix();
+      this.pixeles.setMatrixAt(i, aux.matrix);
+    });
+    this.pixeles.instanceMatrix.needsUpdate = true;
+  },
+
+  // ---------- Subtítulos ----------
+
+  actualizarSubtitulo(t, s) {
+    const actual = INTRO.subtitulos.find(([desde, hasta]) => t >= desde && t < hasta);
+    const texto = actual ? actual[2] : null;
+    if (texto !== this.subtituloActual) {
+      this.subtituloActual = texto;
+      if (texto) this.dibujarSubtitulo(texto);
+      this.subtitulo.visible = !!texto;
+      if (texto) this.colocarSubtitulo(1);
+    }
+    if (texto) this.colocarSubtitulo(Math.min(INTRO.subtitulo.suavizado * s, 1));
+  },
+
+  // Un poco por encima de la mirada, siguiendo la cabeza con retraso
+  colocarSubtitulo(mezcla) {
+    if (!this.camara) this.camara = document.querySelector('#camara');
+    const S = INTRO.subtitulo;
+    const { cam, dir, obj } = this.v;
+    this.camara.object3D.getWorldPosition(cam);
+    this.camara.object3D.getWorldDirection(dir).negate();
+    dir.y = 0;
+    if (dir.lengthSq() < 1e-4) dir.set(0, 0, -1);
+    dir.normalize();
+    obj.copy(cam).addScaledVector(dir, S.distancia).setY(cam.y + S.sobreLaMirada);
+    this.subtitulo.position.lerp(obj, mezcla);
+    this.subtitulo.lookAt(cam.x, this.subtitulo.position.y, cam.z);
+  },
+
+  dibujarSubtitulo(texto) {
+    const C = COLORES.subtitulo;
+    const w = this.canvasSub.width;
+    const h = this.canvasSub.height;
+    const ctx = this.canvasSub.getContext('2d');
     ctx.clearRect(0, 0, w, h);
-
-    // Panel con borde fino
-    const radio = h * 0.08;
-    ctx.globalAlpha = 0.95;
     ctx.fillStyle = C.fondo;
     ctx.beginPath();
-    ctx.roundRect(4, 4, w - 8, h - 8, radio);
+    ctx.roundRect(2, 2, w - 4, h - 4, h * 0.2);
     ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = h * 0.008;
-    ctx.strokeStyle = C.borde;
-    ctx.globalAlpha = 0.5;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
 
-    // Dibujo a la izquierda
-    const lado = h * 0.56;
-    const cx = h * 0.42;
-    const cy = h * 0.42;
-    ctx.save();
-    ctx.translate(cx - lado / 2, cy - lado / 2);
-    this.pictograma(ctx, paso.dibujo, lado);
-    ctx.restore();
-
-    // Título con un poco de volumen
-    const x0 = h * 0.8;
-    const anchoTexto = w - x0 - h * 0.08;
-    let tamano = h * 0.135;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    do {
-      ctx.font = `${tamano}px ${FUENTE_TITULO}`;
-      tamano -= 2;
-    } while (ctx.measureText(paso.titulo).width > anchoTexto && tamano > 10);
-    const yTitulo = h * 0.27;
-    ctx.fillStyle = C.tituloVolumen;
-    ctx.fillText(paso.titulo, x0, yTitulo + tamano * 0.07);
-    ctx.fillStyle = C.titulo;
-    ctx.fillText(paso.titulo, x0, yTitulo);
-
-    // Texto, cortado en líneas
-    const tamanoTexto = h * 0.078;
-    ctx.font = `500 ${tamanoTexto}px ${FUENTE_TEXTO}`;
-    ctx.fillStyle = C.texto;
-    this.partirEnLineas(ctx, paso.texto, anchoTexto).forEach((linea, n) => {
-      ctx.fillText(linea, x0, h * 0.42 + n * tamanoTexto * 1.3);
-    });
-
-    // Puntos de los pasos, centrados abajo
-    const total = INTRO.pasos.length;
-    const separacion = h * 0.045;
-    const xPuntos = w / 2 - ((total - 1) * separacion) / 2;
-    for (let n = 0; n < total; n++) {
-      ctx.fillStyle = n === i ? C.puntoActual : n < i ? C.borde : C.punto;
-      ctx.beginPath();
-      ctx.arc(xPuntos + n * separacion, h * 0.82, h * (n === i ? 0.013 : 0.01), 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Cómo saltear
     ctx.textAlign = 'center';
-    ctx.font = `500 ${h * 0.04}px ${FUENTE_TEXTO}`;
-    ctx.fillStyle = C.pista;
-    ctx.fillText(INTRO.saltear, w / 2, h * 0.9);
+    ctx.textBaseline = 'middle';
+    let tamano = h * 0.3;
+    let lineas;
+    do {
+      ctx.font = `500 ${tamano}px ${FUENTE_TEXTO}`;
+      lineas = this.partirEnLineas(ctx, texto, w * 0.9);
+      tamano -= 2;
+    } while (lineas.length > 2 && tamano > 10);
+    ctx.fillStyle = C.texto;
+    const alturaLinea = tamano * 1.2;
+    const centro = h * 0.42;
+    lineas.forEach((linea, i) => ctx.fillText(linea, w / 2, centro + (i - (lineas.length - 1) / 2) * alturaLinea));
 
-    this.textura.needsUpdate = true;
+    ctx.font = `500 ${h * 0.13}px ${FUENTE_TEXTO}`;
+    ctx.fillStyle = C.pista;
+    ctx.fillText(INTRO.pistaSaltear, w / 2, h * 0.86);
+    this.texturaSub.needsUpdate = true;
   },
 
   partirEnLineas(ctx, texto, anchoMaximo) {
@@ -281,144 +427,107 @@ AFRAME.registerComponent('intro', {
     return lineas;
   },
 
-  // Dibujos simples con formas básicas, en un cuadrado de lado `l` (origen arriba a la izquierda)
-  pictograma(ctx, tipo, l) {
-    const K = COLORES;
-    const rect = (x, y, ancho, alto, color, r = 0) => {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.roundRect(x * l, y * l, ancho * l, alto * l, r * l);
-      ctx.fill();
-    };
-    const hexagono = (x, y, r, relleno, borde) => {
-      ctx.beginPath();
-      for (let k = 0; k < 6; k++) {
-        const a = (Math.PI / 3) * k + Math.PI / 6;
-        const px = (x + Math.cos(a) * r) * l;
-        const py = (y + Math.sin(a) * r) * l;
-        if (k === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      if (relleno) {
-        ctx.fillStyle = relleno;
-        ctx.fill();
-      }
-      if (borde) {
-        ctx.lineWidth = l * 0.02;
-        ctx.strokeStyle = borde;
-        ctx.stroke();
-      }
-    };
-    const persona = (x, y, s, color) => {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x * l, y * l, s * 0.22 * l, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.roundRect((x - s * 0.3) * l, (y + s * 0.28) * l, s * 0.6 * l, s * 0.7 * l, s * 0.25 * l);
-      ctx.fill();
-    };
-    const flechaArriba = (x, y0, y1, color) => {
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color;
-      ctx.lineWidth = l * 0.035;
-      ctx.lineCap = 'round';
-      ctx.setLineDash([l * 0.05, l * 0.05]);
-      ctx.beginPath();
-      ctx.moveTo(x * l, y0 * l);
-      ctx.lineTo(x * l, (y1 + 0.06) * l);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo((x - 0.08) * l, (y1 + 0.08) * l);
-      ctx.lineTo(x * l, y1 * l);
-      ctx.lineTo((x + 0.08) * l, (y1 + 0.08) * l);
-      ctx.closePath();
-      ctx.fill();
-    };
+  // ---------- Pantalla del monitor ----------
 
-    if (tipo === 'atrapado') {
-      // Monitor con una persona adentro y píxeles del Glitch alrededor
-      rect(0.06, 0.1, 0.88, 0.62, K.lavanda, 0.06);
-      rect(0.11, 0.15, 0.78, 0.52, '#1d1727', 0.03);
-      rect(0.44, 0.72, 0.12, 0.1, K.lavanda);
-      rect(0.3, 0.82, 0.4, 0.05, K.lavanda, 0.02);
-      persona(0.5, 0.3, 0.38, K.ambar);
-      [
-        [0.18, 0.2, K.celeste],
-        [0.76, 0.24, K.violeta],
-        [0.22, 0.56, K.violeta],
-        [0.72, 0.55, K.celeste],
-        [0.8, 0.42, K.lavanda],
-      ].forEach(([x, y, c]) => rect(x, y, 0.06, 0.06, c));
-    } else if (tipo === 'setup') {
-      // Tres escalones: teclado, torre y monitor, y una flecha que sube
-      rect(0.04, 0.74, 0.62, 0.18, K.lavanda, 0.03);
-      for (let k = 0; k < 5; k++) rect(0.08 + k * 0.11, 0.78, 0.08, 0.05, '#8f7cc0', 0.01);
-      rect(0.2, 0.42, 0.34, 0.32, '#5d4a8f', 0.03);
-      ctx.strokeStyle = K.verde;
-      ctx.lineWidth = l * 0.02;
+  // Un juego de plataformas simple; con `g` aparecen bloques del glitch y con `a` la pantalla se vuelve un túnel lavanda
+  dibujarPantalla(t, g, a) {
+    const canvas = this.cuarto.canvasPantalla;
+    const w = canvas.width;
+    const h = canvas.height;
+    const ctx = canvas.getContext('2d');
+
+    const cielo = ctx.createLinearGradient(0, 0, 0, h);
+    cielo.addColorStop(0, H.cieloJuego[0]);
+    cielo.addColorStop(1, H.cieloJuego[1]);
+    ctx.fillStyle = cielo;
+    ctx.fillRect(0, 0, w, h);
+
+    // Montañas que pasan despacio
+    ctx.fillStyle = H.montanaJuego;
+    const corrimiento = (t * 18) % (w / 2);
+    for (let k = -1; k < 4; k++) {
+      const x = k * (w / 2) - corrimiento;
       ctx.beginPath();
-      ctx.arc(0.37 * l, 0.58 * l, 0.08 * l, 0, Math.PI * 2);
-      ctx.stroke();
-      rect(0.3, 0.08, 0.5, 0.34, K.lavanda, 0.03);
-      rect(0.34, 0.12, 0.42, 0.26, K.celeste, 0.02);
-      flechaArriba(0.86, 0.9, 0.12, K.ambar);
-    } else if (tipo === 'reset') {
-      // Botón RESET con los tres huecos arriba
-      [0.28, 0.5, 0.72].forEach((x) => hexagono(x, 0.16, 0.08, '#241b36', K.lavanda));
-      ctx.fillStyle = '#3b3449';
-      ctx.beginPath();
-      ctx.arc(0.5 * l, 0.6 * l, 0.34 * l, 0, Math.PI * 2);
+      ctx.moveTo(x, h * 0.75);
+      ctx.lineTo(x + w * 0.25, h * 0.35);
+      ctx.lineTo(x + w * 0.5, h * 0.75);
       ctx.fill();
-      ctx.fillStyle = K.violeta;
-      ctx.beginPath();
-      ctx.arc(0.5 * l, 0.6 * l, 0.28 * l, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = `${l * 0.15}px ${FUENTE_TITULO}`;
-      ctx.fillStyle = '#4b3a7a';
-      ctx.fillText('RESET', 0.5 * l, 0.615 * l);
-      ctx.fillStyle = '#fffaf0';
-      ctx.fillText('RESET', 0.5 * l, 0.6 * l);
-    } else if (tipo === 'fragmentos') {
-      // Los tres fragmentos brillando y el contador
-      [0.2, 0.5, 0.8].forEach((x) => {
-        ctx.save();
-        ctx.shadowColor = K.huecoEncendido;
-        ctx.shadowBlur = l * 0.08;
-        hexagono(x, 0.36, 0.12, K.fragmento, K.huecoEncendido);
-        ctx.restore();
-      });
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = `${l * 0.24}px ${FUENTE_TITULO}`;
-      ctx.fillStyle = '#fffaf0';
-      ctx.fillText('0/3', 0.5 * l, 0.76 * l);
-    } else if (tipo === 'escalar') {
-      // Pared con teclas, una persona colgada, una flecha que sube y la niebla abajo
-      [
-        [0.12, 0.1],
-        [0.58, 0.16],
-        [0.3, 0.36],
-        [0.68, 0.44],
-        [0.16, 0.6],
-      ].forEach(([x, y]) => rect(x, y, 0.2, 0.1, K.lavanda, 0.025));
-      persona(0.46, 0.5, 0.3, K.ambar);
-      flechaArriba(0.86, 0.66, 0.08, K.ambar);
-      ctx.globalAlpha = 0.85;
-      rect(0, 0.82, 1, 0.16, K.niebla, 0.03);
-      ctx.globalAlpha = 1;
-      [0.1, 0.3, 0.55, 0.78].forEach((x, k) => rect(x, 0.76 - (k % 2) * 0.03, 0.06, 0.06, K.nieblaPixel));
     }
+    // Plataformas
+    ctx.fillStyle = H.plataformaJuego;
+    const paso = w / 3;
+    const avance = (t * 70) % paso;
+    for (let k = -1; k < 5; k++) {
+      const alturaPlataforma = h * (0.72 + 0.08 * Math.sin(k * 1.7));
+      ctx.fillRect(k * paso - avance, alturaPlataforma, paso * 0.7, h * 0.05);
+    }
+    ctx.fillRect(0, h * 0.9, w, h * 0.1);
+    // Personaje que salta
+    const salto = Math.abs(Math.sin(t * 3)) * h * 0.18;
+    ctx.fillStyle = H.personajeJuego;
+    ctx.fillRect(w * 0.3, h * 0.62 - salto, w * 0.035, h * 0.09);
+    // Marcador
+    ctx.fillStyle = '#fffaf0';
+    ctx.font = `${h * 0.07}px ${FUENTE_JUEGO}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('NIVEL 99', w * 0.04, h * 0.05);
+
+    // Glitch: bloques que cambian tres veces por segundo (despacio, sin parpadeo)
+    if (g > 0) {
+      let semilla = Math.floor(t * 3) * 9301 + 49297;
+      const azar = () => {
+        semilla = (semilla * 9301 + 49297) % 233280;
+        return semilla / 233280;
+      };
+      const cantidad = Math.floor(g * 45);
+      for (let k = 0; k < cantidad; k++) {
+        ctx.globalAlpha = 0.35 + 0.5 * g;
+        ctx.fillStyle = H.glitch[k % H.glitch.length];
+        const lado = (0.03 + azar() * 0.09) * w;
+        ctx.fillRect(azar() * w, azar() * h, lado, lado * (0.3 + azar()));
+      }
+      ctx.globalAlpha = 1;
+      if (g > 0.4) {
+        ctx.globalAlpha = Math.min((g - 0.4) / 0.4, 1);
+        ctx.fillStyle = 'rgba(29, 23, 39, 0.7)';
+        ctx.fillRect(w * 0.2, h * 0.36, w * 0.6, h * 0.24);
+        ctx.fillStyle = '#efe6ff';
+        ctx.font = `${h * 0.13}px ${FUENTE_JUEGO}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('¿SEGUÍS AHÍ?', w / 2, h * 0.48);
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // Abducción: la pantalla se llena de lavanda y se abre un túnel de cuadrados hacia adentro
+    if (a > 0) {
+      ctx.globalAlpha = Math.min(a * 1.2, 0.92);
+      ctx.fillStyle = H.luzAbduccion;
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = h * 0.02;
+      for (let k = 0; k < 8; k++) {
+        const f = (k / 8 + t * 0.5) % 1;
+        ctx.strokeStyle = H.glitch[k % H.glitch.length];
+        ctx.globalAlpha = 0.6 * a * (1 - f);
+        ctx.strokeRect(w / 2 - (f * w) / 2, h / 2 - (f * h) / 2, f * w, f * h);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    this.cuarto.texturaPantalla.needsUpdate = true;
   },
 
   remove() {
     window.removeEventListener('keydown', this.alTeclear);
-    if (this.escena.canvas) this.escena.canvas.removeEventListener('mousedown', this.alClickear);
-    this.escena.object3D.remove(this.grupo);
-    this.textura.dispose();
+    if (this.escena.canvas) {
+      this.escena.canvas.removeEventListener('mousedown', this.alApretar);
+      this.escena.canvas.removeEventListener('mouseup', this.alSoltar);
+    }
+    this.escena.object3D.remove(this.subtitulo);
+    this.escena.object3D.remove(this.pixeles);
+    this.escena.object3D.remove(this.cuarto.grupo);
   },
 });

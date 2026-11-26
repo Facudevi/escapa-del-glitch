@@ -176,3 +176,10 @@ Formato de cada entrada: **qué pasó → por qué pasó → cómo se resolvió 
 - **Por qué:** A-Frame no ordena los objetos transparentes al dibujarlos, así que el orden lo decide cuándo se agregó cada uno a la escena; ni `renderOrder` ni desactivar la prueba de profundidad alcanzaban.
 - **Solución:** la tarjeta pasó a ser opaca (las esquinas redondeadas se recortan con `alphaTest`), y la aparición, en vez de un fundido de opacidad, es un crecimiento suave.
 - **Aprendizaje:** en A-Frame, un panel que tiene que quedar adelante conviene hacerlo opaco; la transparencia trae problemas de orden.
+
+## 25. El subtítulo de la intro quedaba tapado o fuera de vista
+
+- **Qué pasó:** frente al setup gigante, el cartel de la pared se dibujaba encima del subtítulo; en la habitación, las manos lo tapaban.
+- **Por qué:** el subtítulo no tenía prueba de profundidad, y en WebGL, sin esa prueba, tampoco se guarda la profundidad: los carteles transparentes que se dibujaban después le pasaban por encima. Además estaba debajo de la mirada, donde descansan las manos y donde, mirando hacia arriba, quedaba fuera de la pantalla.
+- **Solución:** el subtítulo es opaco, con prueba de profundidad, y va 10 cm por encima de la mirada a 70 cm, delante del monitor y sin nada entre él y los ojos.
+- **Aprendizaje:** desactivar `depthTest` no sirve para dejar algo «siempre adelante» si después se dibujan objetos transparentes.

@@ -46,6 +46,7 @@ AFRAME.registerComponent('caida', {
 
   tick(tiempo, dt) {
     if (this.estado !== 'normal' || this.el.sceneEl.juegoTerminado) return; // después del final no hay caídas
+    if (this.el.sceneEl.introActiva) return; // en la intro el jugador está en su habitación, fuera de la sala
 
     const posRig = this.el.object3D.position;
     const camara = document.querySelector('#camara');

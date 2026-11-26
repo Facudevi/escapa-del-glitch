@@ -66,24 +66,39 @@ export const COLORES = {
     cinta: '#fffaf0',
     cintaTexto: '#3c3489',
   },
-  // Palabra RESET sobre el botón: letras de bloque crema con volumen violeta (mismo estilo que el título final)
-  etiquetaReset: {
-    cara: '#fffaf0',
-    volumen: ['#c9b8ee', '#9b84cf', '#4b3a7a'], // de la capa pegada a la cara a la más profunda
-    sombra: 'rgba(20, 12, 40, 0.55)',
+  // Introducción: la habitación a oscuras donde el jugador estuvo jugando todo el día
+  habitacion: {
+    piso: '#1f1a26',
+    paredes: '#1b1622',
+    techo: '#141019',
+    escritorio: '#2e2530',
+    metal: '#26212d',
+    marco: '#15121b', // marco del monitor y del gabinete
+    teclado: '#2a2433',
+    tecladoLuz: '#7b5cc4', // tira de luz suave debajo del teclado
+    gabineteLuz: '#5d4a8f', // vidrio del gabinete
+    ventilador: '#8fc3e6',
+    lata: '#d9a15b',
+    cama: '#2d2638',
+    frazada: '#4b3f66',
+    almohada: '#5d5470',
+    ventana: '#141a33', // cielo de noche
+    luna: '#f3ead2',
+    cortina: '#2a2140',
+    reloj: '#d9a15b',
+    luzPantalla: '#8fc3e6', // luz que tira la pantalla sobre la habitación
+    luzAbduccion: '#b9a6dc', // la luz se vuelve lavanda cuando la pantalla lo traga
+    luzLampara: '#d9a15b',
+    // Juego que se ve en la pantalla
+    cieloJuego: ['#1d1940', '#3b2f6a'],
+    montanaJuego: '#2a2450',
+    plataformaJuego: '#6fae8f',
+    personajeJuego: '#d9a15b',
+    glitch: ['#b9a6dc', '#8fc3e6', '#7b5cc4', '#efe6ff'], // bloques del glitch y píxeles que salen de la pantalla
+    fundidoAbduccion: '#cfc0f0', // color del fundido al ser tragado por la pantalla
   },
-  // Tarjetas de la introducción
-  intro: {
-    fondo: '#2b2140',
-    borde: '#b9a6dc',
-    titulo: '#fffaf0',
-    tituloVolumen: '#7b5cc4',
-    texto: '#e9e2f5',
-    pista: '#b9a6dc',
-    punto: '#5d4a8f', // paso que todavía no se vio
-    puntoActual: '#d9a15b',
-    barra: '#d9a15b', // barra de tiempo de la tarjeta
-  },
+  // Subtítulos de la introducción
+  subtitulo: { fondo: '#1d1727', texto: '#f0e9fb', pista: '#9b8cc0' },
   luzRotura: '#ffe9c7', // luz cálida que sale de la grieta del RESET
   grieta: '#efe6ff',
   resetListo: '#9b82e6', // botón RESET encendido
@@ -489,53 +504,52 @@ export const ASCENSO = {
   margenProteccion: 700, // ms extra sin caer después de llegar al piso
 };
 
-// Introducción antes de escalar: tarjetas que cuentan la situación del jugador (menos de 25 s en total).
-// El jugador la ve parado lejos de la pared, de frente al setup gigante; al terminar (o al saltearla) se
-// funde a negro y aparece al pie del teclado, listo para escalar.
+// Introducción antes de escalar (menos de 25 s): una animación en primera persona. El jugador está en su
+// habitación a oscuras, de madrugada, frente a su setup; la pantalla empieza a fallar y lo traga, y aparece
+// frente al setup gigante. Solo tres subtítulos cortos cuentan lo que pasa. Se ve una sola vez y se saltea.
 export const INTRO = {
   soloLaPrimeraVez: true, // al volver a jugar no se repite
-  duracionPaso: 4.4, // s que se ve cada tarjeta (5 tarjetas = 22 s; con los dos fundidos quedan 23,2 s)
-  fundido: 600, // ms del fundido a negro al terminar (ida y vuelta)
-  entradaTarjeta: 300, // ms que tarda cada tarjeta en aparecer (crece suave, sin parpadeo)
-  escalaInicial: 0.92, // tamaño con el que empieza cada tarjeta antes de llegar al suyo
   esperaParaSaltear: 0.8, // s al principio en que no se puede saltear (la tecla que cerró el inicio no cuenta)
-  miradorZ: 8.4, // z donde está parado el jugador durante la intro (lejos de la pared: se ve el setup entero)
-  inclinacionEscritorio: 0.12, // rad que mira hacia arriba la cámara en la compu durante la intro
-  distancia: 1.6, // m delante de la cabeza
-  alturaRelativa: -0.05, // m respecto de los ojos (apenas abajo, sin tapar las manos)
-  suavizado: 3, // cuánto sigue a la cabeza (más alto = más rápido)
-  ancho: 1.6, // m
-  alto: 0.84, // m
-  pixelesPorMetro: 900,
   teclasSaltear: ['Enter', 'Space', 'Escape'],
-  saltear: 'A, X o gatillo: saltear  ·  En la compu: Enter o clic',
-  pasos: [
-    {
-      titulo: 'Te atrapó el Glitch',
-      texto: 'Te quedaste jugando hasta tarde y el Glitch te metió adentro de tu propio setup gamer.',
-      dibujo: 'atrapado',
-    },
-    {
-      titulo: 'Todo es gigante',
-      texto: 'El teclado, la torre de la PC y el monitor ahora son paredes. Para salir, hay que escalarlas.',
-      dibujo: 'setup',
-    },
-    {
-      titulo: 'La salida: el RESET',
-      texto: 'Está arriba de todo, sobre el monitor. Si lo golpeás, rompés la pantalla y escapás.',
-      dibujo: 'reset',
-    },
-    {
-      titulo: 'Pero está apagado',
-      texto: 'Para encenderlo, juntá los 3 fragmentos escondidos en la pared: uno en cada tramo.',
-      dibujo: 'fragmentos',
-    },
-    {
-      titulo: '¡A escalar!',
-      texto: 'Subí con los brazos, alterná las manos y no dejes que te alcance la niebla de píxeles.',
-      dibujo: 'escalar',
-    },
+
+  // Momentos de la animación (s desde que empieza). Total: 23,6 s
+  tiempos: {
+    entrada: 1.0, // fundido desde negro al llegar a la habitación
+    glitch: 7.0, // la pantalla empieza a fallar
+    abduccion: 12.0, // salen los píxeles y la pantalla crece hacia el jugador
+    tragado: 15.4, // fundido lavanda: la pantalla lo traga
+    duracionTragado: 0.9,
+    llegada: 16.3, // aparece frente al setup gigante (fundido desde lavanda)
+    duracionLlegada: 1.2,
+    fin: 22.4, // fundido a negro y queda al pie del teclado
+    duracionFin: 0.6,
+  },
+
+  // Subtítulos: [desde, hasta, texto]
+  subtitulos: [
+    [1.2, 6.4, '3:47 AM. Una partida más y me voy a dormir...'],
+    [7.6, 11.8, '¿Qué le pasa a la pantalla?'],
+    [17.2, 22.2, 'Te atrapó el Glitch. Juntá los 3 fragmentos y golpeá el RESET para escapar.'],
   ],
+  pistaSaltear: 'A / X / Enter: saltear',
+  // Subtítulo un poco por encima de la mirada: abajo lo tapaban las manos y, frente al setup gigante, quedaba fuera de vista
+  subtitulo: { distancia: 0.7, sobreLaMirada: 0.1, ancho: 0.74, alto: 0.13, suavizado: 4, pixelesPorMetro: 1800 },
+
+  // Habitación: lejos del resto de la escena (como el exterior del final, pero del otro lado)
+  habitacion: { x: -300, ancho: 4.2, fondo: 4.2, alto: 2.6 },
+  pantalla: { ancho: 0.8, alto: 0.46, y: 1.38, z: -0.8, fps: 15, resolucion: 512 },
+  luzPantalla: { intensidad: 2.4, intensidadAbduccion: 3.6, distancia: 4 },
+  luzAmbienteHabitacion: 0.35, // intensidad de la luz ambiente mientras está en la habitación (la de la sala es más alta)
+  inclinacionHabitacion: -0.2, // rad que mira hacia abajo la cámara en la compu (hacia el monitor)
+  inclinacionMirador: 0.25, // rad que mira hacia arriba la cámara en la compu frente al setup gigante
+  miradorZ: 8.4, // z donde aparece frente al setup gigante (lejos de la pared: se ve todo)
+
+  // Abducción: la pantalla crece y avanza hasta envolver al jugador, y le salen píxeles alrededor
+  escalaPantallaFinal: 7, // cuántas veces crece la pantalla
+  pixeles: 160,
+  vidaPixel: [1.1, 1.9], // s que tarda un píxel en llegar hasta el jugador (mín, máx)
+  tamanoPixel: [0.015, 0.045], // m
+  giroPixel: 2.2, // vueltas en espiral alrededor del jugador
 };
 
 // Final: el botón RESET, la rotura de la pantalla, el exterior al amanecer y la medalla.

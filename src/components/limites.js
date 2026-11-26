@@ -64,7 +64,7 @@ AFRAME.registerComponent('limites', {
 
   tick() {
     const escena = this.el.sceneEl;
-    if (escena.rigAutomatico || escena.juegoTerminado) return;
+    if (escena.rigAutomatico || escena.juegoTerminado || escena.introActiva) return;
     if (!this.camara) this.camara = document.querySelector('#camara');
     if (!this.camara) return;
 

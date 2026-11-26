@@ -1,8 +1,8 @@
 // Palabra «RESET» sobre la cara del botón grande del piso de arriba.
 //
-// Antes era un cartel común (panel oscuro con la letra del sistema). Ahora son letras de bloque (tipografía
-// Lilita One), color crema y con volumen violeta, en el mismo estilo que el título del final: se lee como el
-// logo de un botón de videojuego. Se dibuja en un canvas sobre un plano transparente, sin panel de fondo.
+// Usa exactamente la tipografía y los colores del título del final («SUBISTE DE NIVEL»): letras de bloque
+// Lilita One, cara crema, volumen de lavanda a violeta y sombra suave (COLORES.tituloNivel). Así el botón y el
+// título se leen como parte del mismo juego. Se dibuja en un canvas sobre un plano transparente, sin panel de fondo.
 // La tipografía viene instalada con npm (@fontsource) y va dentro del build.
 import '@fontsource/lilita-one/latin-400.css';
 import { COLORES } from '../config.js';
@@ -39,7 +39,7 @@ AFRAME.registerComponent('etiqueta-reset', {
   },
 
   dibujar(w, h) {
-    const C = COLORES.etiquetaReset;
+    const C = COLORES.tituloNivel; // los mismos colores que el título del final
     this.canvas.width = w;
     this.canvas.height = h;
     const ctx = this.canvas.getContext('2d');
@@ -55,17 +55,17 @@ AFRAME.registerComponent('etiqueta-reset', {
       tamano -= 2;
     } while (ctx.measureText(texto).width > w * 0.9 && tamano > 10);
     tamano += 2;
-    ctx.letterSpacing = `${Math.round(tamano * 0.04)}px`;
+    ctx.letterSpacing = `${Math.round(tamano * 0.03)}px`;
 
     const centro = h * 0.46;
-    const paso = tamano * 0.045; // grosor de cada capa de volumen
+    const paso = tamano * 0.035; // grosor de cada capa de volumen (igual que el título del final)
     const capas = C.volumen.length;
 
     // Sombra suave debajo de todo
     ctx.save();
     ctx.shadowColor = C.sombra;
     ctx.shadowBlur = tamano * 0.12;
-    ctx.shadowOffsetY = tamano * 0.05;
+    ctx.shadowOffsetY = tamano * 0.06;
     ctx.fillStyle = C.volumen[capas - 1];
     ctx.fillText(texto, w / 2, centro + paso * (capas + 1));
     ctx.restore();
@@ -77,7 +77,7 @@ AFRAME.registerComponent('etiqueta-reset', {
     }
     // Cara, con un contorno fino del color del volumen
     ctx.lineJoin = 'round';
-    ctx.lineWidth = tamano * 0.03;
+    ctx.lineWidth = tamano * 0.025;
     ctx.strokeStyle = C.volumen[0];
     ctx.strokeText(texto, w / 2, centro);
     ctx.fillStyle = C.cara;

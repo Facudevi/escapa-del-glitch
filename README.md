@@ -25,7 +25,7 @@ La partida dura unos 2 minutos y medio. Si te caés, no pasa nada: volvés al ú
 - Hay un **modo fácil** (más alcance, más energía, niebla más lenta): se elige en la pantalla de inicio o con `?facil=1` al final del link.
 
 ### El juego
-- Antes de escalar hay una **intro de 23 s**: cinco tarjetas cuentan que el Glitch te metió en tu setup gigante, que la salida es el botón RESET de arriba y que para encenderlo hay que juntar 3 fragmentos. Se saltea con **A, X, gatillo o grip** (en la compu, **Enter o clic**) y se ve solo la primera vez.
+- Antes de escalar hay una **intro animada de 23,6 s** en primera persona: estás en tu habitación a oscuras, a las 3:47 de la madrugada, frente a tu setup; la pantalla empieza a fallar, te traga y aparecés frente al setup gigante. Tres subtítulos cortos cuentan lo que pasa y que hay que juntar 3 fragmentos para encender el RESET. Se saltea con **A, X, gatillo o grip** (en la compu, **Enter o clic**) y se ve solo la primera vez.
 - Cinco tipos de agarre, cada uno con su color y su forma: **tecla firme** (lavanda), **tecla que se hunde**, **lata que se rompe** (cruje y cae a los 3 s), **bloque intermitente** (mirá su anillo) y **panel que gira**. Los agarres al alcance se resaltan.
 - Cada tramo es un **escalón** (teclado, torre de PC y monitor) con un piso arriba donde descansar: llegás agarrándote del **reborde verde** de arriba de la pared, y desde el piso ves de frente el tramo siguiente.
 - En medio de cada tramo hay **estantes** (pequeñas bases de madera con borde ámbar) donde te podés parar y soltar las manos. Tu **cuerpo** se ve, y se pone rojizo cuando la niebla te llega a los pies.
@@ -64,6 +64,7 @@ Abrir `http://localhost:5173`. Otros comandos: `npm run build` (genera `dist/`) 
 │   ├── config.js      tiempos, velocidades, medidas y colores
 │   ├── tramos.js      generador de la pared (agarres, paneles, fragmentos)
 │   ├── decorado.js    escritorio, teclado, torre de PC y monitor con volumen
+│   ├── habitacion.js  habitación del jugador para la intro (setup de tamaño real, cama, ventana)
 │   ├── plataformas.js pisos de arriba de cada escalón y piso final con el RESET
 │   ├── teclado.js     distribución de las teclas del teclado gigante
 │   ├── objetosFinal.js podio con medalla, pedestal del botón y cartel del exterior
